@@ -1,0 +1,67 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("admins")
+}
+
+model Standard {
+  id          String    @id @default(cuid())
+  name        String    @unique // e.g., "Class 1", "Class 2", etc.
+  description String?
+  order       Int       @unique // for ordering standards
+  subjects    Subject[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("standards")
+}
+
+model Subject {
+  id          String    @id @default(cuid())
+  name        String    // e.g., "Mathematics", "Science", etc.
+  description String?
+  order       Int       // for ordering subjects within a standard
+  standardId  String
+  standard    Standard  @relation(fields: [standardId], references: [id], onDelete: Cascade)
+  chapters    Chapter[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([name, standardId])
+  @@unique([order, standardId])
+  @@map("subjects")
+}
+
+model Chapter {
+  id             String  @id @default(cuid())
+  name           String
+  description    String?
+  order          Int // for ordering chapters within a subject
+  subjectId      String
+  subject        Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  videoUrl       String? // YouTube video URL
+  solutionPdfUrl String? // URL to solution PDF
+  textbookPdfUrl String? // URL to textbook PDF
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([order, subjectId])
+  @@map("chapters")
+}
