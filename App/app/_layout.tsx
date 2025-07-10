@@ -1,5 +1,68 @@
 import { Stack } from "expo-router";
-import "./global.css"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { StatusBar } from "expo-status-bar";
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import "./global.css";
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 2,
+      refetchOnWindowFocus: false,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes
+    },
+  },
+});
+
 export default function RootLayout() {
-  return <Stack />;
+  return (
+    <SafeAreaProvider>
+      <QueryClientProvider client={queryClient}>
+        <StatusBar style="dark" backgroundColor="#7c3aed" />
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: '#f8fafc' },
+            animation: 'ios_from_right',
+            
+          }}
+        >
+          <Stack.Screen 
+            name="index" 
+            options={{
+              title: 'શાળા શિક્ષક',
+              gestureEnabled: false,
+              headerTintColor: '#7c3aed',
+            }} 
+            
+          />
+          <Stack.Screen 
+            name="standard/[id]" 
+            options={{
+              title: 'વિષયો',
+              gestureEnabled: true,
+              headerTintColor: '#7c3aed',
+            }} 
+          />
+          <Stack.Screen 
+            name="subject/[id]" 
+            options={{
+              title: 'પ્રકરણો',
+              gestureEnabled: true,
+              headerTintColor: '#7c3aed',
+            }} 
+          />
+          <Stack.Screen 
+            name="chapter/[id]" 
+            options={{
+              title: 'પ્રકરણ',
+              gestureEnabled: true,
+              headerTintColor: '#7c3aed',
+            }} 
+          />
+        </Stack>
+      </QueryClientProvider>
+    </SafeAreaProvider>
+  );
 }

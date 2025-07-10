@@ -10,11 +10,13 @@ const AdminDashboard: React.FC = () => {
     queryFn: standardsAPI.getAll,
   });
 
-  const totalSubjects = standards.reduce((acc, standard) => acc + (standard.subjects?.length || 0), 0);
-  const totalChapters = standards.reduce((acc, standard) => 
+  const standardsArray = Array.isArray(standards) ? standards : [];
+  
+  const totalSubjects = standardsArray.reduce((acc, standard) => acc + (standard.subjects?.length || 0), 0);
+  const totalChapters = standardsArray.reduce((acc, standard) => 
     acc + (standard.subjects?.reduce((subAcc, subject) => subAcc + (subject.chapters?.length || 0), 0) || 0), 0
   );
-  const totalVideos = standards.reduce((acc, standard) => 
+  const totalVideos = standardsArray.reduce((acc, standard) => 
     acc + (standard.subjects?.reduce((subAcc, subject) => 
       subAcc + (subject.chapters?.filter(chapter => chapter.videoUrl).length || 0), 0) || 0), 0
   );
@@ -22,7 +24,7 @@ const AdminDashboard: React.FC = () => {
   const stats = [
     {
       name: 'Total Standards',
-      value: standards.length,
+      value: standardsArray.length,
       icon: Users,
       color: 'bg-blue-500',
       link: '/admin/standards'
@@ -135,9 +137,9 @@ const AdminDashboard: React.FC = () => {
           {/* Recent Standards */}
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-6">Recent Standards</h2>
-            {standards.length > 0 ? (
+            {standardsArray.length > 0 ? (
               <div className="space-y-4">
-                {standards.slice(0, 5).map((standard) => (
+                { standardsArray.slice(0, 5).map((standard) => (
                   <div key={standard.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <div>
                       <h3 className="font-medium text-gray-900">{standard.name}</h3>
@@ -153,7 +155,7 @@ const AdminDashboard: React.FC = () => {
                     </Link>
                   </div>
                 ))}
-                {standards.length > 5 && (
+                {standardsArray.length > 5 && (
                   <Link
                     to="/admin/standards"
                     className="block text-center text-indigo-600 hover:text-indigo-500 text-sm font-medium"

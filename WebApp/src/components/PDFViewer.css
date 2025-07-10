@@ -1,0 +1,67 @@
+/* React PDF Styles */
+.react-pdf__Page {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border-radius: 8px;
+  overflow: hidden;
+  background: white;
+  margin: 0 auto;
+}
+
+.react-pdf__Page__canvas {
+  max-width: 100%;
+  height: auto !important;
+  border-radius: 8px;
+}
+
+.react-pdf__Page__textContent {
+  border-radius: 8px;
+}
+
+.react-pdf__Page__annotations {
+  border-radius: 8px;
+}
+
+/* Loading animation */
+.page-container {
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* Smooth zoom transition */
+.react-pdf__Page {
+  transition: transform 0.2s ease-out;
+}
+
+/* Custom scrollbar */
+.overflow-auto::-webkit-scrollbar {
+  width: 8px;
+}
+
+.overflow-auto::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.overflow-auto::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.overflow-auto::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Mobile optimizations */
+@media (max-width: 640px) {
+  .react-pdf__Page {
+    margin: 0 auto 16px auto;
+  }
+}
+
+/* Print styles */
+@media print {
+  .react-pdf__Page {
+    box-shadow: none;
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+}
