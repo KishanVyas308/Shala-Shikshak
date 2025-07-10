@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { BookOpen, ArrowLeft, Download, ExternalLink, PlayCircle, Star, Clock, Eye, ThumbsUp, Share2, Bookmark } from 'lucide-react';
+import { BookOpen, ArrowLeft, ExternalLink, PlayCircle, Star, Clock, Eye, ThumbsUp, Share2, Bookmark } from 'lucide-react';
 import { chaptersAPI } from '../services/chapters';
+import SimplePDFViewer from '../components/SimplePDFViewer';
+import '../components/PDFViewer.css';
 
 const ChapterView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -211,38 +213,21 @@ const ChapterView: React.FC = () => {
                     <div className="flex-1">
                       <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-1 sm:mb-2">{chapter.name} - પાઠ્યપુસ્તક</h3>
                       <p className="text-gray-600 mb-3 sm:mb-4 text-sm sm:text-base">સંપૂર્ણ પ્રકરણની સામગ્રી PDF ફોર્મેટમાં</p>
-                      <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
-                        <a
-                          href={`http://localhost:5000${chapter.textbookPdfUrl}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base"
-                        >
-                          <ExternalLink className="h-4 w-4 mr-1 sm:mr-2" />
-                          જુઓ
-                        </a>
-                        <a
-                          href={`http://localhost:5000${chapter.textbookPdfUrl}`}
-                          download
-                          className="inline-flex items-center justify-center px-3 sm:px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors text-sm sm:text-base"
-                        >
-                          <Download className="h-4 w-4 mr-1 sm:mr-2" />
-                          ડાઉનલોડ
-                        </a>
+                      <div className="flex items-center text-sm text-gray-500">
+                        <BookOpen className="h-4 w-4 mr-2" />
+                        <span>PDF વ્યુઅર</span>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* PDF Preview */}
-              <div className="border border-gray-200 rounded-lg overflow-hidden">
-                <iframe
-                  src={`http://localhost:5000${chapter.textbookPdfUrl}#toolbar=0`}
-                  title={`${chapter.name} - પાઠ્યપુસ્તક`}
-                  className="w-full h-64 sm:h-80 md:h-96 lg:h-[600px]"
-                ></iframe>
-              </div>
+              {/* PDF Viewer */}
+              <SimplePDFViewer 
+                src={chapter.textbookPdfUrl}
+                title={`${chapter.name} - પાઠ્યપુસ્તક`}
+                type="textbook"
+              />
             </div>
           )}
 
@@ -263,38 +248,21 @@ const ChapterView: React.FC = () => {
                     <div className="flex-1">
                       <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-1 sm:mb-2">{chapter.name} - ઉકેલ માર્ગદર્શિકા</h3>
                       <p className="text-gray-600 mb-3 sm:mb-4 text-sm sm:text-base">વિગતવાર ઉકેલો અને સમજૂતીઓ</p>
-                      <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
-                        <a
-                          href={`http://localhost:5000${chapter.solutionPdfUrl}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors text-sm sm:text-base"
-                        >
-                          <ExternalLink className="h-4 w-4 mr-1 sm:mr-2" />
-                          જુઓ
-                        </a>
-                        <a
-                          href={`http://localhost:5000${chapter.solutionPdfUrl}`}
-                          download
-                          className="inline-flex items-center justify-center px-3 sm:px-4 py-2 border border-yellow-600 text-yellow-600 rounded-lg hover:bg-yellow-50 transition-colors text-sm sm:text-base"
-                        >
-                          <Download className="h-4 w-4 mr-1 sm:mr-2" />
-                          ડાઉનલોડ
-                        </a>
+                      <div className="flex items-center text-sm text-gray-500">
+                        <Star className="h-4 w-4 mr-2" />
+                        <span>PDF વ્યુઅર</span>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* PDF Preview */}
-              <div className="border border-gray-200 rounded-lg overflow-hidden">
-                <iframe
-                  src={`http://localhost:5000${chapter.solutionPdfUrl}#toolbar=0`}
-                  title={`${chapter.name} - ઉકેલ`}
-                  className="w-full h-64 sm:h-80 md:h-96 lg:h-[600px]"
-                ></iframe>
-              </div>
+              {/* PDF Viewer */}
+              <SimplePDFViewer 
+                src={chapter.solutionPdfUrl}
+                title={`${chapter.name} - ઉકેલ`}
+                type="solution"
+              />
             </div>
           )}
         </div>
