@@ -1,9 +1,40 @@
 import express from 'express';
+import path from 'path';
+import fs from 'fs';
 import { prisma } from '../lib/prisma';
 import { authenticateToken } from '../middleware/auth';
 import { chapterSchema, chapterUpdateSchema } from '../utils/validation';
 
 const router = express.Router();
+
+// Utility function to safely delete a file
+const deleteFileIfExists = (filePath: string | null) => {
+  if (!filePath) return;
+  
+  try {
+    // Extract filename from URL path (e.g., "/uploads/filename.pdf" -> "filename.pdf")
+    const filename = path.basename(filePath);
+    
+    // Skip if no valid filename
+    if (!filename || filename === '.' || filename === '..') {
+      console.warn(`Invalid filename extracted from path: ${filePath}`);
+      return;
+    }
+    
+    const fullPath = path.join(process.cwd(), 'uploads', filename);
+    
+    // Check if file exists before attempting to delete
+    if (fs.existsSync(fullPath)) {
+      fs.unlinkSync(fullPath);
+      console.log(`Successfully deleted file: ${fullPath}`);
+    } else {
+      console.warn(`File not found for deletion: ${fullPath}`);
+    }
+  } catch (error) {
+    console.error(`Error deleting file ${filePath}:`, error);
+    // Don't throw error - we don't want file deletion failure to prevent chapter deletion
+  }
+};
 
 // Get all chapters for a subject (public)
 router.get('/subject/:subjectId', async (req, res) => {
@@ -174,6 +205,15 @@ router.put('/:id', authenticateToken, async (req, res) => {
       }
     }
 
+    // Clean up old PDF files if they're being replaced
+    if (value.textbookPdfUrl && value.textbookPdfUrl !== existingChapter.textbookPdfUrl) {
+      deleteFileIfExists(existingChapter.textbookPdfUrl);
+    }
+    
+    if (value.solutionPdfUrl && value.solutionPdfUrl !== existingChapter.solutionPdfUrl) {
+      deleteFileIfExists(existingChapter.solutionPdfUrl);
+    }
+
     const updatedChapter = await prisma.chapter.update({
       where: { id },
       data: value,
@@ -213,11 +253,23 @@ router.delete('/:id', authenticateToken, async (req, res) => {
       return res.status(404).json({ error: 'Chapter not found' });
     }
 
+    // Delete associated PDF files before deleting the chapter
+    if (chapter.textbookPdfUrl) {
+      deleteFileIfExists(chapter.textbookPdfUrl);
+    }
+    
+    if (chapter.solutionPdfUrl) {
+      deleteFileIfExists(chapter.solutionPdfUrl);
+    }
+
+    // Delete the chapter from database
     await prisma.chapter.delete({
       where: { id },
     });
 
-    res.json({ message: 'Chapter deleted successfully' });
+    res.json({ 
+      message: 'Chapter and associated files deleted successfully' 
+    });
   } catch (error) {
     console.error('Delete chapter error:', error);
     res.status(500).json({ error: 'Internal server error' });
