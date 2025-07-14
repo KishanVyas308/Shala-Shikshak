@@ -63,37 +63,34 @@ const SubjectView: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-      {/* Header */}
+      {/* Compact Header */}
       <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 text-white">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-6 sm:py-8 lg:py-12">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-5">
           <Link
             to={`/standard/${subject.standardId}`}
-            className="inline-flex items-center text-white/80 hover:text-white mb-4 sm:mb-6 transition-colors text-sm sm:text-base"
+            className="inline-flex items-center text-white/80 hover:text-white mb-3 transition-colors text-sm"
           >
-            <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+            <ArrowLeft className="h-4 w-4 mr-2" />
             {subject.standard?.name} માં પાછા જાવ
           </Link>
           
-          <div className="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
-            <div className="bg-white/10 backdrop-blur-lg rounded-full p-3 sm:p-4 w-fit">
-              <BookOpen className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-white" />
+          <div className="flex items-center space-x-3 sm:space-x-4">
+            <div className="bg-white/10 backdrop-blur-lg rounded-lg p-2 sm:p-3 flex-shrink-0">
+              <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
             </div>
-            <div className="flex-1">
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-1 sm:mb-2 leading-tight">{subject.name}</h1>
-              {subject.description && (
-                <p className="text-base sm:text-lg lg:text-xl text-white/90 mb-3 sm:mb-4">{subject.description}</p>
-              )}
-              <div className="flex flex-col space-y-2 sm:space-y-0 sm:flex-row sm:items-center sm:space-x-4 lg:space-x-6 text-white/80 text-sm sm:text-base">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-lg sm:text-xl lg:text-2xl font-bold mb-1 leading-tight truncate">{subject.name}</h1>
+              <div className="flex flex-col sm:flex-row sm:items-center text-white/80 text-xs sm:text-sm space-y-1 sm:space-y-0 sm:space-x-4">
                 <div className="flex items-center">
-                  <FileText className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                  <FileText className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                   <span>{subject.chapters?.length || 0} પ્રકરણો</span>
                 </div>
                 <div className="flex items-center">
-                  <PlayCircle className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                  <PlayCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                   <span>{subject.chapters?.filter(ch => ch.videoUrl).length || 0} વિડિયોઝ</span>
                 </div>
                 <div className="flex items-center">
-                  <Download className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                  <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                   <span>{subject.chapters?.filter(ch => ch.textbookPdfUrl || ch.solutionPdfUrl).length || 0} PDF ફાઇલો</span>
                 </div>
               </div>
