@@ -42,7 +42,7 @@ app.use(express.json()); // No size limit
 app.use(express.urlencoded({ extended: true })); // No size limit
 
 // Serve static files (uploaded PDFs) with proper headers and range support
-app.use('/uploads', (req, res, next) => {
+app.use('/api/uploads', (req, res, next) => {
   // Set headers to allow PDF embedding and enable range requests for react-pdf
   res.set({
     'X-Frame-Options': 'SAMEORIGIN',
