@@ -4,12 +4,11 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
-import { Plus, Edit2, Trash2, X, Save, FileText, Video, Upload, ExternalLink } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Save, FileText, Video } from 'lucide-react';
 import { standardsAPI } from '../../services/standards';
-import { subjectsAPI } from '../../services/subjects';
 import { chaptersAPI } from '../../services/chapters';
 import { uploadAPI } from '../../services/upload';
-import type { Chapter, Subject, Standard } from '../../types';
+import type { Chapter } from '../../types';
 
 const chapterSchema = z.object({
   name: z.string().min(1, 'Name is required').max(200, 'Name too long'),
@@ -84,13 +83,10 @@ const AdminChapters: React.FC = () => {
     handleSubmit,
     reset,
     setValue,
-    watch,
     formState: { errors },
   } = useForm<ChapterFormData>({
     resolver: zodResolver(chapterSchema),
   });
-
-  const watchedSubjectId = watch('subjectId');
 
   const createMutation = useMutation({
     mutationFn: async (data: ChapterFormData & { textbookPdfUrl?: string; solutionPdfUrl?: string }) => {
@@ -141,10 +137,8 @@ const AdminChapters: React.FC = () => {
 
   const onSubmit = async (data: ChapterFormData) => {
     let textbookPdfUrl = editingChapter?.textbookPdfUrl;
-    let textbookPdfFileId = editingChapter?.textbookPdfFileId;
     let textbookPdfFileName = editingChapter?.textbookPdfFileName;
     let solutionPdfUrl = editingChapter?.solutionPdfUrl;
-    let solutionPdfFileId = editingChapter?.solutionPdfFileId;
     let solutionPdfFileName = editingChapter?.solutionPdfFileName;
 
     try {
@@ -152,8 +146,7 @@ const AdminChapters: React.FC = () => {
       if (textbookFile) {
         setUploadingTextbook(true);
         const uploadResult = await uploadAPI.uploadPdf(textbookFile);
-        textbookPdfUrl = uploadResult.viewingUrl;
-        textbookPdfFileId = uploadResult.fileId;
+        textbookPdfUrl = uploadResult.url;
         textbookPdfFileName = uploadResult.originalName;
         setUploadingTextbook(false);
       }
@@ -162,8 +155,7 @@ const AdminChapters: React.FC = () => {
       if (solutionFile) {
         setUploadingSolution(true);
         const uploadResult = await uploadAPI.uploadPdf(solutionFile);
-        solutionPdfUrl = uploadResult.viewingUrl;
-        solutionPdfFileId = uploadResult.fileId;
+        solutionPdfUrl = uploadResult.url;
         solutionPdfFileName = uploadResult.originalName;
         setUploadingSolution(false);
       }
@@ -171,10 +163,8 @@ const AdminChapters: React.FC = () => {
       const chapterData = {
         ...data,
         textbookPdfUrl,
-        textbookPdfFileId,
         textbookPdfFileName,
         solutionPdfUrl,
-        solutionPdfFileId,
         solutionPdfFileName,
       };
 

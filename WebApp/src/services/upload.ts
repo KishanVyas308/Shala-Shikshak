@@ -1,18 +1,20 @@
 import api from '../lib/api';
-import type { UploadResponse } from '../types';
 
-export interface GoogleDriveUploadResponse {
+export interface LocalUploadResponse {
   message: string;
   fileId: string;
   fileName: string;
   originalName: string;
-  size: string;
+  size: number;
+  url: string;
+  filePath: string;
+  // Compatibility fields
   viewingUrl: string;
   embeddedUrl: string;
 }
 
 export const uploadAPI = {
-  uploadPdf: async (file: File): Promise<GoogleDriveUploadResponse> => {
+  uploadPdf: async (file: File): Promise<LocalUploadResponse> => {
     const formData = new FormData();
     formData.append('pdf', file);
     
@@ -28,7 +30,7 @@ export const uploadAPI = {
     await api.delete(`/upload/pdf/${fileId}`);
   },
 
-  getPdfInfo: async (fileId: string): Promise<GoogleDriveUploadResponse> => {
+  getPdfInfo: async (fileId: string): Promise<LocalUploadResponse> => {
     const response = await api.get(`/upload/pdf/${fileId}`);
     return response.data;
   }

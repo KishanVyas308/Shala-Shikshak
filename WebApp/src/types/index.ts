@@ -52,10 +52,8 @@ export interface Chapter {
   };
   videoUrl?: string;
   solutionPdfUrl?: string;
-  solutionPdfFileId?: string;
   solutionPdfFileName?: string;
   textbookPdfUrl?: string;
-  textbookPdfFileId?: string;
   textbookPdfFileName?: string;
   createdAt: string;
   updatedAt: string;
@@ -92,10 +90,8 @@ export interface CreateChapterData {
   subjectId: string;
   videoUrl?: string;
   solutionPdfUrl?: string;
-  solutionPdfFileId?: string;
   solutionPdfFileName?: string;
   textbookPdfUrl?: string;
-  textbookPdfFileId?: string;
   textbookPdfFileName?: string;
 }
 

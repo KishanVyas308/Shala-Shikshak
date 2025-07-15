@@ -11,11 +11,25 @@ export default defineConfig({
   build: {
     commonjsOptions: {
       include: [/pdfjs-dist/, /node_modules/]
+    },
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          pdfjs: ['pdfjs-dist']
+        }
+      }
     }
   },
   server: {
     fs: {
       allow: ['..']
+    },
+    headers: {
+      'Cross-Origin-Embedder-Policy': 'require-corp',
+      'Cross-Origin-Opener-Policy': 'same-origin'
     }
+  },
+  define: {
+    global: 'globalThis'
   }
 });

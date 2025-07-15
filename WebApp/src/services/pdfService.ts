@@ -1,6 +1,15 @@
-import { API_BASE_URL } from '../lib/api';
-import type { PDFCacheItem } from '../contexts/PDFContext';
-import { CACHE_EXPIRY_TIME, MAX_CACHE_SIZE, MAX_CACHE_ITEMS } from '../contexts/PDFContext';
+// Local types for PDF caching
+export interface PDFCacheItem {
+  url: string;
+  blob: Blob;
+  timestamp: number;
+  size: number;
+}
+
+// Cache configuration
+const CACHE_EXPIRY_TIME = 24 * 60 * 60 * 1000; // 24 hours
+const MAX_CACHE_SIZE = 100 * 1024 * 1024; // 100MB
+const MAX_CACHE_ITEMS = 20;
 
 export class PDFService {
   private static instance: PDFService;
@@ -55,7 +64,20 @@ export class PDFService {
     pdfPath: string,
     onProgress?: (progress: number) => void
   ): Promise<string> {
-    const fullUrl = `${API_BASE_URL}${pdfPath}`;
+    // Handle both full URLs and relative paths
+    let fullUrl: string;
+    if (pdfPath.startsWith('http')) {
+      fullUrl = pdfPath;
+    } else if (pdfPath.startsWith('/uploads/')) {
+      fullUrl = `http://localhost:5000${pdfPath}`;
+    } else if (pdfPath.startsWith('/api/uploads/')) {
+      fullUrl = `http://localhost:5000${pdfPath}`;
+    } else {
+      // Assume it's a relative path that needs /uploads/ prefix
+      fullUrl = `http://localhost:5000/uploads/${pdfPath}`;
+    }
+    
+    console.log('Loading PDF from:', fullUrl);
     
     // Check cache first
     this.cleanExpiredCache();
@@ -91,14 +113,16 @@ export class PDFService {
     try {
       const response = await fetch(fullUrl, {
         method: 'GET',
+        mode: 'cors',
+        credentials: 'omit',
         headers: {
           'Accept': 'application/pdf',
-          'Cache-Control': 'public, max-age=3600', // 1 hour browser cache
+          'Cache-Control': 'public, max-age=3600',
         },
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`Failed to load PDF: ${response.status} ${response.statusText}`);
       }
 
       const contentLength = response.headers.get('content-length');
@@ -144,7 +168,7 @@ export class PDFService {
       return objectUrl;
     } catch (error) {
       console.error('PDF loading error:', error);
-      throw error;
+      throw new Error(`Failed to load PDF: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
