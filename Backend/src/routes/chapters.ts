@@ -1,37 +1,21 @@
 import express from 'express';
-import path from 'path';
-import fs from 'fs';
 import { prisma } from '../lib/prisma';
 import { authenticateToken } from '../middleware/auth';
 import { chapterSchema, chapterUpdateSchema } from '../utils/validation';
+import GoogleDriveService from '../services/googleDrive';
 
 const router = express.Router();
+const driveService = GoogleDriveService.getInstance();
 
-// Utility function to safely delete a file
-const deleteFileIfExists = (filePath: string | null) => {
-  if (!filePath) return;
+// Utility function to safely delete a file from Google Drive
+const deleteGoogleDriveFileIfExists = async (fileId: string | null) => {
+  if (!fileId) return;
   
   try {
-    // Extract filename from URL path (e.g., "/uploads/filename.pdf" -> "filename.pdf")
-    const filename = path.basename(filePath);
-    
-    // Skip if no valid filename
-    if (!filename || filename === '.' || filename === '..') {
-      console.warn(`Invalid filename extracted from path: ${filePath}`);
-      return;
-    }
-    
-    const fullPath = path.join(process.cwd(), 'uploads', filename);
-    
-    // Check if file exists before attempting to delete
-    if (fs.existsSync(fullPath)) {
-      fs.unlinkSync(fullPath);
-      console.log(`Successfully deleted file: ${fullPath}`);
-    } else {
-      console.warn(`File not found for deletion: ${fullPath}`);
-    }
+    await driveService.deleteFile(fileId);
+    console.log(`Successfully deleted file from Google Drive: ${fileId}`);
   } catch (error) {
-    console.error(`Error deleting file ${filePath}:`, error);
+    console.error(`Error deleting file from Google Drive ${fileId}:`, error);
     // Don't throw error - we don't want file deletion failure to prevent chapter deletion
   }
 };
@@ -109,7 +93,19 @@ router.post('/', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: error.details[0].message });
     }
 
-    const { name, description, order, subjectId, videoUrl, solutionPdfUrl, textbookPdfUrl } = value;
+    const { 
+      name, 
+      description, 
+      order, 
+      subjectId, 
+      videoUrl, 
+      solutionPdfUrl, 
+      solutionPdfFileId, 
+      solutionPdfFileName, 
+      textbookPdfUrl, 
+      textbookPdfFileId, 
+      textbookPdfFileName 
+    } = value;
 
     // Check if subject exists
     const subject = await prisma.subject.findUnique({
@@ -144,7 +140,11 @@ router.post('/', authenticateToken, async (req, res) => {
         subjectId,
         videoUrl,
         solutionPdfUrl,
+        solutionPdfFileId,
+        solutionPdfFileName,
         textbookPdfUrl,
+        textbookPdfFileId,
+        textbookPdfFileName,
       },
       include: {
         subject: {
@@ -206,12 +206,12 @@ router.put('/:id', authenticateToken, async (req, res) => {
     }
 
     // Clean up old PDF files if they're being replaced
-    if (value.textbookPdfUrl && value.textbookPdfUrl !== existingChapter.textbookPdfUrl) {
-      deleteFileIfExists(existingChapter.textbookPdfUrl);
+    if (value.textbookPdfFileId && value.textbookPdfFileId !== existingChapter.textbookPdfFileId) {
+      await deleteGoogleDriveFileIfExists(existingChapter.textbookPdfFileId);
     }
     
-    if (value.solutionPdfUrl && value.solutionPdfUrl !== existingChapter.solutionPdfUrl) {
-      deleteFileIfExists(existingChapter.solutionPdfUrl);
+    if (value.solutionPdfFileId && value.solutionPdfFileId !== existingChapter.solutionPdfFileId) {
+      await deleteGoogleDriveFileIfExists(existingChapter.solutionPdfFileId);
     }
 
     const updatedChapter = await prisma.chapter.update({
@@ -254,12 +254,12 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     }
 
     // Delete associated PDF files before deleting the chapter
-    if (chapter.textbookPdfUrl) {
-      deleteFileIfExists(chapter.textbookPdfUrl);
+    if (chapter.textbookPdfFileId) {
+      await deleteGoogleDriveFileIfExists(chapter.textbookPdfFileId);
     }
     
-    if (chapter.solutionPdfUrl) {
-      deleteFileIfExists(chapter.solutionPdfUrl);
+    if (chapter.solutionPdfFileId) {
+      await deleteGoogleDriveFileIfExists(chapter.solutionPdfFileId);
     }
 
     // Delete the chapter from database

@@ -5,6 +5,8 @@ import { BookOpen, ArrowLeft, ExternalLink, PlayCircle, Star, Clock, Eye, Thumbs
 import { chaptersAPI } from '../services/chapters';
 import { usePDFViewer } from '../hooks/usePDFViewer';
 import '../components/PDFViewer.css';
+import { API_BASE_URL } from '../lib/api';
+import { getGoogleDriveEmbedUrl } from '../utils/googleDrive';
 
 const ChapterView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -252,7 +254,7 @@ const ChapterView: React.FC = () => {
 
           {pdfViewer?.pdfUrl && (
             <iframe
-              src={pdfViewer.pdfUrl}
+              src={pdfViewer.pdfUrl.startsWith('http') ? getGoogleDriveEmbedUrl(pdfViewer.pdfUrl) : API_BASE_URL + pdfViewer.pdfUrl}
               title={title}
               className={`w-full h-full transition-all duration-300 ${pdfViewer.isLoading ? 'opacity-0' : 'opacity-100'}`}
               style={{ 

@@ -16,7 +16,22 @@ const express_1 = __importDefault(require("express"));
 const prisma_1 = require("../lib/prisma");
 const auth_1 = require("../middleware/auth");
 const validation_1 = require("../utils/validation");
+const googleDrive_1 = __importDefault(require("../services/googleDrive"));
 const router = express_1.default.Router();
+const driveService = googleDrive_1.default.getInstance();
+// Utility function to safely delete a file from Google Drive
+const deleteGoogleDriveFileIfExists = (fileId) => __awaiter(void 0, void 0, void 0, function* () {
+    if (!fileId)
+        return;
+    try {
+        yield driveService.deleteFile(fileId);
+        console.log(`Successfully deleted file from Google Drive: ${fileId}`);
+    }
+    catch (error) {
+        console.error(`Error deleting file from Google Drive ${fileId}:`, error);
+        // Don't throw error - we don't want file deletion failure to prevent chapter deletion
+    }
+});
 // Get all chapters for a subject (public)
 router.get('/subject/:subjectId', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -84,7 +99,7 @@ router.post('/', auth_1.authenticateToken, (req, res) => __awaiter(void 0, void 
         if (error) {
             return res.status(400).json({ error: error.details[0].message });
         }
-        const { name, description, order, subjectId, videoUrl, solutionPdfUrl, textbookPdfUrl } = value;
+        const { name, description, order, subjectId, videoUrl, solutionPdfUrl, solutionPdfFileId, solutionPdfFileName, textbookPdfUrl, textbookPdfFileId, textbookPdfFileName } = value;
         // Check if subject exists
         const subject = yield prisma_1.prisma.subject.findUnique({
             where: { id: subjectId },
@@ -114,7 +129,11 @@ router.post('/', auth_1.authenticateToken, (req, res) => __awaiter(void 0, void 
                 subjectId,
                 videoUrl,
                 solutionPdfUrl,
+                solutionPdfFileId,
+                solutionPdfFileName,
                 textbookPdfUrl,
+                textbookPdfFileId,
+                textbookPdfFileName,
             },
             include: {
                 subject: {
@@ -169,6 +188,13 @@ router.put('/:id', auth_1.authenticateToken, (req, res) => __awaiter(void 0, voi
                 });
             }
         }
+        // Clean up old PDF files if they're being replaced
+        if (value.textbookPdfFileId && value.textbookPdfFileId !== existingChapter.textbookPdfFileId) {
+            yield deleteGoogleDriveFileIfExists(existingChapter.textbookPdfFileId);
+        }
+        if (value.solutionPdfFileId && value.solutionPdfFileId !== existingChapter.solutionPdfFileId) {
+            yield deleteGoogleDriveFileIfExists(existingChapter.solutionPdfFileId);
+        }
         const updatedChapter = yield prisma_1.prisma.chapter.update({
             where: { id },
             data: value,
@@ -204,13 +230,54 @@ router.delete('/:id', auth_1.authenticateToken, (req, res) => __awaiter(void 0, 
         if (!chapter) {
             return res.status(404).json({ error: 'Chapter not found' });
         }
+        // Delete associated PDF files before deleting the chapter
+        if (chapter.textbookPdfFileId) {
+            yield deleteGoogleDriveFileIfExists(chapter.textbookPdfFileId);
+        }
+        if (chapter.solutionPdfFileId) {
+            yield deleteGoogleDriveFileIfExists(chapter.solutionPdfFileId);
+        }
+        // Delete the chapter from database
         yield prisma_1.prisma.chapter.delete({
             where: { id },
         });
-        res.json({ message: 'Chapter deleted successfully' });
+        res.json({
+            message: 'Chapter and associated files deleted successfully'
+        });
     }
     catch (error) {
         console.error('Delete chapter error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}));
+// Batch reorder chapters (admin only)
+router.put('/batch/reorder', auth_1.authenticateToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { chapters } = req.body;
+        if (!Array.isArray(chapters)) {
+            return res.status(400).json({ error: 'Chapters must be an array' });
+        }
+        // Validate that all chapters have id and order
+        for (const chapter of chapters) {
+            if (!chapter.id || typeof chapter.order !== 'number') {
+                return res.status(400).json({
+                    error: 'Each chapter must have an id and order'
+                });
+            }
+        }
+        // Use a transaction to update all chapters atomically
+        yield prisma_1.prisma.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
+            for (const chapter of chapters) {
+                yield tx.chapter.update({
+                    where: { id: chapter.id },
+                    data: { order: chapter.order },
+                });
+            }
+        }));
+        res.json({ message: 'Chapters reordered successfully' });
+    }
+    catch (error) {
+        console.error('Batch reorder chapters error:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 }));

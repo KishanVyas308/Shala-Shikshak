@@ -195,4 +195,65 @@ router.delete('/:id', auth_1.authenticateToken, (req, res) => __awaiter(void 0, 
         res.status(500).json({ error: 'Internal server error' });
     }
 }));
+// Batch update order (admin only) - for drag and drop reordering
+router.put('/batch/reorder', auth_1.authenticateToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { standards } = req.body;
+        if (!Array.isArray(standards)) {
+            return res.status(400).json({ error: 'Standards array is required' });
+        }
+        // Validate that all items have id and order
+        for (const item of standards) {
+            if (!item.id || typeof item.order !== 'number') {
+                return res.status(400).json({ error: 'Each item must have id and order' });
+            }
+        }
+        // Use a transaction to update all orders atomically
+        yield prisma_1.prisma.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
+            // First, set all orders to negative values to avoid conflicts
+            for (let i = 0; i < standards.length; i++) {
+                yield tx.standard.update({
+                    where: { id: standards[i].id },
+                    data: { order: -(i + 1) },
+                });
+            }
+            // Then set the actual orders
+            for (const item of standards) {
+                yield tx.standard.update({
+                    where: { id: item.id },
+                    data: { order: item.order },
+                });
+            }
+        }));
+        // Fetch updated standards
+        const updatedStandards = yield prisma_1.prisma.standard.findMany({
+            orderBy: { order: 'asc' },
+            include: {
+                subjects: {
+                    include: {
+                        chapters: {
+                            orderBy: { order: 'asc' },
+                            select: {
+                                id: true,
+                                name: true,
+                                order: true,
+                                videoUrl: true,
+                                solutionPdfUrl: true,
+                                textbookPdfUrl: true,
+                            },
+                        },
+                    },
+                },
+                _count: {
+                    select: { subjects: true },
+                },
+            },
+        });
+        res.json(updatedStandards);
+    }
+    catch (error) {
+        console.error('Batch reorder error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}));
 exports.default = router;

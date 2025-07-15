@@ -141,14 +141,20 @@ const AdminChapters: React.FC = () => {
 
   const onSubmit = async (data: ChapterFormData) => {
     let textbookPdfUrl = editingChapter?.textbookPdfUrl;
+    let textbookPdfFileId = editingChapter?.textbookPdfFileId;
+    let textbookPdfFileName = editingChapter?.textbookPdfFileName;
     let solutionPdfUrl = editingChapter?.solutionPdfUrl;
+    let solutionPdfFileId = editingChapter?.solutionPdfFileId;
+    let solutionPdfFileName = editingChapter?.solutionPdfFileName;
 
     try {
       // Upload textbook PDF if selected
       if (textbookFile) {
         setUploadingTextbook(true);
         const uploadResult = await uploadAPI.uploadPdf(textbookFile);
-        textbookPdfUrl = uploadResult.url;
+        textbookPdfUrl = uploadResult.viewingUrl;
+        textbookPdfFileId = uploadResult.fileId;
+        textbookPdfFileName = uploadResult.originalName;
         setUploadingTextbook(false);
       }
 
@@ -156,14 +162,20 @@ const AdminChapters: React.FC = () => {
       if (solutionFile) {
         setUploadingSolution(true);
         const uploadResult = await uploadAPI.uploadPdf(solutionFile);
-        solutionPdfUrl = uploadResult.url;
+        solutionPdfUrl = uploadResult.viewingUrl;
+        solutionPdfFileId = uploadResult.fileId;
+        solutionPdfFileName = uploadResult.originalName;
         setUploadingSolution(false);
       }
 
       const chapterData = {
         ...data,
         textbookPdfUrl,
+        textbookPdfFileId,
+        textbookPdfFileName,
         solutionPdfUrl,
+        solutionPdfFileId,
+        solutionPdfFileName,
       };
 
       if (editingChapter) {

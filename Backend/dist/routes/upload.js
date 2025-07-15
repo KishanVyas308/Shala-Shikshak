@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -6,26 +15,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const multer_1 = __importDefault(require("multer"));
 const path_1 = __importDefault(require("path"));
-const fs_1 = __importDefault(require("fs"));
 const auth_1 = require("../middleware/auth");
+const googleDrive_1 = __importDefault(require("../services/googleDrive"));
 const router = express_1.default.Router();
-// Create uploads directory if it doesn't exist
-const uploadsDir = path_1.default.join(process.cwd(), 'uploads');
-if (!fs_1.default.existsSync(uploadsDir)) {
-    fs_1.default.mkdirSync(uploadsDir, { recursive: true });
-}
-// Configure multer for file uploads
-const storage = multer_1.default.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, uploadsDir);
-    },
-    filename: (req, file, cb) => {
-        // Generate unique filename with timestamp
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        const ext = path_1.default.extname(file.originalname);
-        cb(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
-    },
-});
+const driveService = googleDrive_1.default.getInstance();
+// Configure multer for memory storage (we'll upload to Google Drive, not local storage)
+const storage = multer_1.default.memoryStorage();
 const fileFilter = (req, file, cb) => {
     // Only allow PDF files
     if (file.mimetype === 'application/pdf') {
@@ -38,49 +33,68 @@ const fileFilter = (req, file, cb) => {
 const upload = (0, multer_1.default)({
     storage,
     fileFilter,
-    // No file size limit
+    limits: {
+        fileSize: 50 * 1024 * 1024, // 50MB limit
+    },
 });
-// Upload PDF file (admin only)
-router.post('/pdf', auth_1.authenticateToken, upload.single('pdf'), (req, res) => {
+// Upload PDF file to Google Drive (admin only)
+router.post('/pdf', auth_1.authenticateToken, upload.single('pdf'), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         if (!req.file) {
             return res.status(400).json({ error: 'No file uploaded' });
         }
-        const fileUrl = `/uploads/${req.file.filename}`;
+        // Generate unique filename with timestamp
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const ext = path_1.default.extname(req.file.originalname);
+        const fileName = `${req.file.fieldname}-${uniqueSuffix}${ext}`;
+        // Upload to Google Drive
+        const driveFile = yield driveService.uploadPDF(req.file.buffer, fileName, req.file.originalname);
         res.json({
-            message: 'File uploaded successfully',
-            url: fileUrl,
-            filename: req.file.filename,
+            message: 'File uploaded successfully to Google Drive',
+            fileId: driveFile.id,
+            fileName: driveFile.name,
             originalName: req.file.originalname,
-            size: req.file.size,
+            size: driveFile.size,
+            viewingUrl: driveService.getPublicViewingLink(driveFile.id),
+            embeddedUrl: driveService.getEmbeddedViewerLink(driveFile.id),
         });
     }
     catch (error) {
         console.error('Upload error:', error);
         res.status(500).json({ error: 'File upload failed' });
     }
-});
-// Delete uploaded file (admin only)
-router.delete('/pdf/:filename', auth_1.authenticateToken, (req, res) => {
+}));
+// Delete file from Google Drive (admin only)
+router.delete('/pdf/:fileId', auth_1.authenticateToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { filename } = req.params;
-        const filePath = path_1.default.join(uploadsDir, filename);
-        // Check if file exists
-        if (!fs_1.default.existsSync(filePath)) {
-            return res.status(404).json({ error: 'File not found' });
-        }
-        // Delete file
-        fs_1.default.unlinkSync(filePath);
-        res.json({ message: 'File deleted successfully' });
+        const { fileId } = req.params;
+        // Delete from Google Drive
+        yield driveService.deleteFile(fileId);
+        res.json({ message: 'File deleted successfully from Google Drive' });
     }
     catch (error) {
         console.error('Delete file error:', error);
         res.status(500).json({ error: 'File deletion failed' });
     }
-});
+}));
+// Get file info from Google Drive (admin only)
+router.get('/pdf/:fileId', auth_1.authenticateToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { fileId } = req.params;
+        const fileInfo = yield driveService.getFileInfo(fileId);
+        res.json(Object.assign(Object.assign({}, fileInfo), { viewingUrl: driveService.getPublicViewingLink(fileId), embeddedUrl: driveService.getEmbeddedViewerLink(fileId) }));
+    }
+    catch (error) {
+        console.error('Get file info error:', error);
+        res.status(500).json({ error: 'Failed to get file info' });
+    }
+}));
 // Error handling middleware for multer
 router.use((error, req, res, next) => {
     if (error instanceof multer_1.default.MulterError) {
+        if (error.code === 'LIMIT_FILE_SIZE') {
+            return res.status(400).json({ error: 'File size too large. Maximum size is 50MB.' });
+        }
         return res.status(400).json({ error: 'File upload error: ' + error.message });
     }
     if (error.message === 'Only PDF files are allowed') {

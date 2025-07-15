@@ -47,7 +47,11 @@ export const chapterSchema = Joi.object({
   subjectId: Joi.string().required(),
   videoUrl: Joi.string().uri().allow('').optional(),
   solutionPdfUrl: Joi.string().allow('').optional(),
+  solutionPdfFileId: Joi.string().allow('').optional(),
+  solutionPdfFileName: Joi.string().allow('').optional(),
   textbookPdfUrl: Joi.string().allow('').optional(),
+  textbookPdfFileId: Joi.string().allow('').optional(),
+  textbookPdfFileName: Joi.string().allow('').optional(),
 });
 
 export const chapterUpdateSchema = Joi.object({
@@ -56,7 +60,11 @@ export const chapterUpdateSchema = Joi.object({
   order: Joi.number().integer().min(1).optional(),
   videoUrl: Joi.string().uri().allow('').optional(),
   solutionPdfUrl: Joi.string().allow('').optional(),
+  solutionPdfFileId: Joi.string().allow('').optional(),
+  solutionPdfFileName: Joi.string().allow('').optional(),
   textbookPdfUrl: Joi.string().allow('').optional(),
+  textbookPdfFileId: Joi.string().allow('').optional(),
+  textbookPdfFileName: Joi.string().allow('').optional(),
 });
 
 // YouTube URL validation

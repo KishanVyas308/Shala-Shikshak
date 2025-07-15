@@ -52,7 +52,11 @@ export interface Chapter {
   };
   videoUrl?: string;
   textbookPdfUrl?: string;
+  textbookPdfFileId?: string;
+  textbookPdfFileName?: string;
   solutionPdfUrl?: string;
+  solutionPdfFileId?: string;
+  solutionPdfFileName?: string;
   createdAt: string;
   updatedAt: string;
 }
