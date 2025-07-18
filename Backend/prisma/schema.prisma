@@ -58,14 +58,11 @@ model Chapter {
   subject             Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
   videoUrl            String? // YouTube video URL
   
-  // Google Drive file IDs and metadata for solution PDF
-  solutionPdfUrl      String? // Public viewing URL for solution PDF
-  solutionPdfFileId   String? // Google Drive file ID for solution PDF
+  // Local PDF URLs for solution and textbook
+  solutionPdfUrl      String? // Local URL for solution PDF (/uploads/filename.pdf)
   solutionPdfFileName String? // Original filename for solution PDF
   
-  // Google Drive file IDs and metadata for textbook PDF
-  textbookPdfUrl      String? // Public viewing URL for textbook PDF
-  textbookPdfFileId   String? // Google Drive file ID for textbook PDF
+  textbookPdfUrl      String? // Local URL for textbook PDF (/uploads/filename.pdf)
   textbookPdfFileName String? // Original filename for textbook PDF
   
   createdAt           DateTime @default(now())

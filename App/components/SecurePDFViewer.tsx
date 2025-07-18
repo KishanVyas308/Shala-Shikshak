@@ -14,7 +14,7 @@ interface SecurePDFViewerProps {
 
 export default function SecurePDFViewer({ url, title, onClose }: SecurePDFViewerProps) {
   const { width, height } = useWindowDimensions();
-  const pdfUrl = API_BASE_URL + url;
+  const pdfUrl = url;
 
   useEffect(() => {
     // 🚫 Block screenshot on Android

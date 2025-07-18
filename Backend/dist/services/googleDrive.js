@@ -15,15 +15,32 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.GoogleDriveService = void 0;
 const googleapis_1 = require("googleapis");
 const path_1 = __importDefault(require("path"));
+const fs_1 = __importDefault(require("fs"));
 const stream_1 = __importDefault(require("stream"));
+const dotenv_1 = __importDefault(require("dotenv"));
+// Load environment variables
+dotenv_1.default.config();
+// Service Account configuration
+const serviceAccountKeyPath = path_1.default.join(__dirname, '../../pdf-storage-466112-127984f2414d.json');
+// Check if service account key file exists
+if (!fs_1.default.existsSync(serviceAccountKeyPath)) {
+    throw new Error('Service account key file not found at: ' + serviceAccountKeyPath);
+}
 // Load service account credentials
-const CREDENTIALS_PATH = path_1.default.join(process.cwd(), 'pdf-storage-466112-fa3aa17a59ba.json');
-// Initialize Google Drive API
-const auth = new googleapis_1.google.auth.GoogleAuth({
-    keyFile: CREDENTIALS_PATH,
-    scopes: ['https://www.googleapis.com/auth/drive'],
-});
-const drive = googleapis_1.google.drive({ version: 'v3', auth });
+const serviceAccountKey = JSON.parse(fs_1.default.readFileSync(serviceAccountKeyPath, 'utf8'));
+const SCOPES = ['https://www.googleapis.com/auth/drive'];
+// Function to authorize and get JWT client
+function authorize() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const jwtClient = new googleapis_1.google.auth.JWT({
+            email: serviceAccountKey.client_email,
+            key: serviceAccountKey.private_key,
+            scopes: SCOPES,
+        });
+        yield jwtClient.authorize();
+        return jwtClient;
+    });
+}
 class GoogleDriveService {
     constructor() {
         this.FOLDER_ID = process.env.GOOGLE_DRIVE_FOLDER_ID || 'root';
@@ -46,6 +63,9 @@ class GoogleDriveService {
                 return this.appFolderId;
             }
             try {
+                // Get authorized client
+                const authClient = yield authorize();
+                const drive = googleapis_1.google.drive({ version: 'v3', auth: authClient });
                 // If a specific folder ID is provided, use it
                 if (this.FOLDER_ID !== 'root') {
                     this.appFolderId = this.FOLDER_ID;
@@ -98,6 +118,9 @@ class GoogleDriveService {
     uploadPDF(fileBuffer, fileName, originalName) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
+                // Get authorized client
+                const authClient = yield authorize();
+                const drive = googleapis_1.google.drive({ version: 'v3', auth: authClient });
                 // Get the app folder (creates it if it doesn't exist)
                 const parentFolderId = yield this.getAppFolder();
                 // Create a readable stream from the buffer
@@ -105,12 +128,15 @@ class GoogleDriveService {
                 bufferStream.end(fileBuffer);
                 const fileMetadata = {
                     name: fileName,
+                    mimeType: "application/pdf",
                     parents: [parentFolderId],
                 };
                 const media = {
                     mimeType: 'application/pdf',
                     body: bufferStream,
                 };
+                console.log("Uploading file to Google Drive:", fileName);
+                console.log(`File metadata: ${JSON.stringify(fileMetadata)}`);
                 const response = yield drive.files.create({
                     requestBody: fileMetadata,
                     media: media,
@@ -139,14 +165,16 @@ class GoogleDriveService {
                 throw new Error('Failed to upload file to Google Drive');
             }
         });
-    }
-    /**
+    } /**
      * Delete a file from Google Drive
      * @param fileId - The Google Drive file ID
      */
     deleteFile(fileId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
+                // Get authorized client
+                const authClient = yield authorize();
+                const drive = googleapis_1.google.drive({ version: 'v3', auth: authClient });
                 yield drive.files.delete({
                     fileId: fileId,
                 });
@@ -167,6 +195,9 @@ class GoogleDriveService {
     getFileInfo(fileId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
+                // Get authorized client
+                const authClient = yield authorize();
+                const drive = googleapis_1.google.drive({ version: 'v3', auth: authClient });
                 const response = yield drive.files.get({
                     fileId: fileId,
                     fields: 'id,name,webViewLink,webContentLink,mimeType,size',

@@ -3,7 +3,6 @@ import bcrypt from 'bcryptjs';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import { prisma } from '../lib/prisma';
 import { adminLoginSchema, adminRegisterSchema } from '../utils/validation';
-import { GoogleDriveService } from '../services/googleDrive';
 
 const router = express.Router();
 
@@ -134,102 +133,6 @@ router.get('/verify', async (req, res) => {
     res.json({ admin });
   } catch (error) {
     res.status(403).json({ error: 'Invalid or expired token' });
-  }
-});
-
-// Google OAuth2 routes
-const googleDriveService = GoogleDriveService.getInstance();
-
-/**
- * @route GET /api/auth/google/setup
- * @description Get OAuth2 authorization URL for Google Drive
- * @access Public
- */
-router.get('/google/setup', async (req, res) => {
-  try {
-    const authUrl = googleDriveService.getAuthUrl();
-    res.json({
-      success: true,
-      authUrl,
-      message: 'Visit this URL to authorize the application',
-    });
-  } catch (error) {
-    console.error('Error getting auth URL:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to get authorization URL',
-    });
-  }
-});
-
-/**
- * @route GET /api/auth/google/callback
- * @description Handle OAuth2 callback from Google
- * @access Public
- */
-router.get('/google/callback', async (req, res) => {
-  try {
-    const { code } = req.query;
-
-    if (!code) {
-      return res.status(400).json({
-        success: false,
-        message: 'Authorization code not provided',
-      });
-    }
-
-    const tokens = await googleDriveService.getTokens(code as string);
-    
-    res.json({
-      success: true,
-      message: 'Authorization successful',
-      tokens: {
-        access_token: tokens.access_token,
-        refresh_token: tokens.refresh_token,
-        scope: tokens.scope,
-        token_type: tokens.token_type,
-        expiry_date: tokens.expiry_date,
-      },
-      instructions: `Please add this refresh token to your .env file:
-GOOGLE_REFRESH_TOKEN="${tokens.refresh_token}"`,
-    });
-  } catch (error) {
-    console.error('Error handling OAuth callback:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to handle OAuth callback',
-    });
-  }
-});
-
-/**
- * @route GET /api/auth/google/status
- * @description Check Google Drive OAuth2 configuration status
- * @access Public
- */
-router.get('/google/status', async (req, res) => {
-  try {
-    const isConfigured = googleDriveService.isConfigured();
-    
-    res.json({
-      success: true,
-      configured: isConfigured,
-      message: isConfigured 
-        ? 'Google Drive OAuth2 is properly configured'
-        : 'Google Drive OAuth2 is not configured. Please complete the setup.',
-      requiredEnvVars: [
-        'GOOGLE_CLIENT_ID',
-        'GOOGLE_CLIENT_SECRET',
-        'GOOGLE_REDIRECT_URI',
-        'GOOGLE_REFRESH_TOKEN',
-      ],
-    });
-  } catch (error) {
-    console.error('Error checking auth status:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to check authentication status',
-    });
   }
 });
 

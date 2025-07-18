@@ -2,20 +2,21 @@ import express from 'express';
 import { prisma } from '../lib/prisma';
 import { authenticateToken } from '../middleware/auth';
 import { chapterSchema, chapterUpdateSchema } from '../utils/validation';
-import GoogleDriveService from '../services/googleDrive';
+import { LocalFileService } from '../services/localFileService';
+import * as fs from 'fs';
 
 const router = express.Router();
-const driveService = GoogleDriveService.getInstance();
+const fileService = LocalFileService.getInstance();
 
-// Utility function to safely delete a file from Google Drive
-const deleteGoogleDriveFileIfExists = async (fileId: string | null) => {
-  if (!fileId) return;
+// Utility function to safely delete a local file
+const deleteLocalFileIfExists = async (fileUrl: string | null) => {
+  if (!fileUrl) return;
   
   try {
-    await driveService.deleteFile(fileId);
-    console.log(`Successfully deleted file from Google Drive: ${fileId}`);
+    await fileService.deleteFile(fileUrl);
+    console.log(`Successfully deleted local file: ${fileUrl}`);
   } catch (error) {
-    console.error(`Error deleting file from Google Drive ${fileId}:`, error);
+    console.error(`Error deleting local file ${fileUrl}:`, error);
     // Don't throw error - we don't want file deletion failure to prevent chapter deletion
   }
 };
@@ -100,10 +101,8 @@ router.post('/', authenticateToken, async (req, res) => {
       subjectId, 
       videoUrl, 
       solutionPdfUrl, 
-      solutionPdfFileId, 
       solutionPdfFileName, 
       textbookPdfUrl, 
-      textbookPdfFileId, 
       textbookPdfFileName 
     } = value;
 
@@ -140,10 +139,8 @@ router.post('/', authenticateToken, async (req, res) => {
         subjectId,
         videoUrl,
         solutionPdfUrl,
-        solutionPdfFileId,
         solutionPdfFileName,
         textbookPdfUrl,
-        textbookPdfFileId,
         textbookPdfFileName,
       },
       include: {
@@ -206,12 +203,12 @@ router.put('/:id', authenticateToken, async (req, res) => {
     }
 
     // Clean up old PDF files if they're being replaced
-    if (value.textbookPdfFileId && value.textbookPdfFileId !== existingChapter.textbookPdfFileId) {
-      await deleteGoogleDriveFileIfExists(existingChapter.textbookPdfFileId);
+    if (value.textbookPdfUrl && value.textbookPdfUrl !== existingChapter.textbookPdfUrl) {
+      await deleteLocalFileIfExists(existingChapter.textbookPdfUrl);
     }
     
-    if (value.solutionPdfFileId && value.solutionPdfFileId !== existingChapter.solutionPdfFileId) {
-      await deleteGoogleDriveFileIfExists(existingChapter.solutionPdfFileId);
+    if (value.solutionPdfUrl && value.solutionPdfUrl !== existingChapter.solutionPdfUrl) {
+      await deleteLocalFileIfExists(existingChapter.solutionPdfUrl);
     }
 
     const updatedChapter = await prisma.chapter.update({
@@ -254,12 +251,12 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     }
 
     // Delete associated PDF files before deleting the chapter
-    if (chapter.textbookPdfFileId) {
-      await deleteGoogleDriveFileIfExists(chapter.textbookPdfFileId);
+    if (chapter.textbookPdfUrl) {
+      await deleteLocalFileIfExists(chapter.textbookPdfUrl);
     }
     
-    if (chapter.solutionPdfFileId) {
-      await deleteGoogleDriveFileIfExists(chapter.solutionPdfFileId);
+    if (chapter.solutionPdfUrl) {
+      await deleteLocalFileIfExists(chapter.solutionPdfUrl);
     }
 
     // Delete the chapter from database
