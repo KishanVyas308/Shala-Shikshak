@@ -1,8 +1,20 @@
 import api from '../lib/api';
-import type { UploadResponse } from '../types';
+
+export interface LocalUploadResponse {
+  message: string;
+  fileId: string;
+  fileName: string;
+  originalName: string;
+  size: number;
+  url: string;
+  filePath: string;
+  // Compatibility fields
+  viewingUrl: string;
+  embeddedUrl: string;
+}
 
 export const uploadAPI = {
-  uploadPdf: async (file: File): Promise<UploadResponse> => {
+  uploadPdf: async (file: File): Promise<LocalUploadResponse> => {
     const formData = new FormData();
     formData.append('pdf', file);
     
@@ -14,7 +26,12 @@ export const uploadAPI = {
     return response.data;
   },
 
-  deletePdf: async (filename: string): Promise<void> => {
-    await api.delete(`/upload/pdf/${filename}`);
+  deletePdf: async (fileId: string): Promise<void> => {
+    await api.delete(`/upload/pdf/${fileId}`);
+  },
+
+  getPdfInfo: async (fileId: string): Promise<LocalUploadResponse> => {
+    const response = await api.get(`/upload/pdf/${fileId}`);
+    return response.data;
   }
 };

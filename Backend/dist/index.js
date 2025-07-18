@@ -20,18 +20,64 @@ dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 5000;
 // Middleware
-app.use((0, helmet_1.default)());
+app.use((0, helmet_1.default)({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "'unsafe-inline'"],
+            styleSrc: ["'self'", "'unsafe-inline'"],
+            imgSrc: ["'self'", "data:", "blob:"],
+            objectSrc: ["'none'"],
+            frameSrc: ["'self'"],
+            frameAncestors: ["'self'", "http://localhost:3000", "http://localhost:5173"],
+        },
+    },
+    crossOriginEmbedderPolicy: false,
+}));
 app.use((0, cors_1.default)({
-    origin: process.env.NODE_ENV === 'production'
-        ? ['https://your-frontend-domain.com']
-        : ['http://localhost:3000', 'http://localhost:5173'],
+    origin: ['http://localhost:3000', 'http://localhost:5173'],
     credentials: true
 }));
 app.use((0, morgan_1.default)('combined'));
 app.use(express_1.default.json()); // No size limit
 app.use(express_1.default.urlencoded({ extended: true })); // No size limit
-// Serve static files (uploaded PDFs)
-app.use('/uploads', express_1.default.static(path_1.default.join(__dirname, '../uploads')));
+// Serve static files (uploaded PDFs) with proper headers and range support
+app.use('/api/uploads', (req, res, next) => {
+    // Set headers to allow PDF embedding and enable range requests for react-pdf
+    res.set({
+        'X-Frame-Options': 'SAMEORIGIN',
+        'Content-Security-Policy': "frame-ancestors 'self' http://localhost:3000 http://localhost:5173",
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Range, Authorization, X-Requested-With',
+        'Access-Control-Expose-Headers': 'Content-Length, Content-Range, Accept-Ranges',
+        'Accept-Ranges': 'bytes',
+        'Cache-Control': 'public, max-age=31536000', // Cache for 1 year
+        'Vary': 'Accept-Encoding',
+        'Content-Type': req.url.endsWith('.pdf') ? 'application/pdf' : undefined
+    });
+    // Handle preflight requests
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+    next();
+}, express_1.default.static(path_1.default.join(__dirname, '../uploads'), {
+    // Enable range requests for better streaming
+    acceptRanges: true,
+    // Set cache headers
+    maxAge: '1y',
+    // Enable etag for better caching
+    etag: true,
+    // Enable last modified
+    lastModified: true,
+    // Set proper content type for PDFs
+    setHeaders: (res, path) => {
+        if (path.endsWith('.pdf')) {
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', 'inline');
+        }
+    }
+}));
 // API Routes
 app.use('/api/auth', auth_1.default);
 app.use('/api/standards', standards_1.default);

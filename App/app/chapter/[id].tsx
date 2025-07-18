@@ -8,6 +8,8 @@ import Header from '../../components/Header';
 import LoadingState from '../../components/LoadingState';
 import ErrorState from '../../components/ErrorState';
 import { LinearGradient } from 'expo-linear-gradient';
+import { API_BASE_URL } from '../../lib/api';
+import { isGoogleDriveUrl } from '../../utils/googleDrive';
 
 export default function ChapterView() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -22,9 +24,11 @@ export default function ChapterView() {
     try {
       // Navigate to internal PDF viewer instead of external link
       if (type.includes('PDF')) {
+        // Use the URL directly if it's a Google Drive URL, otherwise append API_BASE_URL
+        const pdfUrl = isGoogleDriveUrl(url) ? url : API_BASE_URL + url;
         router.push({
           pathname: '/pdf-viewer' as any,
-          params: { url, title: `${chapter?.name} - ${type}` }
+          params: { url: pdfUrl, title: `${chapter?.name} - ${type}` }
         });
       } else {
         // For video, still open externally

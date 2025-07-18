@@ -1,7 +1,6 @@
 import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 
 interface StandardCardProps {
   id: string;
@@ -19,63 +18,42 @@ export default function StandardCard({
   onPress, 
   order 
 }: StandardCardProps) {
-  
+  const { width } = useWindowDimensions();
+  const isSmallScreen = width < 380;
+  const isMediumScreen = width >= 380 && width < 500;
 
   return (
     <TouchableOpacity
       onPress={onPress}
-      activeOpacity={0.8}
-      className="mx-4 mb-4"
+      activeOpacity={0.9}
+      className={`mx-3 mb-3 ${isSmallScreen ? 'mx-2 mb-2' : ''}`}
     >
-      <View className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-        {/* Purple accent bar */}
-        <View className="h-1 bg-purple-600" />
-        
-        <View className="p-6 relative overflow-hidden">
-          {/* Background Pattern */}
-          <View className="absolute -top-4 -right-4 opacity-10">
-            <View className="w-20 h-20 rounded-full border-2 border-purple-600" />
-          </View>
-          <View className="absolute -bottom-6 -left-6 opacity-5">
-            <View className="w-32 h-32 rounded-full border-2 border-purple-600" />
-          </View>
-        
-        {/* Content */}
-        <View className="flex-row items-center justify-between">
-          <View className="flex-1 mr-4">
+      <View className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+        {/* Accent Bar */}
+        <View className="h-1 bg-gradient-to-r from-purple-500 via-indigo-500 to-blue-500" />
+
+        <View className={`${isSmallScreen ? 'p-4' : isMediumScreen ? 'p-5' : 'p-6'} relative`}>
+          {/* Content */}
+          <View className="flex flex-col space-y-3">
             {/* Standard Name */}
-            <Text className="font-gujarati text-gray-900 text-2xl font-bold mb-3 leading-tight">
-              {name}
-            </Text>
-            
+            <Text className={`font-bold text-gray-900 ${isSmallScreen ? 'text-lg' : 'text-xl'} leading-tight`}>{name}</Text>
+
             {/* Description */}
             {description && (
-              <Text className="font-gujarati text-gray-600 text-sm mb-4 leading-5">
-                {description}
-              </Text>
+              <Text className={`text-gray-600 ${isSmallScreen ? 'text-sm' : 'text-base'} leading-5`}>{description}</Text>
             )}
-            
+
             {/* Subject Count */}
-            <View className="flex-row items-center">
-              <View className="bg-purple-50 rounded-full px-4 py-2 flex-row items-center border border-purple-100">
-                <Ionicons name="book-outline" size={18} color="#7c3aed" />
-                <Text className="font-gujarati text-purple-700 text-sm font-semibold ml-2">
-                  {subjectCount} વિષયો
-                </Text>
-              </View>
+            <View className="flex items-center space-x-2">
+              <Ionicons name="book-outline" size={isSmallScreen ? 16 : 20} color="#7c3aed" />
+              <Text className={`text-purple-700 font-medium ${isSmallScreen ? 'text-sm' : 'text-base'}`}>{subjectCount} વિષયો</Text>
             </View>
           </View>
-          
+
           {/* Arrow Icon */}
-          <View className="bg-purple-600 rounded-full p-4 shadow-sm">
-            <Ionicons name="chevron-forward" size={20} color="white" />
+          <View className="absolute top-3 right-3 bg-purple-600 rounded-full p-2 shadow-md">
+            <Ionicons name="chevron-forward" size={isSmallScreen ? 18 : 22} color="white" />
           </View>
-        </View>
-        
-        {/* Decorative Elements */}
-        <View className="absolute top-3 right-3 opacity-15">
-          <Ionicons name="school-outline" size={28} color="#7c3aed" />
-        </View>
         </View>
       </View>
     </TouchableOpacity>

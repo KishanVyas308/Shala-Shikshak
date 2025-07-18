@@ -50,17 +50,23 @@ model Subject {
 }
 
 model Chapter {
-  id             String  @id @default(cuid())
-  name           String
-  description    String?
-  order          Int // for ordering chapters within a subject
-  subjectId      String
-  subject        Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-  videoUrl       String? // YouTube video URL
-  solutionPdfUrl String? // URL to solution PDF
-  textbookPdfUrl String? // URL to textbook PDF
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id                  String  @id @default(cuid())
+  name                String
+  description         String?
+  order               Int // for ordering chapters within a subject
+  subjectId           String
+  subject             Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  videoUrl            String? // YouTube video URL
+  
+  // Local PDF URLs for solution and textbook
+  solutionPdfUrl      String? // Local URL for solution PDF (/uploads/filename.pdf)
+  solutionPdfFileName String? // Original filename for solution PDF
+  
+  textbookPdfUrl      String? // Local URL for textbook PDF (/uploads/filename.pdf)
+  textbookPdfFileName String? // Original filename for textbook PDF
+  
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 
   @@unique([order, subjectId])
   @@map("chapters")

@@ -1,0 +1,314 @@
+/* Mobile-specific optimizations */
+
+/* Improved touch targets */
+@media (max-width: 640px) {
+  button, a, input, select, textarea {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Better scroll behavior */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Prevent zoom on inputs */
+  input, select, textarea {
+    font-size: 16px;
+  }
+  
+  /* Improve PDF viewer on mobile */
+  .pdf-viewer-container {
+    height: 60vh;
+    overflow: auto;
+  }
+  
+  /* Better modal behavior on mobile */
+  .modal-container {
+    padding: 8px;
+  }
+  
+  /* Improve card interactions */
+  .card-interactive {
+    transition: transform 0.2s ease;
+  }
+  
+  .card-interactive:active {
+    transform: scale(0.98);
+  }
+  
+  /* Better spacing for small screens */
+  .mobile-spacing {
+    padding: 12px;
+  }
+  
+  /* Improve text readability */
+  .text-mobile-optimized {
+    line-height: 1.5;
+    font-size: 14px;
+  }
+  
+  /* Better form inputs */
+  .form-input-mobile {
+    padding: 12px;
+    font-size: 16px;
+    border-radius: 8px;
+  }
+  
+  /* Improved navigation */
+  .nav-mobile {
+    padding: 8px 12px;
+  }
+  
+  /* Better table responsiveness */
+  .table-mobile {
+    font-size: 14px;
+  }
+  
+  .table-mobile th,
+  .table-mobile td {
+    padding: 8px 4px;
+  }
+  
+  /* Improved search inputs */
+  .search-mobile {
+    padding: 10px 12px;
+    font-size: 16px;
+  }
+  
+  /* Better dropdown menus */
+  .dropdown-mobile {
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+  
+  /* Improved video containers */
+  .video-container-mobile {
+    height: 200px;
+  }
+  
+  /* Better loading indicators */
+  .loading-mobile {
+    padding: 20px;
+  }
+  
+  /* Improved error states */
+  .error-mobile {
+    padding: 16px;
+    font-size: 14px;
+  }
+  
+  /* Better empty states */
+  .empty-state-mobile {
+    padding: 32px 16px;
+  }
+  
+  /* Improved floating action buttons */
+  .fab-mobile {
+    width: 56px;
+    height: 56px;
+    bottom: 16px;
+    right: 16px;
+  }
+  
+  /* Better toast notifications */
+  .toast-mobile {
+    margin: 8px;
+    font-size: 14px;
+  }
+  
+  /* Improved overlay behavior */
+  .overlay-mobile {
+    padding: 16px;
+  }
+  
+  /* Better sidebar behavior */
+  .sidebar-mobile {
+    width: 100%;
+    max-width: 320px;
+  }
+  
+  /* Improved grid layouts */
+  .grid-mobile {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  /* Better flex layouts */
+  .flex-mobile {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  /* Improved typography */
+  .heading-mobile {
+    font-size: 20px;
+    line-height: 1.3;
+  }
+  
+  .subheading-mobile {
+    font-size: 16px;
+    line-height: 1.4;
+  }
+  
+  .body-mobile {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  
+  /* Better icon sizes */
+  .icon-mobile {
+    width: 20px;
+    height: 20px;
+  }
+  
+  /* Improved button styles */
+  .button-mobile {
+    padding: 12px 16px;
+    font-size: 14px;
+    border-radius: 8px;
+  }
+  
+  /* Better card layouts */
+  .card-mobile {
+    padding: 16px;
+    border-radius: 12px;
+  }
+  
+  /* Improved status indicators */
+  .status-mobile {
+    padding: 4px 8px;
+    font-size: 12px;
+    border-radius: 6px;
+  }
+  
+  /* Better progress bars */
+  .progress-mobile {
+    height: 6px;
+    border-radius: 3px;
+  }
+  
+  /* Improved tabs */
+  .tab-mobile {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+  
+  /* Better badges */
+  .badge-mobile {
+    padding: 2px 6px;
+    font-size: 11px;
+    border-radius: 4px;
+  }
+  
+  /* Improved list items */
+  .list-item-mobile {
+    padding: 12px;
+    font-size: 14px;
+  }
+  
+  /* Better dividers */
+  .divider-mobile {
+    margin: 12px 0;
+  }
+  
+  /* Improved alerts */
+  .alert-mobile {
+    padding: 12px;
+    font-size: 14px;
+    border-radius: 8px;
+  }
+  
+  /* Better tooltips */
+  .tooltip-mobile {
+    font-size: 12px;
+    padding: 6px 8px;
+  }
+  
+  /* Improved animations */
+  .animate-mobile {
+    animation-duration: 0.3s;
+  }
+  
+  /* Better focus states */
+  .focus-mobile:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+  }
+  
+  /* Improved hover states for touch */
+  .hover-mobile:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+  
+  /* Better disabled states */
+  .disabled-mobile {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  /* Improved selection states */
+  .selected-mobile {
+    background-color: #eff6ff;
+    border-color: #3b82f6;
+  }
+  
+  /* Better scroll indicators */
+  .scroll-mobile::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  .scroll-mobile::-webkit-scrollbar-track {
+    background: #f1f5f9;
+  }
+  
+  .scroll-mobile::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 2px;
+  }
+  
+  /* Improved text selection */
+  .text-select-mobile {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+  }
+  
+  /* Better image handling */
+  .image-mobile {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+  }
+  
+  /* Improved video handling */
+  .video-mobile {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+  }
+}
+
+/* Tablet-specific optimizations */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .tablet-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .tablet-spacing {
+    padding: 16px;
+  }
+  
+  .tablet-text {
+    font-size: 15px;
+  }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .high-dpi-image {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}

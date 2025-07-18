@@ -18,6 +18,31 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Serve static files from uploads directory with CORS headers
+app.use('/uploads', (req, res, next) => {
+  // Set comprehensive CORS headers for PDF files
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control, Pragma, Range');
+  res.header('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Accept-Ranges');
+  res.header('Accept-Ranges', 'bytes');
+  res.header('Cache-Control', 'public, max-age=31536000');
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+    return;
+  }
+  
+  // Set content type for PDF files
+  if (req.url.endsWith('.pdf')) {
+    res.header('Content-Type', 'application/pdf');
+    res.header('Content-Disposition', 'inline');
+  }
+  
+  next();
+}, express.static(path.join(__dirname, '../uploads')));
+
 // Middleware
 app.use(helmet({
   contentSecurityPolicy: {
@@ -27,15 +52,20 @@ app.use(helmet({
       styleSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: ["'self'", "data:", "blob:"],
       objectSrc: ["'none'"],
-      frameSrc: ["'self'"],
+      frameSrc: ["'self'", "http://localhost:3000", "http://localhost:5173", "http://localhost:5000"],
       frameAncestors: ["'self'", "http://localhost:3000", "http://localhost:5173"],
+      connectSrc: ["'self'", "http://localhost:3000", "http://localhost:5173", "http://localhost:5000"],
     },
   },
   crossOriginEmbedderPolicy: false,
+  crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 app.use(cors({
   origin: ['http://localhost:3000', 'http://localhost:5173'],
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Range', 'X-Requested-With'],
+  exposedHeaders: ['Content-Length', 'Content-Range', 'Accept-Ranges']
 }));
 app.use(morgan('combined'));
 app.use(express.json()); // No size limit

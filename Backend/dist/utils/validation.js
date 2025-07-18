@@ -30,11 +30,13 @@ exports.standardUpdateSchema = joi_1.default.object({
 exports.subjectSchema = joi_1.default.object({
     name: joi_1.default.string().min(1).max(100).required(),
     description: joi_1.default.string().allow('').optional(),
+    order: joi_1.default.number().integer().min(1).required(),
     standardId: joi_1.default.string().required(),
 });
 exports.subjectUpdateSchema = joi_1.default.object({
     name: joi_1.default.string().min(1).max(100).optional(),
     description: joi_1.default.string().allow('').optional(),
+    order: joi_1.default.number().integer().min(1).optional(),
 });
 // Chapter validation schemas
 exports.chapterSchema = joi_1.default.object({
@@ -44,7 +46,11 @@ exports.chapterSchema = joi_1.default.object({
     subjectId: joi_1.default.string().required(),
     videoUrl: joi_1.default.string().uri().allow('').optional(),
     solutionPdfUrl: joi_1.default.string().allow('').optional(),
+    solutionPdfFileId: joi_1.default.string().allow('').optional(),
+    solutionPdfFileName: joi_1.default.string().allow('').optional(),
     textbookPdfUrl: joi_1.default.string().allow('').optional(),
+    textbookPdfFileId: joi_1.default.string().allow('').optional(),
+    textbookPdfFileName: joi_1.default.string().allow('').optional(),
 });
 exports.chapterUpdateSchema = joi_1.default.object({
     name: joi_1.default.string().min(1).max(200).optional(),
@@ -52,7 +58,11 @@ exports.chapterUpdateSchema = joi_1.default.object({
     order: joi_1.default.number().integer().min(1).optional(),
     videoUrl: joi_1.default.string().uri().allow('').optional(),
     solutionPdfUrl: joi_1.default.string().allow('').optional(),
+    solutionPdfFileId: joi_1.default.string().allow('').optional(),
+    solutionPdfFileName: joi_1.default.string().allow('').optional(),
     textbookPdfUrl: joi_1.default.string().allow('').optional(),
+    textbookPdfFileId: joi_1.default.string().allow('').optional(),
+    textbookPdfFileName: joi_1.default.string().allow('').optional(),
 });
 // YouTube URL validation
 exports.youtubeUrlSchema = joi_1.default.string().pattern(/^(https?:\/\/)?(www\.)?(youtube\.com\/(watch\?v=|embed\/)|youtu\.be\/)[\w-]+/);

@@ -88,7 +88,7 @@ router.post('/', auth_1.authenticateToken, (req, res) => __awaiter(void 0, void 
         if (error) {
             return res.status(400).json({ error: error.details[0].message });
         }
-        const { name, description, standardId } = value;
+        const { name, description, order, standardId } = value;
         // Check if standard exists
         const standard = yield prisma_1.prisma.standard.findUnique({
             where: { id: standardId },
@@ -110,10 +110,25 @@ router.post('/', auth_1.authenticateToken, (req, res) => __awaiter(void 0, void 
                 error: 'Subject with this name already exists for this standard'
             });
         }
+        // Check if order already exists for this standard
+        const existingOrder = yield prisma_1.prisma.subject.findUnique({
+            where: {
+                order_standardId: {
+                    order,
+                    standardId,
+                },
+            },
+        });
+        if (existingOrder) {
+            return res.status(400).json({
+                error: 'Order already exists for this standard'
+            });
+        }
         const subject = yield prisma_1.prisma.subject.create({
             data: {
                 name,
                 description,
+                order,
                 standardId,
             },
             include: {
@@ -215,6 +230,37 @@ router.delete('/:id', auth_1.authenticateToken, (req, res) => __awaiter(void 0, 
     }
     catch (error) {
         console.error('Delete subject error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}));
+// Batch reorder subjects (admin only)
+router.put('/batch/reorder', auth_1.authenticateToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { subjects } = req.body;
+        if (!Array.isArray(subjects)) {
+            return res.status(400).json({ error: 'Subjects must be an array' });
+        }
+        // Validate that all subjects have id and order
+        for (const subject of subjects) {
+            if (!subject.id || typeof subject.order !== 'number') {
+                return res.status(400).json({
+                    error: 'Each subject must have an id and order'
+                });
+            }
+        }
+        // Use a transaction to update all subjects atomically
+        yield prisma_1.prisma.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
+            for (const subject of subjects) {
+                yield tx.subject.update({
+                    where: { id: subject.id },
+                    data: { order: subject.order },
+                });
+            }
+        }));
+        res.json({ message: 'Subjects reordered successfully' });
+    }
+    catch (error) {
+        console.error('Batch reorder subjects error:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 }));

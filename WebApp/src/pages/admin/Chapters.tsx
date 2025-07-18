@@ -4,12 +4,11 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
-import { Plus, Edit2, Trash2, X, Save, FileText, Video, Upload, ExternalLink } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Save, FileText, Video } from 'lucide-react';
 import { standardsAPI } from '../../services/standards';
-import { subjectsAPI } from '../../services/subjects';
 import { chaptersAPI } from '../../services/chapters';
 import { uploadAPI } from '../../services/upload';
-import type { Chapter, Subject, Standard } from '../../types';
+import type { Chapter } from '../../types';
 
 const chapterSchema = z.object({
   name: z.string().min(1, 'Name is required').max(200, 'Name too long'),
@@ -84,13 +83,10 @@ const AdminChapters: React.FC = () => {
     handleSubmit,
     reset,
     setValue,
-    watch,
     formState: { errors },
   } = useForm<ChapterFormData>({
     resolver: zodResolver(chapterSchema),
   });
-
-  const watchedSubjectId = watch('subjectId');
 
   const createMutation = useMutation({
     mutationFn: async (data: ChapterFormData & { textbookPdfUrl?: string; solutionPdfUrl?: string }) => {
@@ -141,7 +137,9 @@ const AdminChapters: React.FC = () => {
 
   const onSubmit = async (data: ChapterFormData) => {
     let textbookPdfUrl = editingChapter?.textbookPdfUrl;
+    let textbookPdfFileName = editingChapter?.textbookPdfFileName;
     let solutionPdfUrl = editingChapter?.solutionPdfUrl;
+    let solutionPdfFileName = editingChapter?.solutionPdfFileName;
 
     try {
       // Upload textbook PDF if selected
@@ -149,6 +147,7 @@ const AdminChapters: React.FC = () => {
         setUploadingTextbook(true);
         const uploadResult = await uploadAPI.uploadPdf(textbookFile);
         textbookPdfUrl = uploadResult.url;
+        textbookPdfFileName = uploadResult.originalName;
         setUploadingTextbook(false);
       }
 
@@ -157,13 +156,16 @@ const AdminChapters: React.FC = () => {
         setUploadingSolution(true);
         const uploadResult = await uploadAPI.uploadPdf(solutionFile);
         solutionPdfUrl = uploadResult.url;
+        solutionPdfFileName = uploadResult.originalName;
         setUploadingSolution(false);
       }
 
       const chapterData = {
         ...data,
         textbookPdfUrl,
+        textbookPdfFileName,
         solutionPdfUrl,
+        solutionPdfFileName,
       };
 
       if (editingChapter) {

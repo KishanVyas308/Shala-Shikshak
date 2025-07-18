@@ -1,37 +1,22 @@
 import express from 'express';
-import path from 'path';
-import fs from 'fs';
 import { prisma } from '../lib/prisma';
 import { authenticateToken } from '../middleware/auth';
 import { chapterSchema, chapterUpdateSchema } from '../utils/validation';
+import { LocalFileService } from '../services/localFileService';
+import * as fs from 'fs';
 
 const router = express.Router();
+const fileService = LocalFileService.getInstance();
 
-// Utility function to safely delete a file
-const deleteFileIfExists = (filePath: string | null) => {
-  if (!filePath) return;
+// Utility function to safely delete a local file
+const deleteLocalFileIfExists = async (fileUrl: string | null) => {
+  if (!fileUrl) return;
   
   try {
-    // Extract filename from URL path (e.g., "/uploads/filename.pdf" -> "filename.pdf")
-    const filename = path.basename(filePath);
-    
-    // Skip if no valid filename
-    if (!filename || filename === '.' || filename === '..') {
-      console.warn(`Invalid filename extracted from path: ${filePath}`);
-      return;
-    }
-    
-    const fullPath = path.join(process.cwd(), 'uploads', filename);
-    
-    // Check if file exists before attempting to delete
-    if (fs.existsSync(fullPath)) {
-      fs.unlinkSync(fullPath);
-      console.log(`Successfully deleted file: ${fullPath}`);
-    } else {
-      console.warn(`File not found for deletion: ${fullPath}`);
-    }
+    await fileService.deleteFile(fileUrl);
+    console.log(`Successfully deleted local file: ${fileUrl}`);
   } catch (error) {
-    console.error(`Error deleting file ${filePath}:`, error);
+    console.error(`Error deleting local file ${fileUrl}:`, error);
     // Don't throw error - we don't want file deletion failure to prevent chapter deletion
   }
 };
@@ -109,7 +94,17 @@ router.post('/', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: error.details[0].message });
     }
 
-    const { name, description, order, subjectId, videoUrl, solutionPdfUrl, textbookPdfUrl } = value;
+    const { 
+      name, 
+      description, 
+      order, 
+      subjectId, 
+      videoUrl, 
+      solutionPdfUrl, 
+      solutionPdfFileName, 
+      textbookPdfUrl, 
+      textbookPdfFileName 
+    } = value;
 
     // Check if subject exists
     const subject = await prisma.subject.findUnique({
@@ -144,7 +139,9 @@ router.post('/', authenticateToken, async (req, res) => {
         subjectId,
         videoUrl,
         solutionPdfUrl,
+        solutionPdfFileName,
         textbookPdfUrl,
+        textbookPdfFileName,
       },
       include: {
         subject: {
@@ -207,11 +204,11 @@ router.put('/:id', authenticateToken, async (req, res) => {
 
     // Clean up old PDF files if they're being replaced
     if (value.textbookPdfUrl && value.textbookPdfUrl !== existingChapter.textbookPdfUrl) {
-      deleteFileIfExists(existingChapter.textbookPdfUrl);
+      await deleteLocalFileIfExists(existingChapter.textbookPdfUrl);
     }
     
     if (value.solutionPdfUrl && value.solutionPdfUrl !== existingChapter.solutionPdfUrl) {
-      deleteFileIfExists(existingChapter.solutionPdfUrl);
+      await deleteLocalFileIfExists(existingChapter.solutionPdfUrl);
     }
 
     const updatedChapter = await prisma.chapter.update({
@@ -255,11 +252,11 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 
     // Delete associated PDF files before deleting the chapter
     if (chapter.textbookPdfUrl) {
-      deleteFileIfExists(chapter.textbookPdfUrl);
+      await deleteLocalFileIfExists(chapter.textbookPdfUrl);
     }
     
     if (chapter.solutionPdfUrl) {
-      deleteFileIfExists(chapter.solutionPdfUrl);
+      await deleteLocalFileIfExists(chapter.solutionPdfUrl);
     }
 
     // Delete the chapter from database
