@@ -373,7 +373,7 @@ const IframePDFViewer: React.FC<IframePDFViewerProps> = ({ pdfUrl, title, type }
           
           {/* Loading tips */}
           <div className="mt-4 text-xs text-gray-400">
-            <p className="animate-pulse">💡 Use pinch gestures to zoom on mobile</p>
+            <p className="animate-pulse">💡 Perfect for mobile reading</p>
           </div>
         </div>
       </div>
@@ -434,15 +434,15 @@ const IframePDFViewer: React.FC<IframePDFViewerProps> = ({ pdfUrl, title, type }
       onTouchStart={handleInteraction}
     >
       {/* Responsive Header with better mobile layout */}
-      <div className={`bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 px-3 sm:px-4 py-2 sm:py-3 transition-all duration-300 ${
+      <div className={`bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 px-2 sm:px-4 py-1.5 sm:py-3 transition-all duration-300 ${
         isFullscreen && !showControls ? 'transform -translate-y-full opacity-0 absolute top-0 left-0 right-0 z-10' : 'transform translate-y-0 opacity-100'
       }`} ref={controlsRef}>
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
-            <h2 className="text-sm sm:text-lg font-bold truncate bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+        <div className="flex items-center justify-between gap-1 sm:gap-2">
+          <div className="flex items-center space-x-1 sm:space-x-3 min-w-0 flex-1">
+            <h2 className="text-xs sm:text-lg font-bold truncate bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
               {title}
             </h2>
-            <span className={`px-2 py-1 text-xs font-semibold rounded-full flex-shrink-0 shadow-sm transition-all duration-300 ${
+            <span className={`px-1.5 py-0.5 sm:px-2 sm:py-1 text-[10px] sm:text-xs font-semibold rounded-full flex-shrink-0 shadow-sm transition-all duration-300 ${
               type === 'textbook' 
                 ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-blue-200' 
                 : 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-green-200'
@@ -497,32 +497,32 @@ const IframePDFViewer: React.FC<IframePDFViewerProps> = ({ pdfUrl, title, type }
           </div>
           
           {/* Mobile Controls - Optimized for touch */}
-          <div className="flex sm:hidden items-center space-x-2">
-            <div className="flex items-center space-x-1 bg-white rounded-lg p-1 shadow-sm">
+          <div className="flex sm:hidden items-center space-x-1">
+            <div className="flex items-center space-x-0.5 bg-white rounded-lg p-0.5 shadow-sm">
               <button
                 onClick={zoomOut}
-                className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-all duration-200 active:scale-95"
+                className="p-1.5 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-all duration-200 active:scale-95"
                 title="Zoom Out"
               >
-                <ZoomOut className="h-4 w-4" />
+                <ZoomOut className="h-3 w-3" />
               </button>
               
-              <span className="text-sm font-semibold text-gray-700 min-w-[40px] text-center px-2 py-1 bg-gray-50 rounded-md">
+              <span className="text-xs font-semibold text-gray-700 min-w-[35px] text-center px-1 py-1 bg-gray-50 rounded-md">
                 {zoom}%
               </span>
               
               <button
                 onClick={zoomIn}
-                className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-all duration-200 active:scale-95"
+                className="p-1.5 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-all duration-200 active:scale-95"
                 title="Zoom In"
               >
-                <ZoomIn className="h-4 w-4" />
+                <ZoomIn className="h-3 w-3" />
               </button>
             </div>
             
             <button
               onClick={resetZoom}
-              className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 bg-white rounded-lg transition-all duration-200 shadow-sm active:scale-95"
+              className="px-2 py-1.5 text-xs font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 bg-white rounded-lg transition-all duration-200 shadow-sm active:scale-95"
               title="Reset Zoom"
             >
               Reset
@@ -530,34 +530,15 @@ const IframePDFViewer: React.FC<IframePDFViewerProps> = ({ pdfUrl, title, type }
             
             <button
               onClick={toggleFullscreen}
-              className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 bg-white rounded-lg transition-all duration-200 shadow-sm active:scale-95"
+              className="p-1.5 text-gray-600 hover:text-blue-600 hover:bg-blue-50 bg-white rounded-lg transition-all duration-200 shadow-sm active:scale-95"
               title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
             >
               {isFullscreen ? (
-                <Minimize2 className="h-4 w-4" />
+                <Minimize2 className="h-3 w-3" />
               ) : (
-                <Maximize2 className="h-4 w-4" />
+                <Maximize2 className="h-3 w-3" />
               )}
             </button>
-          </div>
-        </div>
-        
-        {/* Mobile gesture hints - More prominent */}
-        <div className="mt-2 sm:hidden">
-          <div className="bg-blue-50 rounded-lg p-2 text-xs text-blue-700">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <span className="flex items-center">
-                  <span className="mr-1">🤏</span>
-                  Pinch to zoom
-                </span>
-                <span className="flex items-center">
-                  <span className="mr-1">👆👆</span>
-                  Double-tap
-                </span>
-              </div>
-              <span className="text-blue-600 font-medium">� Best in fullscreen</span>
-            </div>
           </div>
         </div>
         
@@ -573,9 +554,9 @@ const IframePDFViewer: React.FC<IframePDFViewerProps> = ({ pdfUrl, title, type }
       {/* Responsive PDF Content with mobile optimization */}
       <div className={`flex-1 bg-gradient-to-br from-gray-50 to-gray-100 relative overflow-hidden ${
         isFullscreen ? 'bg-black' : ''
-      }`} style={{ minHeight: isFullscreen ? '100vh' : '300px' }}>
+      }`} style={{ minHeight: isFullscreen ? '100vh' : '400px' }}>
         {pdfBlob && (
-          <div className="absolute inset-0 flex items-center justify-center p-1 sm:p-2">
+          <div className="absolute inset-0 flex items-center justify-center p-0 sm:p-1">
             <div 
               className={`w-full h-full flex items-center justify-center overflow-auto transition-transform duration-300 ease-out ${
                 isZoomAnimating ? 'duration-300' : 'duration-150'
@@ -587,8 +568,8 @@ const IframePDFViewer: React.FC<IframePDFViewerProps> = ({ pdfUrl, title, type }
             >
               <iframe
                 ref={iframeRef}
-                src={pdfBlob}
-                className={`border-0 shadow-lg rounded-md overflow-hidden transition-all duration-300 w-full h-full ${
+                src={`${pdfBlob}#toolbar=0&navpanes=0&scrollbar=0&statusbar=0&messages=0&scrollbar=0`}
+                className={`border-0 shadow-lg rounded-none sm:rounded-md overflow-hidden transition-all duration-300 w-full h-full ${
                   isFullscreen ? 'rounded-none shadow-none' : 'sm:shadow-2xl sm:rounded-lg hover:shadow-3xl'
                 }`}
                 style={{
@@ -601,6 +582,8 @@ const IframePDFViewer: React.FC<IframePDFViewerProps> = ({ pdfUrl, title, type }
                 title={title}
                 onLoad={() => setLoading(false)}
                 onError={() => setError('Failed to display PDF')}
+                allow="fullscreen"
+                sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
               />
             </div>
           </div>
@@ -640,53 +623,6 @@ const IframePDFViewer: React.FC<IframePDFViewerProps> = ({ pdfUrl, title, type }
                 title="Reset Zoom"
               >
                 Reset
-              </button>
-            </div>
-          </div>
-        )}
-        
-        {/* Mobile bottom controls - Only show on mobile when not fullscreen */}
-        {!isFullscreen && (
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/70 to-transparent backdrop-blur-sm p-3 sm:hidden">
-            <div className="flex items-center justify-center space-x-3">
-              <button
-                onClick={zoomOut}
-                className="p-2 text-white hover:text-blue-300 transition-all duration-200 rounded-lg active:bg-white/20 transform active:scale-95"
-                title="Zoom Out"
-              >
-                <ZoomOut className="h-4 w-4" />
-              </button>
-              
-              <span className="text-white text-sm font-bold min-w-[40px] text-center px-2 py-1 bg-white/20 rounded-lg backdrop-blur-sm">
-                {zoom}%
-              </span>
-              
-              <button
-                onClick={zoomIn}
-                className="p-2 text-white hover:text-blue-300 transition-all duration-200 rounded-lg active:bg-white/20 transform active:scale-95"
-                title="Zoom In"
-              >
-                <ZoomIn className="h-4 w-4" />
-              </button>
-              
-              <div className="w-px h-5 bg-white/30"></div>
-              
-              <button
-                onClick={resetZoom}
-                className="px-3 py-1 text-white hover:text-blue-300 transition-all duration-200 text-sm font-medium rounded-lg active:bg-white/20 transform active:scale-95"
-                title="Reset Zoom"
-              >
-                Reset
-              </button>
-              
-              <div className="w-px h-5 bg-white/30"></div>
-              
-              <button
-                onClick={toggleFullscreen}
-                className="p-2 text-white hover:text-blue-300 transition-all duration-200 rounded-lg active:bg-white/20 transform active:scale-95"
-                title="Enter Fullscreen"
-              >
-                <Maximize2 className="h-4 w-4" />
               </button>
             </div>
           </div>
