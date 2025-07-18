@@ -37,7 +37,6 @@ model Subject {
   id          String    @id @default(cuid())
   name        String    // e.g., "Mathematics", "Science", etc.
   description String?
-  order       Int       // for ordering subjects within a standard
   standardId  String
   standard    Standard  @relation(fields: [standardId], references: [id], onDelete: Cascade)
   chapters    Chapter[]
@@ -45,7 +44,6 @@ model Subject {
   updatedAt   DateTime  @updatedAt
 
   @@unique([name, standardId])
-  @@unique([order, standardId])
   @@map("subjects")
 }
 
@@ -53,7 +51,6 @@ model Chapter {
   id                  String  @id @default(cuid())
   name                String
   description         String?
-  order               Int // for ordering chapters within a subject
   subjectId           String
   subject             Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
   videoUrl            String? // YouTube video URL
@@ -68,6 +65,5 @@ model Chapter {
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
-  @@unique([order, subjectId])
   @@map("chapters")
 }

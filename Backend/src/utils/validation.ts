@@ -29,21 +29,18 @@ export const standardUpdateSchema = Joi.object({
 export const subjectSchema = Joi.object({
   name: Joi.string().min(1).max(100).required(),
   description: Joi.string().allow('').optional(),
-  order: Joi.number().integer().min(1).required(),
   standardId: Joi.string().required(),
 });
 
 export const subjectUpdateSchema = Joi.object({
   name: Joi.string().min(1).max(100).optional(),
   description: Joi.string().allow('').optional(),
-  order: Joi.number().integer().min(1).optional(),
 });
 
 // Chapter validation schemas
 export const chapterSchema = Joi.object({
   name: Joi.string().min(1).max(200).required(),
   description: Joi.string().allow('').optional(),
-  order: Joi.number().integer().min(1).required(),
   subjectId: Joi.string().required(),
   videoUrl: Joi.string().uri().allow('').optional(),
   solutionPdfUrl: Joi.string().allow('').optional(),
@@ -55,7 +52,6 @@ export const chapterSchema = Joi.object({
 export const chapterUpdateSchema = Joi.object({
   name: Joi.string().min(1).max(200).optional(),
   description: Joi.string().allow('').optional(),
-  order: Joi.number().integer().min(1).optional(),
   videoUrl: Joi.string().uri().allow('').optional(),
   solutionPdfUrl: Joi.string().allow('').optional(),
   solutionPdfFileName: Joi.string().allow('').optional(),

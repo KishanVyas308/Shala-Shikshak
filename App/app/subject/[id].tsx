@@ -62,7 +62,11 @@ export default function SubjectView() {
     return matchesSearch && matchesFilter;
   }) || [];
 
-  const sortedChapters = [...filteredChapters].sort((a, b) => a.order - b.order);
+  const sortedChapters = [...filteredChapters].sort((a, b) => {
+    const aDate = new Date(a.createdAt || 0);
+    const bDate = new Date(b.createdAt || 0);
+    return bDate.getTime() - aDate.getTime(); // Most recent first
+  });
 
   return (
     <View className="flex-1 bg-secondary-50">
@@ -206,7 +210,6 @@ export default function SubjectView() {
                 hasVideo={!!chapter.videoUrl}
                 hasTextbook={!!chapter.textbookPdfUrl}
                 hasSolution={!!chapter.solutionPdfUrl}
-                order={chapter.order}
                 onPress={() => router.push(`/chapter/${chapter.id}`)}
               />
             ))

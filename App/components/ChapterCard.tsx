@@ -11,7 +11,6 @@ interface ChapterCardProps {
   hasTextbook: boolean;
   hasSolution: boolean;
   onPress: () => void;
-  order: number;
 }
 
 export default function ChapterCard({ 
@@ -20,8 +19,7 @@ export default function ChapterCard({
   hasVideo, 
   hasTextbook, 
   hasSolution, 
-  onPress, 
-  order 
+  onPress
 }: ChapterCardProps) {
   const resourceCount = [hasVideo, hasTextbook, hasSolution].filter(Boolean).length;
   

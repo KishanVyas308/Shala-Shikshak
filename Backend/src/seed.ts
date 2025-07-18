@@ -51,9 +51,9 @@ async function main() {
 
       // Create sample subjects for each standard
       const subjects = [
-        { name: 'Mathematics', description: 'Math subject', order: 1 },
-        { name: 'Science', description: 'Science subject', order: 2 },
-        { name: 'English', description: 'English subject', order: 3 },
+        { name: 'Mathematics', description: 'Math subject' },
+        { name: 'Science', description: 'Science subject' },
+        { name: 'English', description: 'English subject' },
       ];
 
       for (const subjectData of subjects) {
@@ -70,13 +70,11 @@ async function main() {
           { 
             name: 'Introduction', 
             description: 'Introduction chapter',
-            order: 1,
             videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
           },
           { 
             name: 'Basic Concepts', 
             description: 'Basic concepts chapter',
-            order: 2,
             videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
           },
         ];
