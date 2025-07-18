@@ -60,44 +60,62 @@ const SortableStandard: React.FC<SortableStandardProps> = ({ standard, onEdit, o
     <div
       ref={setNodeRef}
       style={style}
-      className={`bg-white rounded-lg shadow-md border border-gray-200 p-6 transition-all duration-200 ${
-        isDragging ? 'shadow-2xl opacity-75 scale-105' : 'hover:shadow-lg'
+      className={`bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 transition-all duration-300 ${
+        isDragging ? 'shadow-2xl opacity-75 scale-105 rotate-2' : 'hover:shadow-xl hover:-translate-y-1'
       }`}
     >
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
+      {/* Mobile Layout */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
+        <div className="flex items-start space-x-3 sm:space-x-4 flex-1">
           <button
             {...attributes}
             {...listeners}
-            className="text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing p-1"
+            className="text-gray-400 hover:text-indigo-600 cursor-grab active:cursor-grabbing p-1 sm:p-2 mt-1 transition-colors duration-200"
+            aria-label="ધોરણ ખસેડો"
           >
-            <GripVertical className="h-6 w-6" />
+            <GripVertical className="h-5 w-5 sm:h-6 sm:w-6" />
           </button>
-          <div className="flex items-center space-x-3">
-            <div className="bg-indigo-100 rounded-full p-2">
-              <BookOpen className="h-6 w-6 text-indigo-600" />
+          
+          <div className="flex items-start space-x-3 flex-1 min-w-0">
+            <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-2 sm:p-3 flex-shrink-0 shadow-lg">
+              <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
             </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900">{standard.name}</h3>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-base sm:text-lg font-bold text-gray-900 truncate mb-1">
+                {standard.name}
+              </h3>
               {standard.description && (
-                <p className="text-sm text-gray-600 mt-1">{standard.description}</p>
+                <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed mb-2">
+                  {standard.description}
+                </p>
               )}
-              <p className="text-xs text-indigo-600 font-medium mt-1">ક્રમ: {standard.order}</p>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-1 sm:space-y-0">
+                <div className="inline-flex items-center px-2 py-1 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-semibold">
+                  ક્રમ: {standard.order}
+                </div>
+                <div className="inline-flex items-center px-2 py-1 bg-gray-50 text-gray-600 rounded-lg text-xs">
+                  {standard._count?.subjects || 0} વિષયો
+                </div>
+              </div>
             </div>
           </div>
         </div>
-        <div className="flex space-x-2">
+        
+        {/* Action Buttons */}
+        <div className="flex items-center justify-end space-x-2 sm:space-x-3 ml-8 sm:ml-0">
           <button
             onClick={() => onEdit(standard)}
-            className="p-2 text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 rounded-full transition-colors"
+            className="p-2 sm:p-3 text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 rounded-xl transition-all duration-200 active:scale-95"
+            aria-label="સંપાદિત કરો"
           >
-            <Edit2 className="h-4 w-4" />
+            <Edit2 className="h-4 w-4 sm:h-5 sm:w-5" />
           </button>
           <button
             onClick={() => onDelete(standard.id)}
-            className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-full transition-colors"
+            className="p-2 sm:p-3 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-xl transition-all duration-200 active:scale-95"
+            aria-label="ડિલીટ કરો"
           >
-            <Trash2 className="h-4 w-4" />
+            <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" />
           </button>
         </div>
       </div>
@@ -241,201 +259,211 @@ const AdminStandards: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-indigo-600 mx-auto mb-4"></div>
-          <p className="text-indigo-600 font-medium">લોડ થઈ રહ્યું છે...</p>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-50 px-4">
+        <div className="text-center max-w-xs mx-auto">
+          <div className="relative mb-6">
+            <div className="animate-spin rounded-full h-16 w-16 sm:h-20 sm:w-20 border-4 border-indigo-200 border-t-indigo-600 mx-auto"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <BookOpen className="h-6 w-6 sm:h-8 sm:w-8 text-indigo-600 animate-pulse" />
+            </div>
+          </div>
+          <h3 className="text-lg sm:text-xl font-semibold text-indigo-700 mb-2">લોડ થઈ રહ્યું છે...</h3>
+          <p className="text-sm text-gray-600">કૃપા કરીને થોડી રાહ જુઓ</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">ધોરણો વ્યવસ્થાપન</h1>
-              <p className="text-lg text-gray-600">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-50">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8">
+        {/* Header - Mobile First */}
+        <div className="bg-white rounded-2xl lg:rounded-3xl shadow-xl border border-gray-100 p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start space-y-4 sm:space-y-0">
+            <div className="flex-1">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 bg-clip-text text-transparent mb-2 sm:mb-3">
+                ધોરણો વ્યવસ્થાપન
+              </h1>
+              <p className="text-sm sm:text-base lg:text-lg text-gray-600 leading-relaxed">
                 શૈક્ષણિક ધોરણો બનાવો અને વ્યવસ્થિત કરો
               </p>
             </div>
             <button
               onClick={() => setIsCreateModalOpen(true)}
-              className="inline-flex items-center px-6 py-3 border border-transparent rounded-xl shadow-lg text-base font-medium text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300 transform hover:scale-105"
+              className="w-full sm:w-auto inline-flex items-center justify-center px-4 sm:px-6 py-3 border border-transparent rounded-xl shadow-lg text-sm sm:text-base font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300 transform hover:scale-105 active:scale-95"
             >
-              <Plus className="h-5 w-5 mr-2" />
-              નવું ધોરણ ઉમેરો
+              <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+              <span className="hidden sm:inline">નવું ધોરણ ઉમેરો</span>
+              <span className="sm:hidden">ધોરણ ઉમેરો</span>
             </button>
           </div>
         </div>
 
-        {/* Instructions */}
+        {/* Instructions - Enhanced for Mobile */}
         {sortedStandards.length > 0 && (
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
-            <p className="text-blue-800 text-sm flex items-center">
-              <GripVertical className="h-4 w-4 mr-2" />
-              ટિપ: ધોરણોને ફરીથી ગોઠવવા માટે ડ્રેગ અને ડ્રોપ કરો
-            </p>
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl sm:rounded-2xl p-3 sm:p-4 mb-4 sm:mb-6">
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <div className="bg-blue-100 rounded-lg p-2">
+                <GripVertical className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600" />
+              </div>
+              <p className="text-blue-800 text-xs sm:text-sm font-medium">
+                <span className="hidden sm:inline">ટિપ: ધોરણોને ફરીથી ગોઠવવા માટે ડ્રેગ અને ડ્રોપ કરો</span>
+                <span className="sm:hidden">ડ્રેગ કરીને ક્રમ બદલો</span>
+              </p>
+            </div>
           </div>
         )}
 
-        {/* Standards List */}
+        {/* Standards List - Mobile Optimized */}
         {sortedStandards.length === 0 ? (
-          <div className="text-center py-16">
-            <BookOpen className="mx-auto h-16 w-16 text-gray-400 mb-4" />
-            <h3 className="text-xl font-medium text-gray-900 mb-2">કોઈ ધોરણ નથી</h3>
-            <p className="text-gray-600 mb-6">શરૂઆત કરવા માટે તમારું પહેલું ધોરણ બનાવો</p>
-            <button
-              onClick={() => setIsCreateModalOpen(true)}
-              className="inline-flex items-center px-6 py-3 border border-transparent rounded-xl shadow-lg text-base font-medium text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 transition-all duration-300"
-            >
-              <Plus className="h-5 w-5 mr-2" />
-              પહેલું ધોરણ ઉમેરો
-            </button>
+          <div className="text-center py-12 sm:py-16 lg:py-20 px-4">
+            <div className="max-w-md mx-auto">
+              <div className="relative mb-6 sm:mb-8">
+                <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-full p-6 sm:p-8 w-20 h-20 sm:w-24 sm:h-24 mx-auto flex items-center justify-center shadow-lg">
+                  <BookOpen className="h-10 w-10 sm:h-12 sm:w-12 text-gray-400" />
+                </div>
+                <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center shadow-lg">
+                  <span className="text-white text-xs font-bold">0</span>
+                </div>
+              </div>
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">કોઈ ધોરણ નથી</h3>
+              <p className="text-gray-600 mb-6 sm:mb-8 text-sm sm:text-base leading-relaxed">
+                શરૂઆત કરવા માટે તમારું પહેલું ધોરણ બનાવો
+              </p>
+              <button
+                onClick={() => setIsCreateModalOpen(true)}
+                className="w-full sm:w-auto inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 border border-transparent rounded-xl sm:rounded-2xl shadow-lg text-sm sm:text-base font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 active:scale-95"
+              >
+                <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                પહેલું ધોરણ ઉમેરો
+              </button>
+            </div>
           </div>
         ) : (
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-          >
-            <SortableContext items={sortedStandards} strategy={verticalListSortingStrategy}>
-              <div className="space-y-4">
-                {sortedStandards.map((standard) => (
-                  <SortableStandard
-                    key={standard.id}
-                    standard={standard}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                  />
-                ))}
-              </div>
-            </SortableContext>
-          </DndContext>
-        )}
-        {/* <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {standards.map((standard) => (
-            <div
-              key={standard.id}
-              className="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow"
+          <div className="space-y-3 sm:space-y-4">
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
             >
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="text-sm font-medium text-indigo-600">
-                    Order: {standard.order}
-                  </div>
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => handleEdit(standard)}
-                      className="text-gray-400 hover:text-indigo-600"
-                    >
-                      <Edit2 className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(standard.id)}
-                      className="text-gray-400 hover:text-red-600"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
+              <SortableContext items={sortedStandards} strategy={verticalListSortingStrategy}>
+                <div className="space-y-3 sm:space-y-4">
+                  {sortedStandards.map((standard) => (
+                    <SortableStandard
+                      key={standard.id}
+                      standard={standard}
+                      onEdit={handleEdit}
+                      onDelete={handleDelete}
+                    />
+                  ))}
                 </div>
-                
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  {standard.name}
-                </h3>
-                
-                {standard.description && (
-                  <p className="text-gray-600 text-sm mb-4">{standard.description}</p>
-                )}
-                
-                <div className="text-sm text-gray-500">
-                  {standard._count?.subjects || 0} subjects
-                </div>
-              </div>
-            </div>
-          ))}
-        </div> */}
-
-        {standards.length === 0 && (
-          <div className="text-center py-12">
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No standards</h3>
-            <p className="mt-1 text-sm text-gray-500">Get started by creating a new standard.</p>
+              </SortableContext>
+            </DndContext>
           </div>
         )}
 
-        {/* Create/Edit Modal */}
+        {/* Floating Action Button for Mobile */}
+        <div className="fixed bottom-6 right-6 sm:hidden z-40">
+          <button
+            onClick={() => setIsCreateModalOpen(true)}
+            className="w-14 h-14 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full shadow-2xl hover:shadow-3xl transform transition-all duration-300 hover:scale-110 active:scale-95 flex items-center justify-center"
+            aria-label="નવું ધોરણ ઉમેરો"
+          >
+            <Plus className="h-6 w-6" />
+          </button>
+        </div>
+
+        {/* Create/Edit Modal - Mobile Optimized */}
         {(isCreateModalOpen || editingStandard) && (
-          <div className="fixed inset-0 bg-gray-600/40 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-medium">
-                  {editingStandard ? 'Edit Standard' : 'Create Standard'}
+          <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 p-3 sm:p-4">
+            <div className="relative top-4 sm:top-10 lg:top-20 mx-auto border border-gray-200 w-full max-w-md sm:max-w-lg shadow-2xl rounded-2xl bg-white">
+              {/* Header */}
+              <div className="flex justify-between items-center p-4 sm:p-6 border-b border-gray-100">
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900">
+                  {editingStandard ? 'ધોરણ સંપાદિત કરો' : 'નવું ધોરણ બનાવો'}
                 </h3>
-                <button onClick={closeModal} className="text-gray-400 hover:text-gray-600">
+                <button 
+                  onClick={closeModal} 
+                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-all duration-200 active:scale-95"
+                >
                   <X className="h-5 w-5" />
                 </button>
               </div>
 
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              {/* Form */}
+              <form onSubmit={handleSubmit(onSubmit)} className="p-4 sm:p-6 space-y-4 sm:space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Name</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    નામ <span className="text-red-500">*</span>
+                  </label>
                   <input
                     {...register('name')}
                     type="text"
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="e.g., Class 1"
+                    className="w-full border border-gray-300 rounded-xl shadow-sm px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm sm:text-base transition-all duration-200"
+                    placeholder="દા.ત., ધોરણ 1"
                   />
                   {errors.name && (
-                    <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
+                    <p className="mt-2 text-sm text-red-600 flex items-center">
+                      <span className="mr-1">⚠️</span>
+                      {errors.name.message}
+                    </p>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Description</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">વર્ણન</label>
                   <textarea
                     {...register('description')}
                     rows={3}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="Optional description"
+                    className="w-full border border-gray-300 rounded-xl shadow-sm px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm sm:text-base transition-all duration-200 resize-none"
+                    placeholder="વૈકલ્પિક વર્ણન"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Order</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    ક્રમ <span className="text-red-500">*</span>
+                  </label>
                   <input
                     {...register('order', { valueAsNumber: true })}
                     type="number"
                     min="1"
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-full border border-gray-300 rounded-xl shadow-sm px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm sm:text-base transition-all duration-200"
                     placeholder="1"
                   />
                   {errors.order && (
-                    <p className="mt-1 text-sm text-red-600">{errors.order.message}</p>
+                    <p className="mt-2 text-sm text-red-600 flex items-center">
+                      <span className="mr-1">⚠️</span>
+                      {errors.order.message}
+                    </p>
                   )}
                 </div>
 
-                <div className="flex justify-end space-x-3 pt-4">
+                {/* Form Actions */}
+                <div className="flex flex-col sm:flex-row sm:justify-end space-y-3 sm:space-y-0 sm:space-x-3 pt-4 sm:pt-6 border-t border-gray-100">
                   <button
                     type="button"
                     onClick={closeModal}
-                    className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 border border-gray-300 rounded-xl shadow-sm text-sm font-semibold text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200 active:scale-95"
                   >
-                    Cancel
+                    રદ કરો
                   </button>
                   <button
                     type="submit"
                     disabled={createMutation.isPending || updateMutation.isPending}
-                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                    className="w-full sm:w-auto inline-flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 border border-transparent rounded-xl shadow-sm text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 active:scale-95"
                   >
-                    <Save className="h-4 w-4 mr-2" />
-                    {createMutation.isPending || updateMutation.isPending
-                      ? 'Saving...'
-                      : editingStandard
-                      ? 'Update'
-                      : 'Create'}
+                    {createMutation.isPending || updateMutation.isPending ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        <span>સાચવી રહ્યા છીએ...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-4 w-4 mr-2" />
+                        <span>{editingStandard ? 'અપડેટ કરો' : 'બનાવો'}</span>
+                      </>
+                    )}
                   </button>
                 </div>
               </form>

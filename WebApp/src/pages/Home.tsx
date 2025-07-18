@@ -150,7 +150,7 @@ const Home: React.FC = () => {
               className="inline-flex items-center px-8 sm:px-10 py-3 sm:py-4 bg-white text-indigo-600 font-bold text-lg sm:text-xl rounded-full hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 shadow-lg"
             >
               <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 mr-2 sm:mr-3" />
-              મફત અધ્યયન શરૂ કરો
+              અધ્યયન શરૂ કરો
               <ArrowRight className="h-5 w-5 sm:h-6 sm:w-6 ml-2 sm:ml-3" />
             </Link>
           </div>
@@ -168,7 +168,7 @@ const Home: React.FC = () => {
             ગુજરાતી માધ્યમના વિદ્યાર્થીઓ માટે આધુનિક શિક્ષણ પ્લેટફોર્મ
           </p>
           <p className="text-gray-500 text-xs sm:text-sm">
-            © 2024 શાળા શિક્ષક. તમામ અધિકારો સુરક્ષિત.
+            © 2025 શાળા શિક્ષક. તમામ અધિકારો સુરક્ષિત.
           </p>
         </div>
       </footer>

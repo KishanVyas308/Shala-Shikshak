@@ -14,6 +14,7 @@ import AdminSubjects from './pages/admin/Subjects'
 import AdminChapters from './pages/admin/Chapters'
 import ProtectedRoute from './components/ProtectedRoute'
 
+
 function App() {
   return (
     <AuthProvider>

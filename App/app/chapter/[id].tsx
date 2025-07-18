@@ -79,7 +79,7 @@ export default function ChapterView() {
     <View className="flex-1 bg-gray-50">
       <Header 
         title={chapter.name}
-        subtitle={`પ્રકરણ ${chapter.order}`}
+        subtitle={chapter.subject?.name || 'પ્રકરણ'}
         showBack
         onBackPress={() => router.back()}
         rightAction={{

@@ -12,13 +12,13 @@ router.get('/', async (req, res) => {
       orderBy: { order: 'asc' },
       include: {
         subjects: {
+          orderBy: { createdAt: 'desc' },
           include: {
             chapters: {
-              orderBy: { order: 'asc' },
+              orderBy: { createdAt: 'desc' },
               select: {
                 id: true,
                 name: true,
-                order: true,
                 videoUrl: true,
                 solutionPdfUrl: true,
                 textbookPdfUrl: true,
@@ -48,9 +48,10 @@ router.get('/:id', async (req, res) => {
       where: { id },
       include: {
         subjects: {
+          orderBy: { createdAt: 'desc' },
           include: {
             chapters: {
-              orderBy: { order: 'asc' },
+              orderBy: { createdAt: 'desc' },
             },
           },
         },
@@ -248,11 +249,10 @@ router.put('/batch/reorder', authenticateToken, async (req, res) => {
         subjects: {
           include: {
             chapters: {
-              orderBy: { order: 'asc' },
+              orderBy: { createdAt: 'asc' },
               select: {
                 id: true,
                 name: true,
-                order: true,
                 videoUrl: true,
                 solutionPdfUrl: true,
                 textbookPdfUrl: true,

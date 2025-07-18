@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { BookOpen, ArrowLeft, ExternalLink, PlayCircle, Star, Eye, ThumbsUp } from 'lucide-react';
 import { chaptersAPI } from '../services/chapters';
+import PDFViewer from '../components/PDFViewer';
 
 const ChapterView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -77,35 +78,34 @@ const ChapterView: React.FC = () => {
             <span className="hidden sm:inline">તમામ ધોરણો</span>
             <span className="sm:hidden">પાછા</span>
           </Link>
+          <span className="text-gray-400">/</span>
           {chapter.subject?.standard && (
-            <>
-              <span className="text-gray-400">/</span>
-              <Link
-                to={`/standard/${chapter.subject.standard.id}`}
-                className="text-indigo-600 hover:text-indigo-700 transition-colors text-sm font-medium whitespace-nowrap"
+            <Link
+              to={`/standard/${chapter.subject.standard.id}`}
+              className="flex items-center text-indigo-600 hover:text-indigo-700 transition-colors text-sm font-medium whitespace-nowrap"
               >
                 {chapter.subject.standard.name}
               </Link>
-            </>
+            
           )}
-          {chapter.subject && (
-            <>
               <span className="text-gray-400">/</span>
+          {chapter.subject && (
+            
               <Link
                 to={`/subject/${chapter.subject.id}`}
-                className="text-indigo-600 hover:text-indigo-700 transition-colors text-sm font-medium whitespace-nowrap"
+                className="flex items-center text-indigo-600 hover:text-indigo-700 transition-colors text-sm font-medium whitespace-nowrap"
               >
                 {chapter.subject.name}
               </Link>
-            </>
+            
           )}
           <span className="text-gray-400">/</span>
           <span className="text-gray-600 font-medium text-sm truncate">
-            {chapter.name || `પ્રકરણ ${chapter.order}`}
+            {chapter.name || `પ્રકરણ `}
           </span>
         </div>
 
-       
+
 
         {/* Minimal Tab Navigation */}
         {availableTabs.length > 0 && (
@@ -118,15 +118,13 @@ const ChapterView: React.FC = () => {
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id as 'video' | 'textbook' | 'solution')}
-                      className={`flex-1 flex items-center justify-center px-3 py-2 rounded-lg transition-all duration-200 ${
-                        activeTab === tab.id
-                          ? 'bg-indigo-600 text-white shadow-sm'
-                          : 'text-gray-600 hover:text-indigo-600 hover:bg-gray-50'
-                      }`}
+                      className={`flex-1 flex items-center justify-center px-3 py-2 rounded-lg transition-all duration-200 ${activeTab === tab.id
+                        ? 'bg-indigo-600 text-white shadow-sm'
+                        : 'text-gray-600 hover:text-indigo-600 hover:bg-gray-50'
+                        }`}
                     >
-                      <IconComponent className={`w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 ${
-                        activeTab === tab.id ? 'text-white' : tab.color
-                      }`} />
+                      <IconComponent className={`w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 ${activeTab === tab.id ? 'text-white' : tab.color
+                        }`} />
                       <span className="text-xs sm:text-sm font-medium">
                         {tab.id === 'video' ? 'વિડિયો' : tab.id === 'textbook' ? 'પુસ્તક' : 'ઉકેલ'}
                       </span>
@@ -151,65 +149,130 @@ const ChapterView: React.FC = () => {
                   <h3 className="text-sm sm:text-base font-semibold text-gray-900">વિડિયો લેક્ચર</h3>
                 </div>
               </div>
-              
+
               <div className="relative bg-gray-900 rounded-lg overflow-hidden mb-3">
                 <div className="aspect-video">
-                  <iframe
-                    src={chapter.videoUrl.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/')}
-                    title={`${chapter.name} - વિડિયો લેક્ચર`}
-                    className="w-full h-full"
-                    frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    allowFullScreen
-                  ></iframe>
-                </div>
-              </div>
+                  {(() => {
+                    // Extract YouTube video ID properly from various formats
+                    const extractVideoId = (url: string): string => {
+                      // Handle youtu.be format
+                      if (url.includes('youtu.be')) {
+                        const idMatch = url.match(/youtu\.be\/([^?&]+)/);
+                        return idMatch?.[1] || '';
+                      }
 
-              <div className="flex items-center justify-between bg-gray-50 rounded-lg p-2 sm:p-3">
-                <div className="flex items-center space-x-3">
-                  <div className="flex items-center text-gray-600 text-xs">
-                    <Eye className="w-3 h-3 mr-1" />
-                    <span>1,234</span>
-                  </div>
-                  <div className="flex items-center text-gray-600 text-xs">
-                    <ThumbsUp className="w-3 h-3 mr-1" />
-                    <span>156</span>
-                  </div>
+                      // Handle youtube.com/watch format
+                      if (url.includes('youtube.com/watch')) {
+                        const urlParams = new URLSearchParams(url.split('?')[1]);
+                        return urlParams.get('v') || '';
+                      }
+
+                      // Handle youtube.com/embed format
+                      if (url.includes('youtube.com/embed')) {
+                        const idMatch = url.match(/embed\/([^?&]+)/);
+                        return idMatch?.[1] || '';
+                      }
+
+                      return '';
+                    };
+
+                    const videoId = extractVideoId(chapter.videoUrl);
+                    
+                    if (!videoId) {
+                      return (
+                        <div className="flex items-center justify-center h-full bg-gray-800 text-white">
+                          <div className="text-center">
+                            <p className="mb-4">Invalid YouTube URL</p>
+                            <a
+                              href={chapter.videoUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                            >
+                              <ExternalLink className="w-4 h-4 mr-2" />
+                              Watch on YouTube
+                            </a>
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    // Create YouTube embed URL with additional parameters
+                    const embedUrl = `https://www.youtube.com/embed/${videoId}?enablejsapi=1&rel=0&showinfo=0&modestbranding=1`;
+
+                    return (
+                      <div className="relative w-full h-full">
+                        <iframe
+                          width="560"
+                          height="315"
+                          src={embedUrl}
+                          title="YouTube video player"
+                          frameBorder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          referrerPolicy="strict-origin-when-cross-origin"
+                          allowFullScreen
+                          className="w-full h-full"
+                          style={{ border: 'none' }}
+                          sandbox="allow-scripts allow-same-origin allow-presentation"
+                          onError={() => {
+                            console.error('YouTube iframe failed to load');
+                          }}
+                        ></iframe>
+                        
+                        {/* Fallback button - shows if iframe fails */}
+                        <div className="absolute inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 opacity-0 hover:opacity-100 transition-opacity pointer-events-none">
+                          <a
+                            href={chapter.videoUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors pointer-events-auto"
+                          >
+                            <ExternalLink className="w-4 h-4 mr-2" />
+                            Open in YouTube
+                          </a>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
-                <a
-                  href={chapter.videoUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center px-2 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-xs font-medium"
-                >
-                  <ExternalLink className="w-3 h-3 mr-1" />
-                  જુઓ
-                </a>
               </div>
+              {
+
+                // <div className="flex items-center justify-between bg-gray-50 rounded-lg p-2 sm:p-3">
+                //   <div className="flex items-center space-x-3">
+                //     {/* These would normally be populated from API data */}
+                //     <div className="flex items-center text-gray-600 text-xs">
+                //       <Eye className="w-3 h-3 mr-1" />
+                //       <span>{chapter.views || '—'}</span>
+                //     </div>
+                //     <div className="flex items-center text-gray-600 text-xs">
+                //       <ThumbsUp className="w-3 h-3 mr-1" />
+                //       <span>{chapter.likes || '—'}</span>
+                //     </div>
+                //   </div>
+                //   <a
+                //     href={chapter.videoUrl}
+                //     target="_blank"
+                //     rel="noopener noreferrer"
+                //     className="inline-flex items-center px-2 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-xs font-medium"
+                //     >
+                //     <ExternalLink className="w-3 h-3 mr-1" />
+                //     જુઓ
+                //   </a>
+                // </div>
+              }
             </div>
           )}
 
           {/* Textbook Content */}
           {activeTab === 'textbook' && chapter.textbookPdfUrl && (
             <div className="p-0">
-              <div className="h-[70vh] sm:h-[80vh] rounded-lg overflow-hidden bg-gray-100">
-                <object
-                  data={`${chapter.textbookPdfUrl}#toolbar=0&navpanes=0&scrollbar=0`}
-                  type="application/pdf"
-                  className="w-full h-full"
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    border: 'none'
-                  }}
-                >
-                  <iframe
-                    src={`https://docs.google.com/gview?url=${encodeURIComponent(chapter.textbookPdfUrl)}&embedded=true`}
-                    className="w-full h-full border-0"
-                    title={`${chapter.name} - પુસ્તક`}
-                    onContextMenu={(e) => e.preventDefault()}
-                  />
-                </object>
+              <div className="h-[75vh] sm:h-[80vh] md:h-[85vh] rounded-lg overflow-hidden bg-gray-100 relative">
+
+                <div className="w-full h-full">
+                  <PDFViewer fileurl={chapter.textbookPdfUrl} />
+                </div>
+
               </div>
             </div>
           )}
@@ -218,23 +281,9 @@ const ChapterView: React.FC = () => {
           {activeTab === 'solution' && chapter.solutionPdfUrl && (
             <div className="p-0">
               <div className="h-[70vh] sm:h-[80vh] rounded-lg overflow-hidden bg-gray-100">
-                <object
-                  data={`${chapter.solutionPdfUrl}#toolbar=0&navpanes=0&scrollbar=0`}
-                  type="application/pdf"
-                  className="w-full h-full"
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    border: 'none'
-                  }}
-                >
-                  <iframe
-                    src={`https://docs.google.com/gview?url=${encodeURIComponent(chapter.solutionPdfUrl)}&embedded=true`}
-                    className="w-full h-full border-0"
-                    title={`${chapter.name} - ઉકેલ`}
-                    onContextMenu={(e) => e.preventDefault()}
-                  />
-                </object>
+                <div className="w-full h-full">
+                  <PDFViewer fileurl={chapter.solutionPdfUrl} />
+                </div>
               </div>
             </div>
           )}

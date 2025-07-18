@@ -50,7 +50,11 @@ export default function StandardView() {
     );
   }
 
-  const sortedSubjects = standard.subjects ? [...standard.subjects].sort((a, b) => a.order - b.order) : [];
+  const sortedSubjects = standard.subjects ? [...standard.subjects].sort((a, b) => {
+    const aDate = new Date(a.createdAt || 0);
+    const bDate = new Date(b.createdAt || 0);
+    return bDate.getTime() - aDate.getTime(); // Most recent first
+  }) : [];
 
   return (
     <View className="flex-1 bg-secondary-50">

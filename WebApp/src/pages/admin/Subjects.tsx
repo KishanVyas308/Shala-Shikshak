@@ -1,91 +1,77 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
-import { Plus, Edit2, Trash2, X, Save, BookOpen, GripVertical } from 'lucide-react';
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+import { Plus, Edit2, Trash2, X, Save, BookOpen, Filter, GraduationCap, AlertTriangle } from 'lucide-react';
 import { standardsAPI } from '../../services/standards';
 import { subjectsAPI } from '../../services/subjects';
-import type { Subject, Standard } from '../../types';
+import type { Subject } from '../../types';
 
-// Sortable Subject Item Component
-interface SortableSubjectItemProps {
+// Subject Item Component
+interface SubjectItemProps {
   subject: Subject;
   onEdit: (subject: Subject) => void;
   onDelete: (id: string) => void;
 }
 
-const SortableSubjectItem: React.FC<SortableSubjectItemProps> = ({ subject, onEdit, onDelete }) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: subject.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
-
+const SubjectItem: React.FC<SubjectItemProps> = ({ subject, onEdit, onDelete }) => {
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      className={`bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-all ${
-        isDragging ? 'shadow-2xl opacity-75 scale-105' : 'hover:shadow-lg'
-      }`}
-    >
-      <div className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="text-sm font-medium text-indigo-600">
+    <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 active:scale-95">
+      {/* Mobile Layout */}
+      <div className="flex flex-col space-y-3 sm:space-y-4">
+        {/* Header with Standard Badge */}
+        <div className="flex items-center justify-between">
+          <div className="inline-flex items-center px-2 py-1 bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-lg text-xs font-semibold text-indigo-700">
+            <GraduationCap className="h-3 w-3 mr-1" />
             {subject.standard?.name}
           </div>
           <div className="flex items-center space-x-2">
             <button
-              {...listeners}
-              className="text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing"
-              aria-label="Drag to reorder"
-            >
-              <GripVertical className="h-4 w-4" />
-            </button>
-            <button
               onClick={() => onEdit(subject)}
-              className="text-gray-400 hover:text-indigo-600"
+              className="p-2 text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 rounded-xl transition-all duration-200 active:scale-95"
+              aria-label="સંપાદિત કરો"
             >
               <Edit2 className="h-4 w-4" />
             </button>
             <button
               onClick={() => onDelete(subject.id)}
-              className="text-gray-400 hover:text-red-600"
+              className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-xl transition-all duration-200 active:scale-95"
+              aria-label="ડિલીટ કરો"
             >
               <Trash2 className="h-4 w-4" />
             </button>
           </div>
         </div>
         
-        <div className="flex items-center mb-2">
-          <BookOpen className="h-5 w-5 text-gray-400 mr-2" />
-          <h3 className="text-lg font-medium text-gray-900">
-            {subject.name}
-          </h3>
+        {/* Subject Name with Icon */}
+        <div className="flex items-start space-x-3">
+          <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl p-2 sm:p-3 flex-shrink-0 shadow-lg">
+            <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-base sm:text-lg font-bold text-gray-900 truncate mb-1">
+              {subject.name}
+            </h3>
+            {subject.description && (
+              <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed mb-2">
+                {subject.description}
+              </p>
+            )}
+          </div>
         </div>
         
-        {subject.description && (
-          <p className="text-gray-600 text-sm mb-4">{subject.description}</p>
-        )}
-        
-        <div className="flex justify-between items-center text-sm text-gray-500">
-          <span>{subject._count?.chapters || 0} chapters</span>
-          <span className="text-indigo-600 font-medium">ક્રમ: {subject.order}</span>
+        {/* Footer with Stats */}
+        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+          <div className="flex items-center space-x-3">
+            <div className="inline-flex items-center px-2 py-1 bg-gray-50 text-gray-600 rounded-lg text-xs font-medium">
+              {subject._count?.chapters || 0} અધ્યાયો
+            </div>
+            <div className="inline-flex items-center px-2 py-1 bg-emerald-50 text-emerald-600 rounded-lg text-xs font-semibold">
+              સક્રિય
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -93,10 +79,9 @@ const SortableSubjectItem: React.FC<SortableSubjectItemProps> = ({ subject, onEd
 };
 
 const subjectSchema = z.object({
-  name: z.string().min(1, 'Name is required').max(100, 'Name too long'),
+  name: z.string().min(1, 'નામ આવશ્યક છે').max(100, 'નામ ખૂબ લાંબું છે'),
   description: z.string().optional(),
-  order: z.number().min(1, 'Order must be positive'),
-  standardId: z.string().min(1, 'Please select a standard'),
+  standardId: z.string().min(1, 'કૃપા કરીને ધોરણ પસંદ કરો'),
 });
 
 type SubjectFormData = z.infer<typeof subjectSchema>;
@@ -106,6 +91,7 @@ const AdminSubjects: React.FC = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingSubject, setEditingSubject] = useState<Subject | null>(null);
   const [selectedStandardId, setSelectedStandardId] = useState<string>('all');
+  const [showFilters, setShowFilters] = useState(false);
 
   const { data: standards = [] } = useQuery({
     queryKey: ['standards'],
@@ -125,62 +111,11 @@ const AdminSubjects: React.FC = () => {
     }))
   );
 
-  // Filter subjects based on selected standard
-  const filteredSubjects = selectedStandardId === 'all' 
+  // Filter subjects based on selected standard and sort by created date (most recent first)
+  const filteredSubjects = (selectedStandardId === 'all' 
     ? subjects 
-    : subjects.filter(subject => subject.standard?.id === selectedStandardId);
-
-  // State for sorted subjects and drag-and-drop
-  const [sortedSubjects, setSortedSubjects] = useState<Subject[]>([]);
-
-  // Sensors for drag and drop
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
-
-  // Update sorted subjects when filtered subjects change
-  useEffect(() => {
-    setSortedSubjects([...filteredSubjects].sort((a, b) => a.order - b.order));
-  }, [filteredSubjects]);
-
-  // Batch reorder mutation
-  const reorderMutation = useMutation({
-    mutationFn: async (newSubjects: Subject[]) => {
-      const reorderData = newSubjects.map((subject, index) => ({
-        id: subject.id,
-        order: index + 1
-      }));
-      return await subjectsAPI.batchReorder(reorderData);
-    },
-    onSuccess: () => {
-      toast.success('ક્રમ સફળતાપૂર્વક અપડેટ થયો');
-      queryClient.invalidateQueries({ queryKey: ['standards'] });
-      queryClient.invalidateQueries({ queryKey: ['standards-with-subjects'] });
-    },
-    onError: () => {
-      toast.error('ક્રમ અપડેટ કરવામાં નિષ્ફળ');
-      // Reset to original order
-      setSortedSubjects([...filteredSubjects].sort((a, b) => a.order - b.order));
-    },
-  });
-
-  const handleDragEnd = (event: any) => {
-    const { active, over } = event;
-
-    if (active.id !== over?.id) {
-      setSortedSubjects((items) => {
-        const oldIndex = items.findIndex((item) => item.id === active.id);
-        const newIndex = items.findIndex((item) => item.id === over.id);
-
-        const newItems = arrayMove(items, oldIndex, newIndex);
-        reorderMutation.mutate(newItems);
-        return newItems;
-      });
-    }
-  };
+    : subjects.filter(subject => subject.standard?.id === selectedStandardId)
+  ).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   const {
     register,
@@ -195,14 +130,14 @@ const AdminSubjects: React.FC = () => {
   const createMutation = useMutation({
     mutationFn: subjectsAPI.create,
     onSuccess: () => {
-      toast.success('Subject created successfully');
+      toast.success('વિષય સફળતાપૂર્વક બનાવાયો');
       queryClient.invalidateQueries({ queryKey: ['standards'] });
       queryClient.invalidateQueries({ queryKey: ['standards-with-subjects'] });
       setIsCreateModalOpen(false);
       reset();
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.error || 'Failed to create subject');
+      toast.error(error.response?.data?.error || 'વિષય બનાવવામાં નિષ્ફળ');
     },
   });
 
@@ -210,26 +145,26 @@ const AdminSubjects: React.FC = () => {
     mutationFn: ({ id, data }: { id: string; data: Partial<SubjectFormData> }) =>
       subjectsAPI.update(id, data),
     onSuccess: () => {
-      toast.success('Subject updated successfully');
+      toast.success('વિષય સફળતાપૂર્વક અપડેટ થયો');
       queryClient.invalidateQueries({ queryKey: ['standards'] });
       queryClient.invalidateQueries({ queryKey: ['standards-with-subjects'] });
       setEditingSubject(null);
       reset();
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.error || 'Failed to update subject');
+      toast.error(error.response?.data?.error || 'વિષય અપડેટ કરવામાં નિષ્ફળ');
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: subjectsAPI.delete,
     onSuccess: () => {
-      toast.success('Subject deleted successfully');
+      toast.success('વિષય સફળતાપૂર્વક ડિલીટ થયો');
       queryClient.invalidateQueries({ queryKey: ['standards'] });
       queryClient.invalidateQueries({ queryKey: ['standards-with-subjects'] });
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.error || 'Failed to delete subject');
+      toast.error(error.response?.data?.error || 'વિષય ડિલીટ કરવામાં નિષ્ફળ');
     },
   });
 
@@ -245,12 +180,11 @@ const AdminSubjects: React.FC = () => {
     setEditingSubject(subject);
     setValue('name', subject.name);
     setValue('description', subject.description || '');
-    setValue('order', subject.order);
     setValue('standardId', subject.standardId);
   };
 
   const handleDelete = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this subject?')) {
+    if (window.confirm('શું તમે ખરેખર આ વિષયને ડિલીટ કરવા માંગો છો?')) {
       deleteMutation.mutate(id);
     }
   };
@@ -263,105 +197,201 @@ const AdminSubjects: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-indigo-600"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-teal-50 to-blue-50 px-4">
+        <div className="text-center max-w-xs mx-auto">
+          <div className="relative mb-6">
+            <div className="animate-spin rounded-full h-16 w-16 sm:h-20 sm:w-20 border-4 border-emerald-200 border-t-emerald-600 mx-auto"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <BookOpen className="h-6 w-6 sm:h-8 sm:w-8 text-emerald-600 animate-pulse" />
+            </div>
+          </div>
+          <h3 className="text-lg sm:text-xl font-semibold text-emerald-700 mb-2">લોડ થઈ રહ્યું છે...</h3>
+          <p className="text-sm text-gray-600">કૃપા કરીને થોડી રાહ જુઓ</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Manage Subjects</h1>
-            <p className="mt-2 text-gray-600">
-              Create and manage subjects for each standard
-            </p>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+        {/* Mobile-First Header */}
+        <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+            <div className="text-center sm:text-left">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                વિષયો સંચાલન
+              </h1>
+              <p className="mt-2 text-sm sm:text-base text-gray-600">
+                દરેક ધોરણ માટે વિષયો બનાવો અને સંચાલિત કરો
+              </p>
+              {filteredSubjects.length > 0 && (
+                <div className="mt-3 flex flex-wrap justify-center sm:justify-start gap-2">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                    <BookOpen className="w-3 h-3 mr-1" />
+                    કુલ: {filteredSubjects.length}
+                  </span>
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                    <GraduationCap className="w-3 h-3 mr-1" />
+                    ધોરણ: {selectedStandardId === 'all' ? standards.length : 1}
+                  </span>
+                </div>
+              )}
+            </div>
+            
+            {/* Mobile Floating Action Button */}
+            <div className="sm:hidden">
+              <button
+                onClick={() => setIsCreateModalOpen(true)}
+                className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 flex items-center justify-center z-40"
+              >
+                <Plus className="h-6 w-6" />
+              </button>
+            </div>
+            
+            {/* Desktop Add Button */}
+            <div className="hidden sm:flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className="sm:hidden inline-flex items-center justify-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-all duration-200"
+              >
+                <Filter className="h-4 w-4 mr-2" />
+                ફિલ્ટર
+              </button>
+              <button
+                onClick={() => setIsCreateModalOpen(true)}
+                className="inline-flex items-center justify-center px-4 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                નવો વિષય ઉમેરો
+              </button>
+            </div>
           </div>
-          <button
-            onClick={() => setIsCreateModalOpen(true)}
-            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Subject
-          </button>
         </div>
 
-        {/* Filter */}
-        <div className="mb-6">
-          <select
-            value={selectedStandardId}
-            onChange={(e) => setSelectedStandardId(e.target.value)}
-            className="block w-full max-w-xs border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-          >
-            <option value="all">All Standards</option>
-            {standards.map((standard) => (
-              <option key={standard.id} value={standard.id}>
-                {standard.name}
-              </option>
-            ))}
-          </select>
+        {/* Mobile Filter Toggle */}
+        <div className={`sm:hidden transition-all duration-300 ${showFilters ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
+          <div className="bg-white rounded-xl shadow-lg p-4 mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              ધોરણ પસંદ કરો
+            </label>
+            <select
+              value={selectedStandardId}
+              onChange={(e) => setSelectedStandardId(e.target.value)}
+              className="block w-full border border-gray-300 rounded-xl shadow-sm px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-gray-50"
+            >
+              <option value="all">બધા ધોરણો</option>
+              {standards.map((standard) => (
+                <option key={standard.id} value={standard.id}>
+                  {standard.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Desktop Filter */}
+        <div className="hidden sm:block mb-6">
+          <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              <label className="text-sm font-medium text-gray-700 shrink-0">
+                ધોરણ પસંદ કરો:
+              </label>
+              <select
+                value={selectedStandardId}
+                onChange={(e) => setSelectedStandardId(e.target.value)}
+                className="block w-full sm:max-w-xs border border-gray-300 rounded-xl shadow-sm px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              >
+                <option value="all">બધા ધોરણો</option>
+                {standards.map((standard) => (
+                  <option key={standard.id} value={standard.id}>
+                    {standard.name}
+                  </option>
+                ))}
+              </select>
+              {selectedStandardId !== 'all' && (
+                <button
+                  onClick={() => setSelectedStandardId('all')}
+                  className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
+                >
+                  બધા બતાવો
+                </button>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Subjects Grid */}
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          <DndContext
-            sensors={sensors}
-            onDragEnd={handleDragEnd}
-            collisionDetection={closestCenter}
-          >
-            <SortableContext
-              items={sortedSubjects.map(subject => subject.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              {sortedSubjects.map((subject) => (
-                <SortableSubjectItem
-                  key={subject.id}
-                  subject={subject}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                />
-              ))}
-            </SortableContext>
-          </DndContext>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+          {filteredSubjects.map((subject) => (
+            <SubjectItem
+              key={subject.id}
+              subject={subject}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
+          ))}
         </div>
 
+        {/* Empty State */}
         {filteredSubjects.length === 0 && (
-          <div className="text-center py-12">
-            <BookOpen className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No subjects</h3>
-            <p className="mt-1 text-sm text-gray-500">
+          <div className="bg-white rounded-2xl shadow-lg p-8 sm:p-12 text-center">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <BookOpen className="h-10 w-10 sm:h-12 sm:w-12 text-indigo-600" />
+            </div>
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3">
+              {selectedStandardId === 'all' ? 'કોઈ વિષય નથી' : 'આ ધોરણ માટે કોઈ વિષય નથી'}
+            </h3>
+            <p className="text-gray-600 mb-6 max-w-md mx-auto">
               {selectedStandardId === 'all' 
-                ? 'Get started by creating a new subject.'
-                : 'No subjects found for the selected standard.'
+                ? 'નવો વિષય બનાવીને શરૂઆત કરો અને વિદ્યાર્થીઓ માટે અધ્યયન સામગ્રી ઉમેરો.'
+                : 'આ ધોરણ માટે પહેલો વિષય ઉમેરો.'
               }
             </p>
+            <button
+              onClick={() => setIsCreateModalOpen(true)}
+              className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
+            >
+              <Plus className="h-5 w-5 mr-2" />
+              પહેલો વિષય ઉમેરો
+            </button>
           </div>
         )}
 
         {/* Create/Edit Modal */}
         {(isCreateModalOpen || editingSubject) && (
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-medium">
-                  {editingSubject ? 'Edit Subject' : 'Create Subject'}
-                </h3>
-                <button onClick={closeModal} className="text-gray-400 hover:text-gray-600">
-                  <X className="h-5 w-5" />
+          <div className="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
+            <div className="relative bg-white w-full max-w-md mx-auto rounded-2xl shadow-2xl">
+              {/* Modal Header */}
+              <div className="flex items-center justify-between p-6 border-b border-gray-100">
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900">
+                    {editingSubject ? 'વિષય સંપાદન' : 'નવો વિષય ઉમેરો'}
+                  </h3>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {editingSubject ? 'વિષયની માહિતી અપડેટ કરો' : 'નવા વિષયની વિગતો ભરો'}
+                  </p>
+                </div>
+                <button 
+                  onClick={closeModal} 
+                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors duration-200"
+                >
+                  <X className="h-5 w-5 text-gray-500" />
                 </button>
               </div>
 
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Standard</label>
+              {/* Modal Content */}
+              <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
+                {/* Standard Selection */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-700">
+                    ધોરણ પસંદ કરો <span className="text-red-500">*</span>
+                  </label>
                   <select
                     {...register('standardId')}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-full border border-gray-300 rounded-xl shadow-sm px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-gray-50 transition-all duration-200"
                   >
-                    <option value="">Select a standard</option>
+                    <option value="">ધોરણ પસંદ કરો</option>
                     {standards.map((standard) => (
                       <option key={standard.id} value={standard.id}>
                         {standard.name}
@@ -369,66 +399,70 @@ const AdminSubjects: React.FC = () => {
                     ))}
                   </select>
                   {errors.standardId && (
-                    <p className="mt-1 text-sm text-red-600">{errors.standardId.message}</p>
+                    <p className="text-sm text-red-600 flex items-center gap-1">
+                      <AlertTriangle className="h-3 w-3" />
+                      {errors.standardId.message}
+                    </p>
                   )}
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Order</label>
-                  <input
-                    {...register('order', { valueAsNumber: true })}
-                    type="number"
-                    min="1"
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="1"
-                  />
-                  {errors.order && (
-                    <p className="mt-1 text-sm text-red-600">{errors.order.message}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Name</label>
+                {/* Subject Name */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-700">
+                    વિષયનું નામ <span className="text-red-500">*</span>
+                  </label>
                   <input
                     {...register('name')}
                     type="text"
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="e.g., Mathematics"
+                    className="w-full border border-gray-300 rounded-xl shadow-sm px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-gray-50 transition-all duration-200"
+                    placeholder="જેમ કે: ગણિત, ભાષા, વિજ્ઞાન"
                   />
                   {errors.name && (
-                    <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
+                    <p className="text-sm text-red-600 flex items-center gap-1">
+                      <AlertTriangle className="h-3 w-3" />
+                      {errors.name.message}
+                    </p>
                   )}
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Description</label>
+                {/* Description */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-700">
+                    વર્ણન (વૈકલ્પિક)
+                  </label>
                   <textarea
                     {...register('description')}
                     rows={3}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="Optional description"
+                    className="w-full border border-gray-300 rounded-xl shadow-sm px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-gray-50 transition-all duration-200 resize-none"
+                    placeholder="વિષય વિશે ટૂંકી માહિતી લખો..."
                   />
                 </div>
 
-                <div className="flex justify-end space-x-3 pt-4">
+                {/* Action Buttons */}
+                <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-100">
                   <button
                     type="button"
                     onClick={closeModal}
-                    className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    className="flex-1 px-4 py-3 border border-gray-300 rounded-xl text-sm font-semibold text-gray-700 bg-white hover:bg-gray-50 transition-all duration-200 transform hover:scale-105"
                   >
-                    Cancel
+                    રદ કરો
                   </button>
                   <button
                     type="submit"
                     disabled={createMutation.isPending || updateMutation.isPending}
-                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                    className="flex-1 inline-flex items-center justify-center px-4 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                   >
-                    <Save className="h-4 w-4 mr-2" />
-                    {createMutation.isPending || updateMutation.isPending
-                      ? 'Saving...'
-                      : editingSubject
-                      ? 'Update'
-                      : 'Create'}
+                    {createMutation.isPending || updateMutation.isPending ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+                        સેવ થઈ રહ્યું છે...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-4 w-4 mr-2" />
+                        {editingSubject ? 'અપડેટ કરો' : 'ઉમેરો'}
+                      </>
+                    )}
                   </button>
                 </div>
               </form>

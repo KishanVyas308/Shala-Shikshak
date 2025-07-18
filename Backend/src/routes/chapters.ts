@@ -28,7 +28,7 @@ router.get('/subject/:subjectId', async (req, res) => {
 
     const chapters = await prisma.chapter.findMany({
       where: { subjectId },
-      orderBy: { order: 'asc' },
+      orderBy: { createdAt: 'desc' },
       include: {
         subject: {
           select: {
@@ -97,7 +97,6 @@ router.post('/', authenticateToken, async (req, res) => {
     const { 
       name, 
       description, 
-      order, 
       subjectId, 
       videoUrl, 
       solutionPdfUrl, 
@@ -115,27 +114,10 @@ router.post('/', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Subject not found' });
     }
 
-    // Check if order already exists for this subject
-    const existingOrder = await prisma.chapter.findUnique({
-      where: {
-        order_subjectId: {
-          order,
-          subjectId,
-        },
-      },
-    });
-
-    if (existingOrder) {
-      return res.status(400).json({ 
-        error: 'Chapter with this order already exists for this subject' 
-      });
-    }
-
     const chapter = await prisma.chapter.create({
       data: {
         name,
         description,
-        order,
         subjectId,
         videoUrl,
         solutionPdfUrl,
@@ -183,23 +165,6 @@ router.put('/:id', authenticateToken, async (req, res) => {
 
     if (!existingChapter) {
       return res.status(404).json({ error: 'Chapter not found' });
-    }
-
-    // Check for order conflict if updating order
-    if (value.order && value.order !== existingChapter.order) {
-      const orderConflict = await prisma.chapter.findUnique({
-        where: {
-          order_subjectId: {
-            order: value.order,
-            subjectId: existingChapter.subjectId,
-          },
-        },
-      });
-      if (orderConflict) {
-        return res.status(400).json({ 
-          error: 'Chapter with this order already exists for this subject' 
-        });
-      }
     }
 
     // Clean up old PDF files if they're being replaced
@@ -269,41 +234,6 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     });
   } catch (error) {
     console.error('Delete chapter error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-// Batch reorder chapters (admin only)
-router.put('/batch/reorder', authenticateToken, async (req, res) => {
-  try {
-    const { chapters } = req.body;
-
-    if (!Array.isArray(chapters)) {
-      return res.status(400).json({ error: 'Chapters must be an array' });
-    }
-
-    // Validate that all chapters have id and order
-    for (const chapter of chapters) {
-      if (!chapter.id || typeof chapter.order !== 'number') {
-        return res.status(400).json({ 
-          error: 'Each chapter must have an id and order' 
-        });
-      }
-    }
-
-    // Use a transaction to update all chapters atomically
-    await prisma.$transaction(async (tx) => {
-      for (const chapter of chapters) {
-        await tx.chapter.update({
-          where: { id: chapter.id },
-          data: { order: chapter.order },
-        });
-      }
-    });
-
-    res.json({ message: 'Chapters reordered successfully' });
-  } catch (error) {
-    console.error('Batch reorder chapters error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

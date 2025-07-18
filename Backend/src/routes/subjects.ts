@@ -14,11 +14,10 @@ router.get('/standard/:standardId', async (req, res) => {
       where: { standardId },
       include: {
         chapters: {
-          orderBy: { order: 'asc' },
+          orderBy: { createdAt: 'desc' },
           select: {
             id: true,
             name: true,
-            order: true,
             videoUrl: true,
             solutionPdfUrl: true,
             textbookPdfUrl: true,
@@ -34,6 +33,7 @@ router.get('/standard/:standardId', async (req, res) => {
           select: { chapters: true },
         },
       },
+      orderBy: { createdAt: 'desc' },
     });
 
     res.json(subjects);
@@ -52,7 +52,7 @@ router.get('/:id', async (req, res) => {
       where: { id },
       include: {
         chapters: {
-          orderBy: { order: 'asc' },
+          orderBy: { createdAt: 'desc' },
         },
         standard: {
           select: {
@@ -82,7 +82,7 @@ router.post('/', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: error.details[0].message });
     }
 
-    const { name, description, order, standardId } = value;
+    const { name, description, standardId } = value;
 
     // Check if standard exists
     const standard = await prisma.standard.findUnique({
@@ -109,27 +109,10 @@ router.post('/', authenticateToken, async (req, res) => {
       });
     }
 
-    // Check if order already exists for this standard
-    const existingOrder = await prisma.subject.findUnique({
-      where: {
-        order_standardId: {
-          order,
-          standardId,
-        },
-      },
-    });
-
-    if (existingOrder) {
-      return res.status(400).json({ 
-        error: 'Order already exists for this standard' 
-      });
-    }
-
     const subject = await prisma.subject.create({
       data: {
         name,
         description,
-        order,
         standardId,
       },
       include: {
@@ -242,41 +225,6 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     res.json({ message: 'Subject deleted successfully' });
   } catch (error) {
     console.error('Delete subject error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-// Batch reorder subjects (admin only)
-router.put('/batch/reorder', authenticateToken, async (req, res) => {
-  try {
-    const { subjects } = req.body;
-
-    if (!Array.isArray(subjects)) {
-      return res.status(400).json({ error: 'Subjects must be an array' });
-    }
-
-    // Validate that all subjects have id and order
-    for (const subject of subjects) {
-      if (!subject.id || typeof subject.order !== 'number') {
-        return res.status(400).json({ 
-          error: 'Each subject must have an id and order' 
-        });
-      }
-    }
-
-    // Use a transaction to update all subjects atomically
-    await prisma.$transaction(async (tx) => {
-      for (const subject of subjects) {
-        await tx.subject.update({
-          where: { id: subject.id },
-          data: { order: subject.order },
-        });
-      }
-    });
-
-    res.json({ message: 'Subjects reordered successfully' });
-  } catch (error) {
-    console.error('Batch reorder subjects error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
