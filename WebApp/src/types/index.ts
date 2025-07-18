@@ -22,7 +22,6 @@ export interface Subject {
   id: string;
   name: string;
   description?: string;
-  order: number;
   standardId: string;
   standard?: {
     id: string;
@@ -40,7 +39,6 @@ export interface Chapter {
   id: string;
   name: string;
   description?: string;
-  order: number;
   subjectId: string;
   subject?: {
     id: string;
@@ -79,14 +77,12 @@ export interface CreateStandardData {
 export interface CreateSubjectData {
   name: string;
   description?: string;
-  order: number;
   standardId: string;
 }
 
 export interface CreateChapterData {
   name: string;
   description?: string;
-  order: number;
   subjectId: string;
   videoUrl?: string;
   solutionPdfUrl?: string;

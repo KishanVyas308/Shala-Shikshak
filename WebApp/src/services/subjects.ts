@@ -24,9 +24,5 @@ export const subjectsAPI = {
 
   delete: async (id: string): Promise<void> => {
     await api.delete(`/subjects/${id}`);
-  },
-
-  batchReorder: async (subjects: { id: string; order: number }[]): Promise<void> => {
-    await api.put('/subjects/batch/reorder', { subjects });
   }
 };
