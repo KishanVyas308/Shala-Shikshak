@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { BookOpen, ArrowLeft, FileText, Users, GraduationCap, ArrowRight } from 'lucide-react';
+import { BookOpen, ArrowLeft, FileText, Users, ArrowRight } from 'lucide-react';
 import { standardsAPI } from '../services/standards';
 
 interface Subject {
@@ -28,18 +28,6 @@ interface Chapter {
   updatedAt?: string;
 }
 
-interface Standard {
-  id: string;
-  name: string;
-  description?: string;
-  order: number;
-  subjects: Subject[];
-  _count?: {
-    subjects: number;
-  };
-  createdAt: string;
-  updatedAt: string;
-}
 
 const StandardView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
