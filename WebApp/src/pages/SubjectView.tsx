@@ -8,7 +8,6 @@ interface Chapter {
   id: string;
   name?: string;
   description?: string;
-  order?: number;
   subjectId: string;
   videoUrl?: string;
   solutionPdfUrl?: string;
@@ -66,7 +65,11 @@ const SubjectView: React.FC = () => {
     );
   }
 
-  const sortedChapters = [...(subject.chapters || [])].sort((a, b) => (a.order || 0) - (b.order || 0));
+  const sortedChapters = [...(subject.chapters || [])].sort((a, b) => {
+    const aDate = new Date(a.createdAt || 0);
+    const bDate = new Date(b.createdAt || 0);
+    return bDate.getTime() - aDate.getTime(); // Most recent first
+  });
   const filteredChapters = sortedChapters.filter(chapter =>
     chapter.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     chapter.description?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -202,7 +205,7 @@ const ChapterCard: React.FC<ChapterCardProps> = ({ chapter }) => {
               <div className="flex items-center mb-2">
                 
                 <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 group-hover:text-indigo-600 transition-colors leading-tight">
-                  {chapter.name || `પ્રકરણ ${chapter.order}`}
+                  {chapter.name || 'પ્રકરણ'}
                 </h3>
               </div>
               {chapter.description && (

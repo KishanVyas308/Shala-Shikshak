@@ -8,7 +8,6 @@ interface Subject {
   id: string;
   name: string;
   description?: string;
-  order: number;
   standardId: string;
   chapters? : Chapter[];
   createdAt: string;
@@ -19,7 +18,6 @@ interface Chapter {
   id: string;
   name?: string;
   description?: string;
-  order?: number;
   subjectId: string;
   videoUrl?: string;
   solutionPdfUrl?: string;
@@ -87,7 +85,11 @@ const StandardView: React.FC = () => {
     );
   }
 
-  const sortedSubjects = [...(standard.subjects || [])].sort((a, b) => a.order - b.order);
+  const sortedSubjects = [...(standard.subjects || [])].sort((a, b) => {
+    const aDate = new Date(a.createdAt || 0);
+    const bDate = new Date(b.createdAt || 0);
+    return bDate.getTime() - aDate.getTime(); // Most recent first
+  });
   const totalChapters = sortedSubjects.reduce((total, subject) => total + (subject._count?.chapters || 0), 0);
 
   return (
@@ -194,7 +196,7 @@ const SubjectCard: React.FC<SubjectCardProps> = ({ subject }) => {
             {subject.name}
           </h3>
           <div className="bg-indigo-50 rounded-full px-2 py-0.5 sm:px-3 sm:py-1 flex-shrink-0">
-            <span className="text-xs sm:text-sm font-medium text-indigo-600">ક્રમ {subject.order}</span>
+            <span className="text-xs sm:text-sm font-medium text-indigo-600">નવું</span>
           </div>
         </div>
 
