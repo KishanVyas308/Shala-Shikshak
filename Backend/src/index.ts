@@ -52,16 +52,16 @@ app.use(helmet({
       styleSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: ["'self'", "data:", "blob:"],
       objectSrc: ["'none'"],
-      frameSrc: ["'self'", "http://localhost:3000", "http://localhost:5173", "http://localhost:5000"],
-      frameAncestors: ["'self'", "http://localhost:3000", "http://localhost:5173"],
-      connectSrc: ["'self'", "http://localhost:3000", "http://localhost:5173", "http://localhost:5000"],
+      frameSrc: ["'self'", "http://localhost:3000", "http://localhost:5173", "http://localhost:5000", "https://shalashikshak.in"],
+      frameAncestors: ["'self'", "http://localhost:3000", "http://localhost:5173", "https://shalashikshak.in"],
+      connectSrc: ["'self'", "http://localhost:3000", "http://localhost:5173", "http://localhost:5000", "https://shalashikshak.in"],
     },
   },
   crossOriginEmbedderPolicy: false,
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:5173'],
+  origin: ['http://localhost:3000', 'http://localhost:5173', 'https://shalashikshak.in'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Range', 'X-Requested-With'],
@@ -76,7 +76,7 @@ app.use('/api/uploads', (req, res, next) => {
   // Set headers to allow PDF embedding and enable range requests for react-pdf
   res.set({
     'X-Frame-Options': 'SAMEORIGIN',
-    'Content-Security-Policy': "frame-ancestors 'self' http://localhost:3000 http://localhost:5173",
+    'Content-Security-Policy': "frame-ancestors 'self' http://localhost:3000 http://localhost:5173 https://shalashikshak.in",
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Range, Authorization, X-Requested-With',
