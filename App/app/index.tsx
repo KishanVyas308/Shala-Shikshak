@@ -1,14 +1,12 @@
 import React from 'react';
 import { View, Text, ScrollView, RefreshControl } from 'react-native';
-import { Link, router } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { standardsAPI } from '../services/standards';
 import Header from '../components/Header';
 import StandardCard from '../components/StandardCard';
 import LoadingState from '../components/LoadingState';
 import ErrorState from '../components/ErrorState';
-import { LinearGradient } from 'expo-linear-gradient';
 
 export default function Home() {
   const { data: standards = [], isLoading, error, refetch } = useQuery({

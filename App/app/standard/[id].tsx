@@ -8,7 +8,6 @@ import Header from '../../components/Header';
 import SubjectCard from '../../components/SubjectCard';
 import LoadingState from '../../components/LoadingState';
 import ErrorState from '../../components/ErrorState';
-import { LinearGradient } from 'expo-linear-gradient';
 
 export default function StandardView() {
   const { id } = useLocalSearchParams<{ id: string }>();
