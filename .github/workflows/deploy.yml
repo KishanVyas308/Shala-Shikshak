@@ -42,3 +42,4 @@ jobs:
           -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
           -d parse_mode=Markdown \
           -d text=$'❌ *Deployment Failed!*\n\n*🔁 Branch:* `master`\n🛠 *Project:* Shala-Shikshak\n💣 *Status:* CI/CD Failed!\n\n📄 *Check logs:* [GitHub Actions](https://github.com/KishanVyas308/Shala-Shikshak/actions)\n\n🕒 Time: '"$(date '+%d %b %Y, %I:%M %p')"'\n\n🔴 Investigate!'
+
