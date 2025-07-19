@@ -15,7 +15,7 @@ jobs:
       - name: Pull latest code
         run: |
           cd /home/Shala-Shikshak
-          git pull origin main
+          git pull origin master
 
       - name: Install & Build Backend
         run: |
