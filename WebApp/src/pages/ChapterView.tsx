@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { BookOpen, ArrowLeft, ExternalLink, PlayCircle, Star } from 'lucide-react';
 import { chaptersAPI } from '../services/chapters';
-import PDFViewer from '../components/PDFViewer';
+import PDFViewer from '../components/PdfViewer';
 
 const ChapterView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
