@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { BookOpen, ArrowLeft, FileText, PlayCircle, Search, Download, Grid, List, ArrowRight } from 'lucide-react';
+import { BookOpen, ArrowLeft, FileText, PlayCircle, Download, ArrowRight } from 'lucide-react';
 import { subjectsAPI } from '../services/subjects';
 
 interface Chapter {
@@ -192,7 +192,7 @@ const ChapterCard: React.FC<ChapterCardProps> = ({ chapter }) => {
   const hasVideo = !!chapter.videoUrl;
   const hasSolutionPdf = !!chapter.solutionPdfUrl;
   const hasTextbookPdf = !!chapter.textbookPdfUrl;
-  const hasAnyContent = hasVideo || hasSolutionPdf || hasTextbookPdf;
+ 
 
     return (
       <Link
