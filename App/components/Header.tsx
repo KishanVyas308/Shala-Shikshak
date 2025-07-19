@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
+
 
 interface HeaderProps {
   title: string;
