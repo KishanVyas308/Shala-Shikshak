@@ -375,7 +375,7 @@ const AdminStandards: React.FC = () => {
 
         {/* Create/Edit Modal - Mobile Optimized */}
         {(isCreateModalOpen || editingStandard) && (
-          <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 p-3 sm:p-4">
+          <div className="fixed inset-0 bg-black/25  backdrop-blur-sm overflow-y-auto h-full w-full z-50 p-3 sm:p-4">
             <div className="relative top-4 sm:top-10 lg:top-20 mx-auto border border-gray-200 w-full max-w-md sm:max-w-lg shadow-2xl rounded-2xl bg-white">
               {/* Header */}
               <div className="flex justify-between items-center p-4 sm:p-6 border-b border-gray-100">

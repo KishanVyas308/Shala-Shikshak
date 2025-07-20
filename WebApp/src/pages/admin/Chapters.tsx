@@ -13,6 +13,8 @@ const chapterSchema = z.object({
   name: z.string().min(1, 'Name is required').max(200, 'Name too long'),
   description: z.string().optional(),
   videoUrl: z.string().url('Must be a valid URL').optional().or(z.literal('')),
+  textbookPdfUrl: z.string().url('Must be a valid URL').optional().or(z.literal('')),
+  solutionPdfUrl: z.string().url('Must be a valid URL').optional().or(z.literal('')),
 });
 
 type ChapterFormData = z.infer<typeof chapterSchema>;
@@ -27,6 +29,10 @@ const AdminChapters: React.FC = () => {
   const [textbookFile, setTextbookFile] = useState<File | null>(null);
   const [solutionFile, setSolutionFile] = useState<File | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+  
+  // File upload mode states
+  const [textbookMode, setTextbookMode] = useState<'url' | 'upload'>('url');
+  const [solutionMode, setSolutionMode] = useState<'url' | 'upload'>('url');
   
   // Modal form states
   const [modalSelectedStandardId, setModalSelectedStandardId] = useState<string>('');
@@ -130,32 +136,42 @@ const AdminChapters: React.FC = () => {
       return;
     }
 
-    let textbookPdfUrl = '';
+    let textbookPdfUrl = data.textbookPdfUrl || '';
     let textbookPdfFileName = '';
-    let solutionPdfUrl = '';
+    let solutionPdfUrl = data.solutionPdfUrl || '';
     let solutionPdfFileName = '';
 
     try {
-      // Upload textbook PDF if selected
-      if (textbookFile) {
+      // Upload textbook PDF if file is selected and no URL is provided
+      if (textbookFile && textbookMode === 'upload') {
         setUploadingTextbook(true);
         const uploadResult = await uploadAPI.uploadPdf(textbookFile);
         textbookPdfUrl = uploadResult.url;
         textbookPdfFileName = uploadResult.originalName;
         setUploadingTextbook(false);
+      } else if (data.textbookPdfUrl && textbookMode === 'url') {
+        // Use the provided URL
+        textbookPdfUrl = data.textbookPdfUrl;
+        textbookPdfFileName = 'External PDF'; // Default name for external URLs
       }
 
-      // Upload solution PDF if selected
-      if (solutionFile) {
+      // Upload solution PDF if file is selected and no URL is provided
+      if (solutionFile && solutionMode === 'upload') {
         setUploadingSolution(true);
         const uploadResult = await uploadAPI.uploadPdf(solutionFile);
         solutionPdfUrl = uploadResult.url;
         solutionPdfFileName = uploadResult.originalName;
         setUploadingSolution(false);
+      } else if (data.solutionPdfUrl && solutionMode === 'url') {
+        // Use the provided URL
+        solutionPdfUrl = data.solutionPdfUrl;
+        solutionPdfFileName = 'External PDF'; // Default name for external URLs
       }
 
       const chapterData = {
-        ...data,
+        name: data.name,
+        description: data.description,
+        videoUrl: data.videoUrl,
         subjectId: modalSelectedSubjectId, // Use the modal selected subject ID
         textbookPdfUrl,
         textbookPdfFileName,
@@ -184,6 +200,8 @@ const AdminChapters: React.FC = () => {
     setSolutionFile(null);
     setModalSelectedStandardId('');
     setModalSelectedSubjectId('');
+    setTextbookMode('url');
+    setSolutionMode('url');
   };
 
   if (isLoading) {
@@ -387,7 +405,7 @@ const AdminChapters: React.FC = () => {
 
         {/* Create Modal - Mobile optimized */}
         {isCreateModalOpen && (
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 p-4">
+          <div className="fixed inset-0 bg-black/25  backdrop-blur-sm overflow-y-auto h-full w-full z-50 p-4">
             <div className="relative top-0 sm:top-10 mx-auto border w-full max-w-2xl shadow-lg rounded-xl bg-white">
               {/* Header */}
               <div className="flex justify-between items-center p-4 sm:p-6 border-b border-gray-200">
@@ -496,50 +514,130 @@ const AdminChapters: React.FC = () => {
                   )}
                 </div>
 
-                {/* File Uploads */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* File Uploads / URLs */}
+                <div className="space-y-6">
+                  {/* Textbook PDF Section */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Textbook PDF
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="file"
-                        accept=".pdf"
-                        onChange={(e) => setTextbookFile(e.target.files?.[0] || null)}
-                        className="block w-full text-sm text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 border border-gray-300 rounded-lg"
-                      />
-                      {uploadingTextbook && (
-                        <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center rounded-lg">
-                          <div className="flex items-center space-x-2">
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-600"></div>
-                            <span className="text-sm text-gray-600">Uploading...</span>
-                          </div>
-                        </div>
-                      )}
+                    <div className="flex items-center justify-between mb-3">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Textbook PDF
+                      </label>
+                      <div className="flex bg-gray-100 rounded-lg p-1">
+                        <button
+                          type="button"
+                          onClick={() => setTextbookMode('url')}
+                          className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                            textbookMode === 'url'
+                              ? 'bg-white text-indigo-600 shadow-sm'
+                              : 'text-gray-600 hover:text-gray-900'
+                          }`}
+                        >
+                          URL
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setTextbookMode('upload')}
+                          className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                            textbookMode === 'upload'
+                              ? 'bg-white text-indigo-600 shadow-sm'
+                              : 'text-gray-600 hover:text-gray-900'
+                          }`}
+                        >
+                          Upload
+                        </button>
+                      </div>
                     </div>
+
+                    {textbookMode === 'url' ? (
+                      <input
+                        {...register('textbookPdfUrl')}
+                        type="url"
+                        className="block w-full border border-gray-300 rounded-lg shadow-sm px-3 py-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                        placeholder="https://example.com/textbook.pdf"
+                      />
+                    ) : (
+                      <div className="relative">
+                        <input
+                          type="file"
+                          accept=".pdf"
+                          onChange={(e) => setTextbookFile(e.target.files?.[0] || null)}
+                          className="block w-full text-sm text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 border border-gray-300 rounded-lg"
+                        />
+                        {uploadingTextbook && (
+                          <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center rounded-lg">
+                            <div className="flex items-center space-x-2">
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-600"></div>
+                              <span className="text-sm text-gray-600">Uploading...</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {errors.textbookPdfUrl && (
+                      <p className="mt-1 text-sm text-red-600">{errors.textbookPdfUrl.message}</p>
+                    )}
                   </div>
 
+                  {/* Solution PDF Section */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Solution PDF
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="file"
-                        accept=".pdf"
-                        onChange={(e) => setSolutionFile(e.target.files?.[0] || null)}
-                        className="block w-full text-sm text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 border border-gray-300 rounded-lg"
-                      />
-                      {uploadingSolution && (
-                        <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center rounded-lg">
-                          <div className="flex items-center space-x-2">
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600"></div>
-                            <span className="text-sm text-gray-600">Uploading...</span>
-                          </div>
-                        </div>
-                      )}
+                    <div className="flex items-center justify-between mb-3">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Solution PDF
+                      </label>
+                      <div className="flex bg-gray-100 rounded-lg p-1">
+                        <button
+                          type="button"
+                          onClick={() => setSolutionMode('url')}
+                          className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                            solutionMode === 'url'
+                              ? 'bg-white text-purple-600 shadow-sm'
+                              : 'text-gray-600 hover:text-gray-900'
+                          }`}
+                        >
+                          URL
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setSolutionMode('upload')}
+                          className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                            solutionMode === 'upload'
+                              ? 'bg-white text-purple-600 shadow-sm'
+                              : 'text-gray-600 hover:text-gray-900'
+                          }`}
+                        >
+                          Upload
+                        </button>
+                      </div>
                     </div>
+
+                    {solutionMode === 'url' ? (
+                      <input
+                        {...register('solutionPdfUrl')}
+                        type="url"
+                        className="block w-full border border-gray-300 rounded-lg shadow-sm px-3 py-2 focus:outline-none focus:ring-purple-500 focus:border-purple-500 text-sm"
+                        placeholder="https://example.com/solution.pdf"
+                      />
+                    ) : (
+                      <div className="relative">
+                        <input
+                          type="file"
+                          accept=".pdf"
+                          onChange={(e) => setSolutionFile(e.target.files?.[0] || null)}
+                          className="block w-full text-sm text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 border border-gray-300 rounded-lg"
+                        />
+                        {uploadingSolution && (
+                          <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center rounded-lg">
+                            <div className="flex items-center space-x-2">
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600"></div>
+                              <span className="text-sm text-gray-600">Uploading...</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {errors.solutionPdfUrl && (
+                      <p className="mt-1 text-sm text-red-600">{errors.solutionPdfUrl.message}</p>
+                    )}
                   </div>
                 </div>
 
