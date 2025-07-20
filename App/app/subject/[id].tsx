@@ -75,7 +75,7 @@ export default function SubjectView() {
         showBack
         onBackPress={() => router.back()}
         rightAction={{
-          icon: 'search-outline',
+           icon: 'bookmark-outline',
           onPress: () => {}
         }}
       />
@@ -87,118 +87,11 @@ export default function SubjectView() {
         }
         showsVerticalScrollIndicator={false}
       >
-       
-        
-        {/* Search and Filter Section */}
-        <View className="m-4">
-          {/* Search Bar */}
-          <View className="bg-white rounded-xl p-4 mb-3 shadow-sm">
-            <View className="flex-row items-center">
-              <Ionicons name="search" size={20} color="#64748b" />
-              <TextInput
-                className="flex-1 ml-3 font-gujarati text-secondary-700"
-                placeholder="પ્રકરણ શોધો..."
-                value={searchTerm}
-                onChangeText={setSearchTerm}
-                placeholderTextColor="#94a3b8"
-              />
-              {searchTerm.length > 0 && (
-                <TouchableOpacity onPress={() => setSearchTerm('')}>
-                  <Ionicons name="close-circle" size={20} color="#94a3b8" />
-                </TouchableOpacity>
-              )}
-            </View>
-          </View>
-          
-          {/* Filter Buttons */}
-          <View className="flex-row space-x-3">
-            <TouchableOpacity
-              onPress={() => setFilterType('all')}
-              className={`flex-1 py-3 px-4 rounded-xl ${
-                filterType === 'all' ? 'bg-primary-500' : 'bg-white'
-              }`}
-            >
-              <Text className={`font-gujarati text-center font-medium ${
-                filterType === 'all' ? 'text-white' : 'text-secondary-600'
-              }`}>
-                બધા
-              </Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity
-              onPress={() => setFilterType('video')}
-              className={`flex-1 py-3 px-4 rounded-xl ${
-                filterType === 'video' ? 'bg-danger-500' : 'bg-white'
-              }`}
-            >
-              <Text className={`font-gujarati text-center font-medium ${
-                filterType === 'video' ? 'text-white' : 'text-secondary-600'
-              }`}>
-                વિડિયો
-              </Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity
-              onPress={() => setFilterType('pdf')}
-              className={`flex-1 py-3 px-4 rounded-xl ${
-                filterType === 'pdf' ? 'bg-accent-500' : 'bg-white'
-              }`}
-            >
-              <Text className={`font-gujarati text-center font-medium ${
-                filterType === 'pdf' ? 'text-white' : 'text-secondary-600'
-              }`}>
-                PDF
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-        
-        {/* Statistics Cards */}
-        <View className="flex-row mx-4 mb-6 gap-3">
-          <View className="flex-1 bg-white rounded-xl p-4 shadow-sm">
-            <View className="items-center">
-              <Text className="font-gujarati text-2xl font-bold text-primary-600">
-                {sortedChapters.length}
-              </Text>
-              <Text className="font-gujarati text-secondary-600 text-sm">
-                પ્રકરણો
-              </Text>
-            </View>
-          </View>
-          <View className="flex-1 bg-white rounded-xl p-4 shadow-sm">
-            <View className="items-center">
-              <Text className="font-gujarati text-2xl font-bold text-danger-600">
-                {sortedChapters.filter(ch => ch.videoUrl).length}
-              </Text>
-              <Text className="font-gujarati text-secondary-600 text-sm">
-                વિડિયો
-              </Text>
-            </View>
-          </View>
-          <View className="flex-1 bg-white rounded-xl p-4 shadow-sm">
-            <View className="items-center">
-              <Text className="font-gujarati text-2xl font-bold text-accent-600">
-                {sortedChapters.filter(ch => ch.textbookPdfUrl || ch.solutionPdfUrl).length}
-              </Text>
-              <Text className="font-gujarati text-secondary-600 text-sm">
-                PDF
-              </Text>
-            </View>
-          </View>
-        </View>
-        
-        {/* Chapters List Header */}
-        <View className="mx-4 mb-4">
-          <Text className="font-gujarati text-secondary-800 text-lg font-bold">
-            પ્રકરણો
-          </Text>
-          <Text className="font-gujarati text-secondary-600 text-sm mt-1">
-            અભ્યાસ કરવા માટે પ્રકરણ પસંદ કરો
-          </Text>
-        </View>
+
+
         
         {/* Chapters List */}
-        <View className="pb-6">
+        <View className="pb-6 my-4">
           {sortedChapters.length > 0 ? (
             sortedChapters.map((chapter) => (
               <ChapterCard
@@ -209,6 +102,9 @@ export default function SubjectView() {
                 hasVideo={!!chapter.videoUrl}
                 hasTextbook={!!chapter.textbookPdfUrl}
                 hasSolution={!!chapter.solutionPdfUrl}
+                videoUrl={chapter.videoUrl}
+                textbookPdfUrl={chapter.textbookPdfUrl}
+                solutionPdfUrl={chapter.solutionPdfUrl}
                 onPress={() => router.push(`/chapter/${chapter.id}`)}
               />
             ))
