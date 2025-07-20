@@ -46,6 +46,38 @@ class PDFErrorBoundary extends React.Component<
 const PDFViewer: React.FC<PDFViewerProps> = ({ fileurl }) => {
     const iframeRef = React.useRef<HTMLIFrameElement>(null);
 
+    // Check if URL is a Google Drive link or doesn't end with .pdf
+    const isGoogleDriveUrl = (url: string) => {
+        return !url.endsWith('.pdf') || url.includes('drive.google.com') || url.includes('docs.google.com');
+    };
+
+    // Convert Google Drive URL to viewer format
+    const getViewerUrl = (url: string) => {
+        if (isGoogleDriveUrl(url)) {
+            // If it's already a drive link, extract file ID and use viewer
+            if (url.includes('drive.google.com') || url.includes('docs.google.com')) {
+                const fileIdMatch = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+                if (fileIdMatch) {
+                    return `https://drive.google.com/file/d/${fileIdMatch[1]}/preview`;
+                }
+                // If already in preview format, use as is
+                if (url.includes('/preview')) {
+                    return url;
+                }
+                return `${url}/preview`;
+            } else {
+                // Assume it's a file ID for Google Drive
+                return `https://drive.google.com/file/d/${url}/preview`;
+            }
+        } else {
+            // Regular PDF URL - use PDF.js viewer
+            return `https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent(url)}`;
+        }
+    };
+
+    const viewerUrl = getViewerUrl(fileurl);
+    const isDriveViewer = isGoogleDriveUrl(fileurl);
+
     // Web-based security measures (equivalent to React Native screen capture protection)
     useEffect(() => {
         // Disable right-click context menu
@@ -124,68 +156,132 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ fileurl }) => {
                 if (iframeDoc) {
                     // Inject CSS to hide download and print buttons
                     const style = iframeDoc.createElement('style');
-                    style.textContent = `
-                        /* Hide download button and other controls */
-                        #toolbarViewerRight,
-                        #download,
-                        #print,
-                        #openFile,
-                        .toolbarButton[title*="Download"],
-                        .toolbarButton[title*="Print"],
-                        .toolbarButton[title*="Save"],
-                        button[title*="Download"],
-                        button[title*="Print"],
-                        button[title*="Save"] {
-                            display: none !important;
-                        }
-                        
-                        /* Security: Disable text selection */
-                        * {
-                            -webkit-user-select: none !important;
-                            -moz-user-select: none !important;
-                            -ms-user-select: none !important;
-                            user-select: none !important;
-                            -webkit-touch-callout: none !important;
-                        }
-                        
-                        /* Disable right-click context menu */
-                        body {
-                            -webkit-touch-callout: none;
-                            -webkit-user-select: none;
-                            -khtml-user-select: none;
-                            -moz-user-select: none;
-                            -ms-user-select: none;
-                            user-select: none;
-                        }
-                    `;
+                    
+                    if (isDriveViewer) {
+                        // Google Drive specific styles
+                        style.textContent = `
+                            /* Hide Google Drive download and sharing buttons */
+                            [data-tooltip*="Download"],
+                            [data-tooltip*="Print"], 
+                            [aria-label*="Download"],
+                            [aria-label*="Print"],
+                            [aria-label*="Share"],
+                            [role="button"][aria-label*="Download"],
+                            [role="button"][aria-label*="Print"],
+                            [role="button"][aria-label*="Share"],
+                            .ndfHFb-c4YZDc-Wrql6b,
+                            .ndfHFb-c4YZDc-to915-LgbsSe,
+                            .a-s-fa-Ha-pa {
+                                display: none !important;
+                            }
+                            
+                            /* Security: Disable text selection */
+                            * {
+                                -webkit-user-select: none !important;
+                                -moz-user-select: none !important;
+                                -ms-user-select: none !important;
+                                user-select: none !important;
+                                -webkit-touch-callout: none !important;
+                            }
+                            
+                            /* Disable right-click context menu */
+                            body {
+                                -webkit-touch-callout: none;
+                                -webkit-user-select: none;
+                                -khtml-user-select: none;
+                                -moz-user-select: none;
+                                -ms-user-select: none;
+                                user-select: none;
+                            }
+                        `;
+                    } else {
+                        // PDF.js specific styles
+                        style.textContent = `
+                            /* Hide download button and other controls */
+                            #toolbarViewerRight,
+                            #download,
+                            #print,
+                            #openFile,
+                            .toolbarButton[title*="Download"],
+                            .toolbarButton[title*="Print"],
+                            .toolbarButton[title*="Save"],
+                            button[title*="Download"],
+                            button[title*="Print"],
+                            button[title*="Save"] {
+                                display: none !important;
+                            }
+                            
+                            /* Security: Disable text selection */
+                            * {
+                                -webkit-user-select: none !important;
+                                -moz-user-select: none !important;
+                                -ms-user-select: none !important;
+                                user-select: none !important;
+                                -webkit-touch-callout: none !important;
+                            }
+                            
+                            /* Disable right-click context menu */
+                            body {
+                                -webkit-touch-callout: none;
+                                -webkit-user-select: none;
+                                -khtml-user-select: none;
+                                -moz-user-select: none;
+                                -ms-user-select: none;
+                                user-select: none;
+                            }
+                        `;
+                    }
+                    
                     iframeDoc.head.appendChild(style);
 
                     // Also try to hide buttons with JavaScript
                     setTimeout(() => {
-                        const elementsToHide = [
-                            '#toolbarViewerRight',
-                            '#download',
-                            '#print',
-                            '#openFile',
-                            'button[title*="Download"]',
-                            'button[title*="Print"]',
-                            'button[title*="Save"]'
-                        ];
+                        if (isDriveViewer) {
+                            // Google Drive elements to hide
+                            const driveElementsToHide = [
+                                '[data-tooltip*="Download"]',
+                                '[data-tooltip*="Print"]', 
+                                '[aria-label*="Download"]',
+                                '[aria-label*="Print"]',
+                                '[aria-label*="Share"]',
+                                '[role="button"][aria-label*="Download"]',
+                                '[role="button"][aria-label*="Print"]',
+                                '[role="button"][aria-label*="Share"]'
+                            ];
 
-                        elementsToHide.forEach(selector => {
-                            const elements = iframeDoc.querySelectorAll(selector);
-                            elements.forEach(el => {
-                                (el as HTMLElement).style.display = 'none';
+                            driveElementsToHide.forEach(selector => {
+                                const elements = iframeDoc.querySelectorAll(selector);
+                                elements.forEach(el => {
+                                    (el as HTMLElement).style.display = 'none';
+                                });
                             });
-                        });
-                    }, 1000);
+                        } else {
+                            // PDF.js elements to hide
+                            const elementsToHide = [
+                                '#toolbarViewerRight',
+                                '#download',
+                                '#print',
+                                '#openFile',
+                                'button[title*="Download"]',
+                                'button[title*="Print"]',
+                                'button[title*="Save"]'
+                            ];
+
+                            elementsToHide.forEach(selector => {
+                                const elements = iframeDoc.querySelectorAll(selector);
+                                elements.forEach(el => {
+                                    (el as HTMLElement).style.display = 'none';
+                                });
+                            });
+                        }
+                    }, isDriveViewer ? 2000 : 1000); // Longer timeout for Google Drive
                 }
             } catch (error) {
                 // Cross-origin restrictions might prevent this
                 console.warn('Could not inject styles into iframe:', error);
             }
         }
-    }, []);
+    }, [isDriveViewer]);
 
     // Add security styles for the container
     React.useEffect(() => {
@@ -267,14 +363,16 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ fileurl }) => {
                 >
                     <div className="text-center">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
-                        <p className="text-gray-600">PDF લોડ થઈ રહ્યું છે...</p>
+                        <p className="text-gray-600">
+                            {isDriveViewer ? 'Google Drive દસ્તાવેજ લોડ થઈ રહ્યો છે...' : 'PDF લોડ થઈ રહ્યું છે...'}
+                        </p>
                     </div>
                 </div>
 
                 <iframe
                     ref={iframeRef}
                     className="pdf-viewer-iframe"
-                    src={`https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent(fileurl)}`}
+                    src={viewerUrl}
                     style={{
                         width: '100%',
                         height: '100%',
