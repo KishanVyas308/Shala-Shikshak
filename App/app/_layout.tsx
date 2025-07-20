@@ -35,7 +35,14 @@ export default function RootLayout() {
               gestureEnabled: false,
               headerTintColor: '#7c3aed',
             }} 
-            
+          />
+          <Stack.Screen 
+            name="select-standards" 
+            options={{
+              title: 'ધોરણ પસંદ કરો',
+              gestureEnabled: true,
+              headerTintColor: '#7c3aed',
+            }} 
           />
           <Stack.Screen 
             name="standard/[id]" 
@@ -54,9 +61,9 @@ export default function RootLayout() {
             }} 
           />
           <Stack.Screen 
-            name="chapter/[id]" 
+            name="pdf-viewer" 
             options={{
-              title: 'પ્રકરણ',
+              title: 'PDF વ્યૂઅર',
               gestureEnabled: true,
               headerTintColor: '#7c3aed',
             }} 

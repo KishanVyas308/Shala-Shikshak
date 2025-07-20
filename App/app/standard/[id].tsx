@@ -63,7 +63,7 @@ export default function StandardView() {
         showBack
         onBackPress={() => router.back()}
         rightAction={{
-          icon: 'information-circle-outline',
+          icon: 'bookmark-outline',
           onPress: () => {}
         }}
       />
@@ -75,57 +75,24 @@ export default function StandardView() {
         }
         showsVerticalScrollIndicator={false}
       >
-        
-        {/* Quick Stats */}
-        <View className="flex-row mx-4 my-6 gap-3">
-          <View className="flex-1 bg-white rounded-xl p-4 shadow-sm">
-            <View className="items-center">
-              <Text className="font-gujarati text-2xl font-bold text-accent-600">
-                {sortedSubjects.length}
-              </Text>
-              <Text className="font-gujarati text-secondary-600 text-sm">
-                વિષયો
-              </Text>
-            </View>
-          </View>
-          <View className="flex-1 bg-white rounded-xl p-4 shadow-sm">
-            <View className="items-center">
-              <Text className="font-gujarati text-2xl font-bold text-success-600">
-                {sortedSubjects.reduce((acc, subj) => acc + (subj._count?.chapters || 0), 0)}
-                 {sortedSubjects.reduce((acc, subj) => 
-                  acc + (subj.chapters?.length || 0), 0) || 0}
-              </Text>
-              <Text className="font-gujarati text-secondary-600 text-sm">
-                પ્રકરણો
-              </Text>
-            </View>
-          </View>
-        </View>
-        
-        {/* Subjects List Header */}
-        <View className="mx-4 mb-4">
-          <Text className="font-gujarati text-secondary-800 text-lg font-bold">
-            વિષયો
-          </Text>
-          <Text className="font-gujarati text-secondary-600 text-sm mt-1">
-            અભ્યાસ કરવા માટે વિષય પસંદ કરો
-          </Text>
-        </View>
+      
         
         {/* Subjects List */}
-        <View className="pb-6">
+        <View className="px-4 pb-6 my-4">
           {sortedSubjects.length > 0 ? (
-            sortedSubjects.map((subject) => (
-              <SubjectCard
-                key={subject.id}
-                id={subject.id}
-                name={subject.name}
-                description={subject.description}
-                chapterCount={subject.chapters?.length || 0}
-                standardName={standard.name}
-                onPress={() => router.push(`/subject/${subject.id}`)}
-              />
-            ))
+            <View className="flex-row flex-wrap justify-between">
+              {sortedSubjects.map((subject) => (
+                <SubjectCard
+                  key={subject.id}
+                  id={subject.id}
+                  name={subject.name}
+                  description={subject.description}
+                  chapterCount={subject.chapters?.length || 0}
+                  standardName={standard.name}
+                  onPress={() => router.push(`/subject/${subject.id}`)}
+                />
+              ))}
+            </View>
           ) : (
             <View className="mx-4 mt-8">
               <View className="bg-white rounded-2xl p-8 items-center">
