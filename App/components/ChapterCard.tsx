@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Alert, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { storageService } from '../services/storage';
 
 interface ChapterCardProps {
   id: string;
@@ -14,6 +15,7 @@ interface ChapterCardProps {
   textbookPdfUrl?: string;
   solutionPdfUrl?: string;
   onPress: () => void;
+  handleRemoveChapterBookmark?: () => void;
 }
 
 export default function ChapterCard({
@@ -26,9 +28,33 @@ export default function ChapterCard({
   videoUrl,
   textbookPdfUrl,
   solutionPdfUrl,
-  onPress
+  onPress,
+  handleRemoveChapterBookmark
 }: ChapterCardProps) {
+  const [isBookmarked, setIsBookmarked] = useState(false);
   const resourceCount = [hasVideo, hasTextbook, hasSolution].filter(Boolean).length;
+
+  useEffect(() => {
+    checkBookmarkStatus();
+  }, [id]);
+
+  const checkBookmarkStatus = async () => {
+    try {
+      const bookmarked = await storageService.isChapterBookmarked(id);
+      setIsBookmarked(bookmarked);
+    } catch (error) {
+      console.error('Error checking bookmark status:', error);
+    }
+  };
+
+  const handleBookmarkPress = async () => {
+    try {
+      const newBookmarkStatus = await storageService.toggleChapterBookmark(id);
+      setIsBookmarked(newBookmarkStatus);
+    } catch (error) {
+      Alert.alert('ભૂલ', 'બુકમાર્ક અપડેટ કરવામાં સમસ્યા આવી');
+    }
+  };
 
   const handleResourcePress = async (url: string, type: string) => {
     try {
@@ -53,13 +79,20 @@ export default function ChapterCard({
   };
 
   return (
-   
-
+  
       <View className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mx-4 mb-3">
-        {/* Arrow indicator */}
-        <View className="bg-gray-100 rounded-full absolute -top-3 right-3 p-2">
-          <Ionicons name="bookmark-outline" size={18} color="#6b7280" />
-        </View>
+        {/* Bookmark indicator */}
+        <TouchableOpacity
+          onPress={handleBookmarkPress}
+          className={`absolute top-3 right-3 rounded-full p-2 ${isBookmarked ? 'bg-purple-100' : 'bg-gray-100'}`}
+          activeOpacity={0.7}
+        >
+          <Ionicons 
+            name={isBookmarked ? "bookmark" : "bookmark-outline"} 
+            size={18} 
+            color={isBookmarked ? "#7c3aed" : "#6b7280"} 
+          />
+        </TouchableOpacity>
 
         {/* Left accent bar */}
         <View className="flex-row">
@@ -128,6 +161,7 @@ export default function ChapterCard({
               )}
             </View>
 
+       
           </View>
         </View>
       </View>
