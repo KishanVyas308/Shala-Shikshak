@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
-import { Plus, Edit2, Trash2, X, Save, BookOpen, Filter, GraduationCap, AlertTriangle } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Save, BookOpen, Filter, GraduationCap, AlertTriangle, Search } from 'lucide-react';
 import { standardsAPI } from '../../services/standards';
 import { subjectsAPI } from '../../services/subjects';
 import type { Subject } from '../../types';
@@ -92,6 +92,7 @@ const AdminSubjects: React.FC = () => {
   const [editingSubject, setEditingSubject] = useState<Subject | null>(null);
   const [selectedStandardId, setSelectedStandardId] = useState<string>('all');
   const [showFilters, setShowFilters] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const { data: standards = [] } = useQuery({
     queryKey: ['standards'],
@@ -111,18 +112,24 @@ const AdminSubjects: React.FC = () => {
     }))
   );
 
-  // Filter subjects based on selected standard and sort by created date (most recent first)
-  const filteredSubjects = (selectedStandardId === 'all' 
-    ? subjects 
-    : subjects.filter(subject => subject.standard?.id === selectedStandardId)
-  ).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  // Filter subjects based on selected standard, search query and sort by created date
+  const filteredSubjects = subjects
+    .filter(subject => {
+      const matchesStandard = selectedStandardId === 'all' || subject.standard?.id === selectedStandardId;
+      const matchesSearch = searchQuery === '' || 
+        subject.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (subject.description && subject.description.toLowerCase().includes(searchQuery.toLowerCase()));
+      return matchesStandard && matchesSearch;
+    })
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   const {
     register,
     handleSubmit,
     reset,
     setValue,
-    formState: { errors },
+    watch,
+    formState: { errors, isSubmitting },
   } = useForm<SubjectFormData>({
     resolver: zodResolver(subjectSchema),
   });
@@ -137,7 +144,7 @@ const AdminSubjects: React.FC = () => {
       reset();
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.error || 'વિષય બનાવવામાં નિષ્ફળ');
+      toast.error(error.response?.data?.message || error.message || 'વિષય બનાવવામાં નિષ્ફળ');
     },
   });
 
@@ -152,7 +159,8 @@ const AdminSubjects: React.FC = () => {
       reset();
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.error || 'વિષય અપડેટ કરવામાં નિષ્ફળ');
+      console.error('Update error:', error);
+      toast.error(error.response?.data?.message || error.message || 'વિષય અપડેટ કરવામાં નિષ્ફળ');
     },
   });
 
@@ -164,15 +172,19 @@ const AdminSubjects: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['standards-with-subjects'] });
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.error || 'વિષય ડિલીટ કરવામાં નિષ્ફળ');
+      toast.error(error.response?.data?.message || error.message || 'વિષય ડિલીટ કરવામાં નિષ્ફળ');
     },
   });
 
-  const onSubmit = (data: SubjectFormData) => {
-    if (editingSubject) {
-      updateMutation.mutate({ id: editingSubject.id, data });
-    } else {
-      createMutation.mutate(data);
+  const onSubmit = async (data: SubjectFormData) => {
+    try {
+      if (editingSubject) {
+        await updateMutation.mutateAsync({ id: editingSubject.id, data });
+      } else {
+        await createMutation.mutateAsync(data);
+      }
+    } catch (error) {
+      console.error('Form submission error:', error);
     }
   };
 
@@ -181,6 +193,7 @@ const AdminSubjects: React.FC = () => {
     setValue('name', subject.name);
     setValue('description', subject.description || '');
     setValue('standardId', subject.standardId);
+    setIsCreateModalOpen(true);
   };
 
   const handleDelete = (id: string) => {
@@ -193,6 +206,12 @@ const AdminSubjects: React.FC = () => {
     setIsCreateModalOpen(false);
     setEditingSubject(null);
     reset();
+  };
+
+  const openCreateModal = () => {
+    setEditingSubject(null);
+    reset();
+    setIsCreateModalOpen(true);
   };
 
   if (isLoading) {
@@ -242,24 +261,26 @@ const AdminSubjects: React.FC = () => {
             {/* Mobile Floating Action Button */}
             <div className="sm:hidden">
               <button
-                onClick={() => setIsCreateModalOpen(true)}
+                onClick={openCreateModal}
                 className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 flex items-center justify-center z-40"
               >
                 <Plus className="h-6 w-6" />
+              </button>
+              
+              {/* Mobile Filter Button */}
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className="flex items-center justify-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-all duration-200 w-full"
+              >
+                <Filter className="h-4 w-4 mr-2" />
+                ફિલ્ટર {showFilters ? 'છુપાવો' : 'બતાવો'}
               </button>
             </div>
             
             {/* Desktop Add Button */}
             <div className="hidden sm:flex flex-col sm:flex-row gap-3">
               <button
-                onClick={() => setShowFilters(!showFilters)}
-                className="sm:hidden inline-flex items-center justify-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-all duration-200"
-              >
-                <Filter className="h-4 w-4 mr-2" />
-                ફિલ્ટર
-              </button>
-              <button
-                onClick={() => setIsCreateModalOpen(true)}
+                onClick={openCreateModal}
                 className="inline-flex items-center justify-center px-4 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
               >
                 <Plus className="h-4 w-4 mr-2" />
@@ -270,37 +291,36 @@ const AdminSubjects: React.FC = () => {
         </div>
 
         {/* Mobile Filter Toggle */}
-        <div className={`sm:hidden transition-all duration-300 ${showFilters ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
-          <div className="bg-white rounded-xl shadow-lg p-4 mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              ધોરણ પસંદ કરો
-            </label>
-            <select
-              value={selectedStandardId}
-              onChange={(e) => setSelectedStandardId(e.target.value)}
-              className="block w-full border border-gray-300 rounded-xl shadow-sm px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-gray-50"
-            >
-              <option value="all">બધા ધોરણો</option>
-              {standards.map((standard) => (
-                <option key={standard.id} value={standard.id}>
-                  {standard.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {/* Desktop Filter */}
-        <div className="hidden sm:block mb-6">
-          <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-              <label className="text-sm font-medium text-gray-700 shrink-0">
-                ધોરણ પસંદ કરો:
+        <div className={`sm:hidden transition-all duration-300 ${showFilters ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
+          <div className="bg-white rounded-xl shadow-lg p-4 mb-6 space-y-4">
+            {/* Search */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                વિષય શોધો
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Search className="h-4 w-4 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="વિષય શોધો..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-gray-50"
+                />
+              </div>
+            </div>
+            
+            {/* Standard Filter */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                ધોરણ પસંદ કરો
               </label>
               <select
                 value={selectedStandardId}
                 onChange={(e) => setSelectedStandardId(e.target.value)}
-                className="block w-full sm:max-w-xs border border-gray-300 rounded-xl shadow-sm px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="block w-full border border-gray-300 rounded-xl shadow-sm px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-gray-50"
               >
                 <option value="all">બધા ધોરણો</option>
                 {standards.map((standard) => (
@@ -309,14 +329,73 @@ const AdminSubjects: React.FC = () => {
                   </option>
                 ))}
               </select>
-              {selectedStandardId !== 'all' && (
-                <button
-                  onClick={() => setSelectedStandardId('all')}
-                  className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
+            </div>
+            
+            {/* Reset Button */}
+            {(selectedStandardId !== 'all' || searchQuery) && (
+              <button
+                onClick={() => {
+                  setSelectedStandardId('all');
+                  setSearchQuery('');
+                  setShowFilters(false);
+                }}
+                className="w-full text-sm text-indigo-600 hover:text-indigo-800 font-medium py-2"
+              >
+                રીસેટ કરો
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Desktop Filter */}
+        <div className="hidden sm:block mb-6">
+          <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
+            <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+              {/* Search */}
+              <div className="flex-1">
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Search className="h-4 w-4 text-gray-400" />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="વિષય શોધો..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+              </div>
+              
+              {/* Standard Filter */}
+              <div className="flex items-center gap-4">
+                <label className="text-sm font-medium text-gray-700 shrink-0">
+                  ધોરણ:
+                </label>
+                <select
+                  value={selectedStandardId}
+                  onChange={(e) => setSelectedStandardId(e.target.value)}
+                  className="block w-full sm:max-w-xs border border-gray-300 rounded-xl shadow-sm px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 >
-                  બધા બતાવો
-                </button>
-              )}
+                  <option value="all">બધા ધોરણો</option>
+                  {standards.map((standard) => (
+                    <option key={standard.id} value={standard.id}>
+                      {standard.name}
+                    </option>
+                  ))}
+                </select>
+                {(selectedStandardId !== 'all' || searchQuery) && (
+                  <button
+                    onClick={() => {
+                      setSelectedStandardId('all');
+                      setSearchQuery('');
+                    }}
+                    className="text-sm text-indigo-600 hover:text-indigo-800 font-medium whitespace-nowrap"
+                  >
+                    રીસેટ કરો
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>

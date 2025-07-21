@@ -11,7 +11,7 @@ import Login from './pages/Login'
 import AdminDashboard from './pages/admin/Dashboard'
 import AdminStandards from './pages/admin/Standards'
 import AdminSubjects from './pages/admin/Subjects'
-import AdminChapters from './pages/admin/Chapters'
+import AdminChapters from './pages/admin/ChaptersNew'
 import ProtectedRoute from './components/ProtectedRoute'
 
 
