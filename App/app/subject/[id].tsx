@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, RefreshControl } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, TextInput, RefreshControl, Alert } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { subjectsAPI } from '../../services/subjects';
+import { storageService } from '../../services/storage';
 import Header from '../../components/Header';
 import ChapterCard from '../../components/ChapterCard';
 import LoadingState from '../../components/LoadingState';
@@ -13,12 +14,31 @@ export default function SubjectView() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'video' | 'pdf'>('all');
+  const [isBookmarked, setIsBookmarked] = useState(false);
 
   const { data: subject, isLoading, error, refetch } = useQuery({
     queryKey: ['subjects', id],
     queryFn: () => subjectsAPI.getById(id!),
     enabled: !!id,
   });
+
+  // Check bookmark status
+  useEffect(() => {
+    const checkBookmarkStatus = async () => {
+      if (subject) {
+        const bookmarked = await storageService.isSubjectBookmarked(subject.id);
+        setIsBookmarked(bookmarked);
+      }
+    };
+    checkBookmarkStatus();
+  }, [subject]);
+
+  const handleBookmarkPress = async () => {
+    if (subject) {
+      await storageService.toggleSubjectBookmark(subject.id);
+      setIsBookmarked(!isBookmarked);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -75,8 +95,8 @@ export default function SubjectView() {
         showBack
         onBackPress={() => router.back()}
         rightAction={{
-           icon: 'bookmark-outline',
-          onPress: () => {}
+          icon: isBookmarked ? 'bookmark' : 'bookmark-outline',
+          onPress: handleBookmarkPress
         }}
       />
       
@@ -105,7 +125,7 @@ export default function SubjectView() {
                 videoUrl={chapter.videoUrl}
                 textbookPdfUrl={chapter.textbookPdfUrl}
                 solutionPdfUrl={chapter.solutionPdfUrl}
-                onPress={() => router.push(`/chapter/${chapter.id}`)}
+                onPress={() => {}}
               />
             ))
           ) : (

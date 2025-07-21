@@ -45,6 +45,14 @@ export default function RootLayout() {
             }} 
           />
           <Stack.Screen 
+            name="bookmarks" 
+            options={{
+              title: 'બુકમાર્ક્સ',
+              gestureEnabled: true,
+              headerTintColor: '#7c3aed',
+            }} 
+          />
+          <Stack.Screen 
             name="standard/[id]" 
             options={{
               title: 'વિષયો',
