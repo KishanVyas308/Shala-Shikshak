@@ -16,13 +16,13 @@ router.get('/', async (req, res) => {
           include: {
             chapters: {
               orderBy: { createdAt: 'desc' },
-              select: {
-                id: true,
-                name: true,
-                videoUrl: true,
-                solutionPdfUrl: true,
-                textbookPdfUrl: true,
-              },
+              include: {
+                _count: {
+                  select: {
+                    resources: true,
+                  }
+                }
+              }
             },
           },
         },
@@ -250,13 +250,13 @@ router.put('/batch/reorder', authenticateToken, async (req, res) => {
           include: {
             chapters: {
               orderBy: { createdAt: 'asc' },
-              select: {
-                id: true,
-                name: true,
-                videoUrl: true,
-                solutionPdfUrl: true,
-                textbookPdfUrl: true,
-              },
+              include: {
+                _count: {
+                  select: {
+                    resources: true,
+                  }
+                }
+              }
             },
           },
         },

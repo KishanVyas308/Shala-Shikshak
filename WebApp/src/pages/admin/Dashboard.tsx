@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { BookOpen, Users, Video, FileText, Plus, TrendingUp, Calendar, Activity } from 'lucide-react';
+import { BookOpen, Users, Video, FileText, Plus, TrendingUp, Calendar, Activity, Settings } from 'lucide-react';
 import { standardsAPI } from '../../services/standards';
 
 const AdminDashboard: React.FC = () => {
@@ -16,10 +16,34 @@ const AdminDashboard: React.FC = () => {
   const totalChapters = standardsArray.reduce((acc, standard) => 
     acc + (standard.subjects?.reduce((subAcc, subject) => subAcc + (subject.chapters?.length || 0), 0) || 0), 0
   );
-  const totalVideos = standardsArray.reduce((acc, standard) => 
+  const totalResources = standardsArray.reduce((acc, standard) => 
     acc + (standard.subjects?.reduce((subAcc, subject) => 
-      subAcc + (subject.chapters?.filter(chapter => chapter.videoUrl).length || 0), 0) || 0), 0
+      subAcc + (subject.chapters?.reduce((chapterAcc, chapter) => 
+        chapterAcc + (chapter._count?.resources || 0), 0) || 0), 0) || 0), 0
   );
+
+  // Calculate resource counts by type
+  const getResourceCountsByType = () => {
+    let svadhyay = 0;
+    let svadhyay_pothi = 0;
+    let other = 0;
+
+    standardsArray.forEach(standard => {
+      standard.subjects?.forEach(subject => {
+        subject.chapters?.forEach(chapter => {
+          chapter.resources?.forEach(resource => {
+            if (resource.type === 'svadhyay') svadhyay++;
+            else if (resource.type === 'svadhyay_pothi') svadhyay_pothi++;
+            else if (resource.type === 'other') other++;
+          });
+        });
+      });
+    });
+
+    return { svadhyay, svadhyay_pothi, other };
+  };
+
+  const resourceCounts = getResourceCountsByType();
 
   const stats = [
     {
@@ -53,8 +77,8 @@ const AdminDashboard: React.FC = () => {
       trend: '+15%'
     },
     {
-      name: 'Videos',
-      value: totalVideos,
+      name: 'Resources',
+      value: totalResources,
       icon: Video,
       color: 'from-red-500 to-red-600',
       bgColor: 'bg-red-50',
@@ -66,25 +90,32 @@ const AdminDashboard: React.FC = () => {
 
   const quickActions = [
     {
-      name: 'Add Standard',
+      name: 'Manage Standard',
       description: 'Create a new standard',
       icon: Users,
       link: '/admin/standards',
       color: 'bg-blue-600 hover:bg-blue-700'
     },
     {
-      name: 'Add Subject',
+      name: 'Manage Subject',
       description: 'Create a new subject',
       icon: BookOpen,
       link: '/admin/subjects',
       color: 'bg-emerald-600 hover:bg-emerald-700'
     },
     {
-      name: 'Add Chapter',
+      name: 'Manage Chapter',
       description: 'Create a new chapter',
       icon: FileText,
       link: '/admin/chapters',
       color: 'bg-purple-600 hover:bg-purple-700'
+    },
+    {
+      name: 'Resource Categories',
+      description: 'Manage svadhyay, pothi & other resources',
+      icon: Video,
+      link: '/admin/chapters',
+      color: 'bg-red-600 hover:bg-red-700'
     },
   ];
 
@@ -266,6 +297,7 @@ const AdminDashboard: React.FC = () => {
             </div>
           </div>
         </div>
+
       </div>
     </div>
   );

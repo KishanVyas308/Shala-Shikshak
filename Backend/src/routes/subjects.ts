@@ -18,10 +18,17 @@ router.get('/standard/:standardId', async (req, res) => {
           select: {
             id: true,
             name: true,
-            videoUrl: true,
-            solutionPdfUrl: true,
-            textbookPdfUrl: true,
+            description: true,
           },
+          include: {
+            resources: {
+              select: {
+                id: true,
+                type: true,
+                resourceType: true,
+              }
+            }
+          }
         },
         standard: {
           select: {

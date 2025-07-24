@@ -24,16 +24,28 @@ class PDFErrorBoundary extends React.Component<
     render() {
         if (this.state.hasError) {
             return (
-                <div className="flex items-center justify-center h-full bg-gray-100">
-                    <div className="text-center">
-                        <p className="text-red-500 mb-2">PDF લોડ કરવામાં સમસ્યા</p>
-                        <p className="text-gray-500 text-sm">કૃપા કરીને પાછળથી પ્રયાસ કરો</p>
-                        <button 
-                            onClick={() => this.setState({ hasError: false })}
-                            className="mt-2 px-3 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600"
-                        >
-                            ફરીથી પ્રયાસ કરો
-                        </button>
+                <div className="flex items-center justify-center h-full bg-gradient-to-br from-red-50 to-orange-50 rounded-xl">
+                    <div className="text-center p-6">
+                        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5C2.962 18.333 3.924 20 5.464 20z" />
+                            </svg>
+                        </div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">PDF લોડ કરવામાં સમસ્યા</h3>
+                        <p className="text-gray-600 text-sm mb-4 max-w-sm mx-auto leading-relaxed">
+                            આ દસ્તાવેજ લોડ કરવામાં તકનીકી સમસ્યા આવી રહી છે. કૃપા કરીને પાછળથી પ્રયાસ કરો.
+                        </p>
+                        <div className="space-y-2">
+                            <button 
+                                onClick={() => this.setState({ hasError: false })}
+                                className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg font-medium hover:from-red-700 hover:to-red-800 transition-all duration-300 transform hover:scale-105"
+                            >
+                                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                                ફરીથી પ્રયાસ કરો
+                            </button>
+                        </div>
                     </div>
                 </div>
             );
@@ -336,8 +348,16 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ fileurl }) => {
     if (!fileurl || typeof fileurl !== 'string') {
         return (
             <PDFErrorBoundary>
-                <div className="flex items-center justify-center h-full bg-gray-100">
-                    <p className="text-gray-500">PDF URL અમાન્ય છે</p>
+                <div className="flex items-center justify-center h-full bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl">
+                    <div className="text-center p-6">
+                        <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                        </div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">અમાન્ય PDF લિંક</h3>
+                        <p className="text-gray-600 text-sm">આ PDF લિંક યોગ્ય ફોર્મેટમાં નથી</p>
+                    </div>
                 </div>
             </PDFErrorBoundary>
         );
@@ -354,18 +374,29 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ fileurl }) => {
                     position: 'relative'
                 }}
             >
-                {/* Loading overlay */}
+                {/* Enhanced loading overlay */}
                 <div 
-                    className="absolute inset-0 flex items-center justify-center bg-gray-100 z-10"
+                    className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50 z-10 rounded-xl"
                     style={{ 
                         transition: 'opacity 0.3s ease-in-out'
                     }}
                 >
-                    <div className="text-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
-                        <p className="text-gray-600">
+                    <div className="text-center p-6">
+                        <div className="relative mb-4">
+                            <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600 mx-auto"></div>
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <svg className="w-6 h-6 text-blue-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                            </div>
+                        </div>
+                        <h3 className="text-lg font-semibold text-blue-700 mb-2">
                             {isDriveViewer ? 'Google Drive દસ્તાવેજ લોડ થઈ રહ્યો છે...' : 'PDF લોડ થઈ રહ્યું છે...'}
-                        </p>
+                        </h3>
+                        <p className="text-blue-600 text-sm">કૃપા કરીને થોડી રાહ જુઓ</p>
+                        <div className="mt-4 w-48 bg-blue-200 rounded-full h-2 mx-auto">
+                            <div className="bg-blue-600 h-2 rounded-full animate-pulse" style={{ width: '60%' }}></div>
+                        </div>
                     </div>
                 </div>
 

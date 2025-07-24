@@ -10,6 +10,7 @@ import authRoutes from './routes/auth';
 import standardRoutes from './routes/standards';
 import subjectRoutes from './routes/subjects';
 import chapterRoutes from './routes/chapters';
+import chapterResourceRoutes from './routes/chapterResources';
 import uploadRoutes from './routes/upload';
 
 // Load environment variables
@@ -116,6 +117,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/standards', standardRoutes);
 app.use('/api/subjects', subjectRoutes);
 app.use('/api/chapters', chapterRoutes);
+app.use('/api/chapter-resources', chapterResourceRoutes);
 app.use('/api/upload', uploadRoutes);
 
 // Health check endpoint

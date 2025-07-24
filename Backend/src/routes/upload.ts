@@ -24,7 +24,7 @@ const upload = multer({
   storage,
   fileFilter,
   limits: {
-    fileSize: 50 * 1024 * 1024, // 50MB limit
+    fileSize: 30 * 1024 * 1024, // 30MB limit
   },
 });
 
@@ -106,127 +106,6 @@ router.get('/files', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('List files error:', error);
     res.status(500).json({ error: 'Failed to list files' });
-  }
-});
-
-// Upload PDF directly to a chapter (admin only)
-router.post('/chapter/:chapterId/pdf', authenticateToken, upload.single('pdf'), async (req, res) => {
-  try {
-    const { chapterId } = req.params;
-    const { type } = req.body; // 'solution' or 'textbook'
-
-    if (!req.file) {
-      return res.status(400).json({ error: 'No file uploaded' });
-    }
-
-    if (!type || !['solution', 'textbook'].includes(type)) {
-      return res.status(400).json({ error: 'Type must be either "solution" or "textbook"' });
-    }
-
-    // Check if chapter exists
-    const chapter = await prisma.chapter.findUnique({
-      where: { id: chapterId },
-    });
-
-    if (!chapter) {
-      return res.status(404).json({ error: 'Chapter not found' });
-    }
-
-    // Generate unique filename with chapter info
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const ext = path.extname(req.file.originalname);
-    const fileName = `chapter-${chapterId}-${type}-${uniqueSuffix}${ext}`;
-
-    // Save file locally
-    const localFile = await fileService.uploadPDF(
-      req.file.buffer,
-      fileName,
-      req.file.originalname
-    );
-
-    // Delete old file if it exists
-    const oldFileUrl = type === 'solution' ? chapter.solutionPdfUrl : chapter.textbookPdfUrl;
-    if (oldFileUrl) {
-      try {
-        await fileService.deleteFile(oldFileUrl);
-      } catch (deleteError) {
-        console.warn('Failed to delete old file:', deleteError);
-      }
-    }
-
-    // Update chapter in database
-    const updateData = type === 'solution' 
-      ? { solutionPdfUrl: localFile.url }
-      : { textbookPdfUrl: localFile.url };
-
-    const updatedChapter = await prisma.chapter.update({
-      where: { id: chapterId },
-      data: updateData,
-    });
-
-    res.json({
-      message: `${type} PDF uploaded successfully to chapter`,
-      chapter: updatedChapter,
-      file: {
-        fileId: localFile.id,
-        fileName: localFile.name,
-        originalName: req.file.originalname,
-        size: localFile.size,
-        url: localFile.url,
-        type,
-      },
-    });
-  } catch (error) {
-    console.error('Chapter PDF upload error:', error);
-    res.status(500).json({ error: 'Chapter PDF upload failed' });
-  }
-});
-
-// Delete PDF from a chapter (admin only)
-router.delete('/chapter/:chapterId/pdf/:type', authenticateToken, async (req, res) => {
-  try {
-    const { chapterId, type } = req.params;
-
-    if (!['solution', 'textbook'].includes(type)) {
-      return res.status(400).json({ error: 'Type must be either "solution" or "textbook"' });
-    }
-
-    // Check if chapter exists
-    const chapter = await prisma.chapter.findUnique({
-      where: { id: chapterId },
-    });
-
-    if (!chapter) {
-      return res.status(404).json({ error: 'Chapter not found' });
-    }
-
-    // Get file URL to delete
-    const fileUrl = type === 'solution' ? chapter.solutionPdfUrl : chapter.textbookPdfUrl;
-
-    if (!fileUrl) {
-      return res.status(404).json({ error: `No ${type} PDF found for this chapter` });
-    }
-
-    // Delete file locally
-    await fileService.deleteFile(fileUrl);
-
-    // Update chapter in database (remove the URL)
-    const updateData = type === 'solution' 
-      ? { solutionPdfUrl: null }
-      : { textbookPdfUrl: null };
-
-    const updatedChapter = await prisma.chapter.update({
-      where: { id: chapterId },
-      data: updateData,
-    });
-
-    res.json({
-      message: `${type} PDF deleted successfully from chapter`,
-      chapter: updatedChapter,
-    });
-  } catch (error) {
-    console.error('Chapter PDF delete error:', error);
-    res.status(500).json({ error: 'Chapter PDF deletion failed' });
   }
 });
 

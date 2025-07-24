@@ -37,26 +37,36 @@ export const subjectUpdateSchema = Joi.object({
   description: Joi.string().allow('').optional(),
 });
 
-// Chapter validation schemas
+// Chapter validation schemas (simplified)
 export const chapterSchema = Joi.object({
   name: Joi.string().min(1).max(200).required(),
   description: Joi.string().allow('').optional(),
   subjectId: Joi.string().required(),
-  videoUrl: Joi.string().uri().allow('').optional(),
-  solutionPdfUrl: Joi.string().allow('').optional(),
-  solutionPdfFileName: Joi.string().allow('').optional(),
-  textbookPdfUrl: Joi.string().allow('').optional(),
-  textbookPdfFileName: Joi.string().allow('').optional(),
 });
 
 export const chapterUpdateSchema = Joi.object({
   name: Joi.string().min(1).max(200).optional(),
   description: Joi.string().allow('').optional(),
-  videoUrl: Joi.string().uri().allow('').optional(),
-  solutionPdfUrl: Joi.string().allow('').optional(),
-  solutionPdfFileName: Joi.string().allow('').optional(),
-  textbookPdfUrl: Joi.string().allow('').optional(),
-  textbookPdfFileName: Joi.string().allow('').optional(),
+});
+
+// Chapter Resource validation schemas
+export const chapterResourceSchema = Joi.object({
+  title: Joi.string().min(1).max(200).required(),
+  description: Joi.string().allow('').optional(),
+  type: Joi.string().valid('svadhyay', 'svadhyay_pothi', 'other').required(),
+  resourceType: Joi.string().valid('video', 'pdf').required(),
+  url: Joi.string().uri().optional(), // Made optional for file uploads
+  fileName: Joi.string().allow('').optional(),
+  chapterId: Joi.string().required(),
+});
+
+export const chapterResourceUpdateSchema = Joi.object({
+  title: Joi.string().min(1).max(200).optional(),
+  description: Joi.string().allow('').optional(),
+  type: Joi.string().valid('svadhyay', 'svadhyay_pothi', 'other').optional(),
+  resourceType: Joi.string().valid('video', 'pdf').optional(),
+  url: Joi.string().uri().optional(),
+  fileName: Joi.string().allow('').optional(),
 });
 
 // YouTube URL validation
