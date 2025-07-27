@@ -65,7 +65,7 @@ const SubjectView: React.FC = () => {
     );
   }
 
-  const sortedChapters = [...(subject.chapters || [])].sort((a, b) => {
+  const sortedChapters: Chapter[] = [...(subject.chapters || [])].sort((a, b) => {
     const aDate = new Date(a.createdAt || 0);
     const bDate = new Date(b.createdAt || 0);
     return bDate.getTime() - aDate.getTime(); // Most recent first

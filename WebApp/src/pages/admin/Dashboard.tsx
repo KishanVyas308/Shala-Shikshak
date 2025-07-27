@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { BookOpen, Users, Video, FileText, Plus, TrendingUp, Calendar, Activity, Settings } from 'lucide-react';
+import { BookOpen, Users, Video, FileText, Plus, TrendingUp, Calendar, Activity } from 'lucide-react';
 import { standardsAPI } from '../../services/standards';
 
 const AdminDashboard: React.FC = () => {
@@ -22,28 +22,8 @@ const AdminDashboard: React.FC = () => {
         chapterAcc + (chapter._count?.resources || 0), 0) || 0), 0) || 0), 0
   );
 
-  // Calculate resource counts by type
-  const getResourceCountsByType = () => {
-    let svadhyay = 0;
-    let svadhyay_pothi = 0;
-    let other = 0;
 
-    standardsArray.forEach(standard => {
-      standard.subjects?.forEach(subject => {
-        subject.chapters?.forEach(chapter => {
-          chapter.resources?.forEach(resource => {
-            if (resource.type === 'svadhyay') svadhyay++;
-            else if (resource.type === 'svadhyay_pothi') svadhyay_pothi++;
-            else if (resource.type === 'other') other++;
-          });
-        });
-      });
-    });
 
-    return { svadhyay, svadhyay_pothi, other };
-  };
-
-  const resourceCounts = getResourceCountsByType();
 
   const stats = [
     {
