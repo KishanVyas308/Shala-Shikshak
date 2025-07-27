@@ -7,51 +7,51 @@ import { adminLoginSchema, adminRegisterSchema } from '../utils/validation';
 const router = express.Router();
 
 // Register admin (for development - remove in production)
-router.post('/register', async (req, res) => {
-  try {
-    const { error, value } = adminRegisterSchema.validate(req.body);
-    if (error) {
-      return res.status(400).json({ error: error.details[0].message });
-    }
+// router.post('/register', async (req, res) => {
+//   try {
+//     const { error, value } = adminRegisterSchema.validate(req.body);
+//     if (error) {
+//       return res.status(400).json({ error: error.details[0].message });
+//     }
 
-    const { name, email, password } = value;
+//     const { name, email, password } = value;
 
-    // Check if admin already exists
-    const existingAdmin = await prisma.admin.findUnique({
-      where: { email },
-    });
+//     // Check if admin already exists
+//     const existingAdmin = await prisma.admin.findUnique({
+//       where: { email },
+//     });
 
-    if (existingAdmin) {
-      return res.status(400).json({ error: 'Admin already exists with this email' });
-    }
+//     if (existingAdmin) {
+//       return res.status(400).json({ error: 'Admin already exists with this email' });
+//     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 12);
+//     // Hash password
+//     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Create admin
-    const admin = await prisma.admin.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        createdAt: true,
-      },
-    });
+//     // Create admin
+//     const admin = await prisma.admin.create({
+//       data: {
+//         name,
+//         email,
+//         password: hashedPassword,
+//       },
+//       select: {
+//         id: true,
+//         name: true,
+//         email: true,
+//         createdAt: true,
+//       },
+//     });
 
-    res.status(201).json({
-      message: 'Admin registered successfully',
-      admin,
-    });
-  } catch (error) {
-    console.error('Register error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
+//     res.status(201).json({
+//       message: 'Admin registered successfully',
+//       admin,
+//     });
+//   } catch (error) {
+//     console.error('Register error:', error);
+//     res.status(500).json({ error: 'Internal server error' });
+//   }
+// });
 
 // Login admin
 router.post('/login', async (req, res) => {
