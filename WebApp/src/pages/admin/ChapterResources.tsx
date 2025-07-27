@@ -28,7 +28,7 @@ import PDFViewer from '../../components/PDFViewer';
 import type { ChapterResource } from '../../types';
 
 const resourceSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
+  title: z.string().min(1, 'શીર્ષક આવશ્યક છે'),
   description: z.string().optional(),
   type: z.enum(['svadhyay', 'svadhyay_pothi', 'other']),
   resourceType: z.enum(['video', 'pdf']),
@@ -48,7 +48,7 @@ const resourceSchema = z.object({
   // For PDFs, either URL or fileName should be present (handled in form logic)
   return true;
 }, {
-  message: 'Please provide a valid YouTube URL for video resources',
+  message: 'કૃપા કરીને વિડિયો સંસાધનો માટે માન્ય YouTube URL પ્રદાન કરો',
   path: ['url'],
 });
 
@@ -72,19 +72,39 @@ const ResourceCard = ({
   onEdit, 
   onDelete,
   onPreview,
-  onRemoveFile
+  onRemoveFile,
+  isLoading = false,
+  loadingAction = null
 }: { 
   resource: ChapterResource; 
   onEdit: (resource: ChapterResource) => void;
   onDelete: (id: string) => void;
   onPreview: (resource: ChapterResource) => void;
   onRemoveFile: (resource: ChapterResource) => void;
+  isLoading?: boolean;
+  loadingAction?: 'delete' | 'removeFile' | 'create' | 'update' | 'upload' | null;
 }) => {
   const hasUploadedFile = resource.fileName && resource.url;
   const hasExternalUrl = resource.url && !resource.fileName;
 
   return (
-    <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+    <div className={`bg-white rounded-xl shadow-lg border border-gray-100 p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${isLoading ? 'opacity-70 pointer-events-none' : ''}`}>
+      {/* Loading Overlay */}
+      {isLoading && (
+        <div className="absolute inset-0 bg-white/80 rounded-xl flex items-center justify-center z-10">
+          <div className="flex flex-col items-center space-y-2">
+            <div className="animate-spin rounded-full h-8 w-8 border-2 border-purple-200 border-t-purple-600"></div>
+            <span className="text-sm font-medium text-purple-700">
+              {loadingAction === 'delete' ? 'દૂર કરી રહ્યા છીએ...' : 
+               loadingAction === 'removeFile' ? 'ફાઇલ દૂર કરી રહ્યા છીએ...' :
+               loadingAction === 'create' ? 'બનાવી રહ્યા છીએ...' :
+               loadingAction === 'update' ? 'અપડેટ કરી રહ્યા છીએ...' :
+               loadingAction === 'upload' ? 'અપલોડ કરી રહ્યા છીએ...' : 'પ્રક્રિયા ચાલુ છે...'}
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Header with Type Icons */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center space-x-3">
@@ -139,10 +159,15 @@ const ResourceCard = ({
                   <span className="text-sm font-medium text-green-700">અપલોડ કરેલ ફાઇલ</span>
                   <button
                     onClick={() => onRemoveFile(resource)}
-                    className="ml-2 p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded transition-all duration-200"
+                    disabled={isLoading}
+                    className="ml-2 p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     title="ફાઇલ દૂર કરો"
                   >
-                    <X className="w-3 h-3" />
+                    {isLoading && loadingAction === 'removeFile' ? (
+                      <div className="animate-spin rounded-full h-3 w-3 border border-red-400 border-t-transparent"></div>
+                    ) : (
+                      <X className="w-3 h-3" />
+                    )}
                   </button>
                 </>
               ) : hasExternalUrl ? (
@@ -178,7 +203,8 @@ const ResourceCard = ({
         <div className="space-y-2">
           <button
             onClick={() => onPreview(resource)}
-            className="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 py-2 px-4 rounded-lg text-sm font-medium transition-colors flex items-center justify-center space-x-2"
+            disabled={isLoading}
+            className="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 py-2 px-4 rounded-lg text-sm font-medium transition-colors flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Eye className="w-4 h-4" />
             <span>પૂર્વાવલોકન</span>
@@ -187,7 +213,8 @@ const ResourceCard = ({
           <div className="grid grid-cols-2 gap-2">
             <button
               onClick={() => onEdit(resource)}
-              className="bg-amber-50 hover:bg-amber-100 text-amber-700 py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center space-x-1"
+              disabled={isLoading}
+              className="bg-amber-50 hover:bg-amber-100 text-amber-700 py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center space-x-1 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Edit className="w-4 h-4" />
               <span>સંપાદિત કરો</span>
@@ -195,9 +222,14 @@ const ResourceCard = ({
             
             <button
               onClick={() => onDelete(resource.id)}
-              className="bg-red-50 hover:bg-red-100 text-red-700 py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center space-x-1"
+              disabled={isLoading}
+              className="bg-red-50 hover:bg-red-100 text-red-700 py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center space-x-1 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Trash2 className="w-4 h-4" />
+              {isLoading && loadingAction === 'delete' ? (
+                <div className="animate-spin rounded-full h-4 w-4 border border-red-700 border-t-transparent"></div>
+              ) : (
+                <Trash2 className="w-4 h-4" />
+              )}
               <span>દૂર કરો</span>
             </button>
           </div>
@@ -216,6 +248,8 @@ const ChapterResourcesPage: React.FC = () => {
   const [previewResource, setPreviewResource] = useState<ChapterResource | null>(null);
   const [uploadMode, setUploadMode] = useState<'url' | 'file'>('url');
   const [uploadingFile, setUploadingFile] = useState(false);
+  const [loadingResourceId, setLoadingResourceId] = useState<string | null>(null);
+  const [loadingAction, setLoadingAction] = useState<'delete' | 'removeFile' | 'create' | 'update' | 'upload' | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: chapter } = useQuery({
@@ -233,51 +267,83 @@ const ChapterResourcesPage: React.FC = () => {
   const createMutation = useMutation({
     mutationFn: ({ data, file }: { data: any; file?: File }) => 
       chapterResourcesAPI.create(data, file),
+    onMutate: () => {
+      setLoadingResourceId('create');
+      setLoadingAction('create');
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['chapter-resources-grouped', chapterId] });
       setIsModalOpen(false);
       reset();
-      toast.success('Resource created successfully');
+      toast.success('સંસાધન સફળતાપૂર્વક બનાવવામાં આવ્યું');
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.error || 'Failed to create resource');
+      toast.error(error.response?.data?.error || 'સંસાધન બનાવવામાં નિષ્ફળ');
+    },
+    onSettled: () => {
+      setLoadingResourceId(null);
+      setLoadingAction(null);
     },
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data, file }: { id: string; data: Partial<ResourceFormData>; file?: File }) =>
       chapterResourcesAPI.update(id, data, file),
+    onMutate: () => {
+      setLoadingResourceId('update');
+      setLoadingAction('update');
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['chapter-resources-grouped', chapterId] });
       setIsModalOpen(false);
       setEditingResource(null);
       reset();
-      toast.success('Resource updated successfully');
+      toast.success('સંસાધન સફળતાપૂર્વક અપડેટ થયું');
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.error || 'Failed to update resource');
+      toast.error(error.response?.data?.error || 'સંસાધન અપડેટ કરવામાં નિષ્ફળ');
+    },
+    onSettled: () => {
+      setLoadingResourceId(null);
+      setLoadingAction(null);
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: chapterResourcesAPI.delete,
+    onMutate: (id: string) => {
+      setLoadingResourceId(id);
+      setLoadingAction('delete');
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['chapter-resources-grouped', chapterId] });
-      toast.success('Resource deleted successfully');
+      toast.success('સંસાધન સફળતાપૂર્વક દૂર કરવામાં આવ્યું');
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.error || 'Failed to delete resource');
+      toast.error(error.response?.data?.error || 'સંસાધન દૂર કરવામાં નિષ્ફળ');
+    },
+    onSettled: () => {
+      setLoadingResourceId(null);
+      setLoadingAction(null);
     },
   });
 
   const removeFileMutation = useMutation({
     mutationFn: chapterResourcesAPI.removeFile,
+    onMutate: (id: string) => {
+      setLoadingResourceId(id);
+      setLoadingAction('removeFile');
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['chapter-resources-grouped', chapterId] });
-      toast.success('File removed successfully');
+      toast.success('ફાઇલ સફળતાપૂર્વક દૂર કરવામાં આવી');
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.error || 'Failed to remove file');
+      toast.error(error.response?.data?.error || 'ફાઇલ દૂર કરવામાં નિષ્ફળ');
+    },
+    onSettled: () => {
+      setLoadingResourceId(null);
+      setLoadingAction(null);
     },
   });
 
@@ -287,7 +353,7 @@ const ChapterResourcesPage: React.FC = () => {
     reset,
     setValue,
     watch,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<ResourceFormData>({
     resolver: zodResolver(resourceSchema),
   });
@@ -295,18 +361,18 @@ const ChapterResourcesPage: React.FC = () => {
   const onSubmit = (data: ResourceFormData) => {
     // Additional validation for videos - must have YouTube URL
     if (data.resourceType === 'video' && !data.url) {
-      toast.error('YouTube URL is required for video resources');
+      toast.error('વિડિયો સંસાધનો માટે YouTube URL આવશ્યક છે');
       return;
     }
 
     // Additional validation for PDFs - must have either URL or uploaded file
     if (data.resourceType === 'pdf') {
       if (uploadMode === 'url' && !data.url) {
-        toast.error('Please provide a PDF URL');
+        toast.error('કૃપા કરીને PDF URL પ્રદાન કરો');
         return;
       }
       if (uploadMode === 'file' && (!data.url || !data.fileName)) {
-        toast.error('Please upload a PDF file');
+        toast.error('કૃપા કરીને PDF ફાઇલ અપલોડ કરો');
         return;
       }
     }
@@ -359,18 +425,18 @@ const ChapterResourcesPage: React.FC = () => {
   };
 
   const handleDelete = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this resource? This action cannot be undone.')) {
+    if (window.confirm('શું તમે ખરેખર આ સંસાધન દૂર કરવા માગો છો? આ ક્રિયા પૂર્વવત્ કરી શકાશે નહીં.')) {
       deleteMutation.mutate(id);
     }
   };
 
   const handleRemoveFile = (resource: ChapterResource) => {
     if (!resource.fileName) {
-      toast.error('This resource has no uploaded file to remove');
+      toast.error('આ સંસાધનમાં દૂર કરવા માટે કોઈ અપલોડ કરેલ ફાઇલ નથી');
       return;
     }
     
-    if (window.confirm(`Are you sure you want to remove the uploaded file from "${resource.title}"? The resource will remain but without the file content.`)) {
+    if (window.confirm(`શું તમે ખરેખર "${resource.title}" માંથી અપલોડ કરેલ ફાઇલ દૂર કરવા માગો છો? સંસાધન રહેશે પરંતુ ફાઇલ સામગ્રી વિના.`)) {
       removeFileMutation.mutate(resource.id);
     }
   };
@@ -449,7 +515,8 @@ const ChapterResourcesPage: React.FC = () => {
             <div className="sm:hidden">
               <button
                 onClick={openCreateModal}
-                className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 flex items-center justify-center z-40"
+                disabled={createMutation.isPending || updateMutation.isPending}
+                className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 flex items-center justify-center z-40 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
               >
                 <Plus className="h-6 w-6" />
               </button>
@@ -459,7 +526,8 @@ const ChapterResourcesPage: React.FC = () => {
             <div className="hidden sm:flex gap-3">
               <button
                 onClick={openCreateModal}
-                className="inline-flex items-center justify-center px-4 py-3 bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                disabled={createMutation.isPending || updateMutation.isPending}
+                className="inline-flex items-center justify-center px-4 py-3 bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 નવું સંસાધન ઉમેરો
@@ -488,6 +556,8 @@ const ChapterResourcesPage: React.FC = () => {
                     onDelete={handleDelete}
                     onPreview={handlePreview}
                     onRemoveFile={handleRemoveFile}
+                    isLoading={loadingResourceId === resource.id}
+                    loadingAction={loadingResourceId === resource.id ? loadingAction : null}
                   />
                 )) || []}
                 {(!resourcesData.resources?.svadhyay || resourcesData.resources.svadhyay.length === 0) && (
@@ -526,6 +596,8 @@ const ChapterResourcesPage: React.FC = () => {
                     onDelete={handleDelete}
                     onPreview={handlePreview}
                     onRemoveFile={handleRemoveFile}
+                    isLoading={loadingResourceId === resource.id}
+                    loadingAction={loadingResourceId === resource.id ? loadingAction : null}
                   />
                 )) || []}
                 {(!resourcesData.resources?.svadhyay_pothi || resourcesData.resources.svadhyay_pothi.length === 0) && (
@@ -564,6 +636,8 @@ const ChapterResourcesPage: React.FC = () => {
                     onDelete={handleDelete}
                     onPreview={handlePreview}
                     onRemoveFile={handleRemoveFile}
+                    isLoading={loadingResourceId === resource.id}
+                    loadingAction={loadingResourceId === resource.id ? loadingAction : null}
                   />
                 )) || []}
                 {(!resourcesData.resources?.other || resourcesData.resources.other.length === 0) && (
@@ -1179,6 +1253,7 @@ const ChapterResourcesPage: React.FC = () => {
                 <div className="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-3 pt-6 border-t border-gray-200 mt-8">
                   <button
                     type="button"
+                    disabled={createMutation.isPending || updateMutation.isPending}
                     onClick={() => {
                       setIsModalOpen(false);
                       setEditingResource(null);
@@ -1189,19 +1264,19 @@ const ChapterResourcesPage: React.FC = () => {
                         fileInputRef.current.value = '';
                       }
                     }}
-                    className="px-6 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl font-medium transition-all duration-200 transform hover:scale-105"
+                    className="px-6 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl font-medium transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:transform-none"
                   >
                     રદ કરો
                   </button>
                   <button
                     type="submit"
-                    disabled={isSubmitting || uploadingFile}
+                    disabled={createMutation.isPending || updateMutation.isPending || uploadingFile}
                     className="px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:transform-none flex items-center justify-center"
                   >
-                    {isSubmitting || uploadingFile ? (
+                    {createMutation.isPending || updateMutation.isPending || uploadingFile ? (
                       <>
                         <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
-                        {uploadingFile ? 'અપલોડ થઈ રહ્યું છે...' : 'સેવ થઈ રહ્યું છે...'}
+                        {uploadingFile ? 'અપલોડ થઈ રહ્યું છે...' : editingResource ? 'અપડેટ થઈ રહ્યું છે...' : 'બનાવી રહ્યા છીએ...'}
                       </>
                     ) : (
                       editingResource ? 'અપડેટ કરો' : 'બનાવો'
