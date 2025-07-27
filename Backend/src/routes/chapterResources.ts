@@ -212,11 +212,8 @@ router.post('/', authenticateToken, upload.single('file'), async (req, res) => {
 router.put('/:id', authenticateToken, upload.single('file'), async (req, res) => {
   try {
     const { id } = req.params;
-    const { error, value } = chapterResourceUpdateSchema.validate(req.body);
-    
-    if (error) {
-      return res.status(400).json({ error: error.details[0].message });
-    }
+    const value = req.body;
+
 
     // Check if resource exists
     const existingResource = await prisma.chapterResource.findUnique({
@@ -324,6 +321,64 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     });
   } catch (error) {
     console.error('Delete chapter resource error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Remove file from resource (admin only) - keeps resource but removes file
+router.delete('/:id/file', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const resource = await prisma.chapterResource.findUnique({
+      where: { id },
+    });
+
+    if (!resource) {
+      return res.status(404).json({ error: 'Resource not found' });
+    }
+
+    if (!resource.fileName) {
+      return res.status(400).json({ error: 'Resource has no uploaded file to remove' });
+    }
+
+    // Delete the physical file
+    if (resource.url) {
+      await deleteLocalFileIfExists(resource.url);
+    }
+
+    // Update resource to remove file references
+    const updatedResource = await prisma.chapterResource.update({
+      where: { id },
+      data: {
+        url: '',
+        fileName: null,
+      },
+      include: {
+        chapter: {
+          select: {
+            id: true,
+            name: true,
+            subject: {
+              select: {
+                id: true,
+                name: true,
+                standard: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    res.json(updatedResource);
+  } catch (error) {
+    console.error('Remove file from resource error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

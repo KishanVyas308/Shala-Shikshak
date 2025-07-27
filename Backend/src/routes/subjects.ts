@@ -146,11 +146,12 @@ router.post('/', authenticateToken, async (req, res) => {
 router.put('/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const { error, value } = subjectUpdateSchema.validate(req.body);
+    // const { error, value } = subjectUpdateSchema.validate(req.body);
+    const value = req.body;
     
-    if (error) {
-      return res.status(400).json({ error: error.details[0].message });
-    }
+    // if (error) {
+    //   return res.status(400).json({ error: error.details[0].message });
+    // }
 
     // Check if subject exists
     const existingSubject = await prisma.subject.findUnique({

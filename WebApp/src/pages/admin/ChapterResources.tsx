@@ -19,11 +19,11 @@ import {
   Upload,
   Link as LinkIcon,
   X,
-  ExternalLink
+  ExternalLink,
+  AlertTriangle
 } from 'lucide-react';
 import { chaptersAPI } from '../../services/chapters';
 import { chapterResourcesAPI } from '../../services/chapterResources';
-import { uploadAPI } from '../../services/upload';
 import PDFViewer from '../../components/PDFViewer';
 import type { ChapterResource } from '../../types';
 
@@ -40,7 +40,8 @@ const resourceSchema = z.object({
     if (!data.url) {
       return false;
     }
-    const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com\/(watch\?v=|embed\/)|youtu\.be\/)[\w-]+(&[\w=]*)?$/;
+    // Updated regex to handle all YouTube URL formats including youtu.be with query parameters
+    const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com\/(watch\?v=|embed\/|v\/)|youtu\.be\/)[\w-]+(\?[\w=&-]*)?$/;
     return youtubeRegex.test(data.url);
   }
   
@@ -70,65 +71,136 @@ const ResourceCard = ({
   resource, 
   onEdit, 
   onDelete,
-  onPreview
+  onPreview,
+  onRemoveFile
 }: { 
   resource: ChapterResource; 
   onEdit: (resource: ChapterResource) => void;
   onDelete: (id: string) => void;
   onPreview: (resource: ChapterResource) => void;
+  onRemoveFile: (resource: ChapterResource) => void;
 }) => {
+  const hasUploadedFile = resource.fileName && resource.url;
+  const hasExternalUrl = resource.url && !resource.fileName;
+
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center space-x-2">
-          <ResourceTypeIcon type={resource.type} />
-          {resource.resourceType === 'video' ? (
-            <Video className="w-4 h-4 text-red-500" />
-          ) : (
-            <FileText className="w-4 h-4 text-blue-500" />
-          )}
-        </div>
-        <div className="flex space-x-2">
-          <button
-            onClick={() => onPreview(resource)}
-            className="p-1 text-gray-400 hover:text-green-500 transition-colors"
-            title="Preview"
-          >
-            <Eye className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => onEdit(resource)}
-            className="p-1 text-gray-400 hover:text-blue-500 transition-colors"
-            title="Edit"
-          >
-            <Edit className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => onDelete(resource.id)}
-            className="p-1 text-gray-400 hover:text-red-500 transition-colors"
-            title="Delete"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+    <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+      {/* Header with Type Icons */}
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2">
+            <ResourceTypeIcon type={resource.type} />
+            {resource.resourceType === 'video' ? (
+              <div className="flex items-center space-x-1">
+                <Video className="w-4 h-4 text-red-500" />
+                <span className="text-xs px-2 py-1 bg-red-100 text-red-700 rounded-full font-medium">વિડિયો</span>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-1">
+                <FileText className="w-4 h-4 text-blue-500" />
+                <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full font-medium">PDF</span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
       
-      <h3 className="font-medium text-gray-900 mb-1">{resource.title}</h3>
-      {resource.description && (
-        <p className="text-sm text-gray-600 mb-3">{resource.description}</p>
-      )}
+      {/* Resource Title and Description */}
+      <div className="mb-4">
+        <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2">{resource.title}</h3>
+        {resource.description && (
+          <p className="text-sm text-gray-600 line-clamp-3 leading-relaxed">{resource.description}</p>
+        )}
+      </div>
       
-      <div className="flex items-center justify-between text-xs text-gray-500">
-        <span className="bg-gray-100 px-2 py-1 rounded">
-          {resource.type.replace('_', ' ')}
-        </span>
-        <div className="flex items-center space-x-2">
-          <span>{resource.resourceType}</span>
-          {resource.fileName ? (
-            <span className="bg-green-100 text-green-700 px-2 py-1 rounded">Uploaded</span>
-          ) : (
-            <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded">URL</span>
-          )}
+      {/* Resource Status and File Info */}
+      <div className="space-y-3">
+        {/* Category Badge */}
+        <div className="flex items-center justify-between">
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 capitalize">
+            {resource.type.replace('_', ' ')}
+          </span>
+          <span className="text-xs text-gray-500">
+            {new Date(resource.createdAt).toLocaleDateString('gu-IN', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric'
+            })}
+          </span>
+        </div>
+        
+        {/* File Status */}
+        <div className="p-3 bg-gradient-to-r from-gray-50 to-blue-50 border border-gray-200 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              {hasUploadedFile ? (
+                <>
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span className="text-sm font-medium text-green-700">અપલોડ કરેલ ફાઇલ</span>
+                  <button
+                    onClick={() => onRemoveFile(resource)}
+                    className="ml-2 p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded transition-all duration-200"
+                    title="ફાઇલ દૂર કરો"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </>
+              ) : hasExternalUrl ? (
+                <>
+                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <span className="text-sm font-medium text-blue-700">બાહ્ય લિંક</span>
+                </>
+              ) : (
+                <>
+                  <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+                  <span className="text-sm font-medium text-amber-700">સામગ્રી નથી</span>
+                </>
+              )}
+            </div>
+            
+            {(hasUploadedFile || hasExternalUrl) && (
+              <a
+                href={resource.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-blue-600 hover:text-blue-800 flex items-center space-x-1 hover:underline"
+              >
+                <ExternalLink className="w-3 h-3" />
+                <span>ખોલો</span>
+              </a>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Footer Actions */}
+      <div className="mt-4 pt-4 border-t border-gray-100">
+        <div className="space-y-2">
+          <button
+            onClick={() => onPreview(resource)}
+            className="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 py-2 px-4 rounded-lg text-sm font-medium transition-colors flex items-center justify-center space-x-2"
+          >
+            <Eye className="w-4 h-4" />
+            <span>પૂર્વાવલોકન</span>
+          </button>
+          
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => onEdit(resource)}
+              className="bg-amber-50 hover:bg-amber-100 text-amber-700 py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center space-x-1"
+            >
+              <Edit className="w-4 h-4" />
+              <span>સંપાદિત કરો</span>
+            </button>
+            
+            <button
+              onClick={() => onDelete(resource.id)}
+              className="bg-red-50 hover:bg-red-100 text-red-700 py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center space-x-1"
+            >
+              <Trash2 className="w-4 h-4" />
+              <span>દૂર કરો</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -159,7 +231,8 @@ const ChapterResourcesPage: React.FC = () => {
   });
 
   const createMutation = useMutation({
-    mutationFn: chapterResourcesAPI.create,
+    mutationFn: ({ data, file }: { data: any; file?: File }) => 
+      chapterResourcesAPI.create(data, file),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['chapter-resources-grouped', chapterId] });
       setIsModalOpen(false);
@@ -172,8 +245,8 @@ const ChapterResourcesPage: React.FC = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<ResourceFormData> }) =>
-      chapterResourcesAPI.update(id, data),
+    mutationFn: ({ id, data, file }: { id: string; data: Partial<ResourceFormData>; file?: File }) =>
+      chapterResourcesAPI.update(id, data, file),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['chapter-resources-grouped', chapterId] });
       setIsModalOpen(false);
@@ -194,6 +267,17 @@ const ChapterResourcesPage: React.FC = () => {
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.error || 'Failed to delete resource');
+    },
+  });
+
+  const removeFileMutation = useMutation({
+    mutationFn: chapterResourcesAPI.removeFile,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['chapter-resources-grouped', chapterId] });
+      toast.success('File removed successfully');
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.error || 'Failed to remove file');
     },
   });
 
@@ -221,12 +305,15 @@ const ChapterResourcesPage: React.FC = () => {
         toast.error('Please provide a PDF URL');
         return;
       }
-      if (uploadMode === 'file' && !data.url) {
+      if (uploadMode === 'file' && (!data.url || !data.fileName)) {
         toast.error('Please upload a PDF file');
         return;
       }
     }
 
+    // Get the actual file if one was selected
+    const selectedFile = fileInputRef.current?.files?.[0];
+    
     const submitData = {
       ...data,
       chapterId: chapterId!,
@@ -234,9 +321,18 @@ const ChapterResourcesPage: React.FC = () => {
     };
 
     if (editingResource) {
-      updateMutation.mutate({ id: editingResource.id, data: submitData });
+      // For updates, pass the file if a new one was selected
+      updateMutation.mutate({ 
+        id: editingResource.id, 
+        data: submitData,
+        file: selectedFile 
+      });
     } else {
-      createMutation.mutate(submitData);
+      // For creation, pass the file if one was selected
+      createMutation.mutate({
+        data: submitData,
+        file: selectedFile
+      });
     }
   };
 
@@ -263,8 +359,19 @@ const ChapterResourcesPage: React.FC = () => {
   };
 
   const handleDelete = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this resource?')) {
+    if (window.confirm('Are you sure you want to delete this resource? This action cannot be undone.')) {
       deleteMutation.mutate(id);
+    }
+  };
+
+  const handleRemoveFile = (resource: ChapterResource) => {
+    if (!resource.fileName) {
+      toast.error('This resource has no uploaded file to remove');
+      return;
+    }
+    
+    if (window.confirm(`Are you sure you want to remove the uploaded file from "${resource.title}"? The resource will remain but without the file content.`)) {
+      removeFileMutation.mutate(resource.id);
     }
   };
 
@@ -280,48 +387,99 @@ const ChapterResourcesPage: React.FC = () => {
   };
 
   if (!chapter) {
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 px-4">
+        <div className="text-center max-w-xs mx-auto">
+          <div className="relative mb-6">
+            <div className="animate-spin rounded-full h-16 w-16 sm:h-20 sm:w-20 border-4 border-purple-200 border-t-purple-600 mx-auto"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <FileText className="h-6 w-6 sm:h-8 sm:w-8 text-purple-600 animate-pulse" />
+            </div>
+          </div>
+          <h3 className="text-lg sm:text-xl font-semibold text-purple-700 mb-2">લોડ થઈ રહ્યું છે...</h3>
+          <p className="text-sm text-gray-600">કૃપા કરીને થોડી રાહ જુઓ</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+        {/* Breadcrumb Navigation */}
+        <div className="mb-4">
+          <button
+            onClick={() => navigate(-1)}
+            className="inline-flex items-center text-sm text-purple-600 hover:text-purple-800 font-medium transition-colors duration-200"
+          >
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            પાછા જાઓ
+          </button>
+        </div>
+
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center space-x-4 mb-4">
-            <button
-              onClick={() => navigate(-1)}
-              className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">{chapter.name}</h1>
-              <p className="text-gray-600">
-                Manage resources for this chapter
+        <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+            <div className="text-center sm:text-left">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                {chapter.name}
+              </h1>
+              <p className="mt-2 text-sm sm:text-base text-gray-600">
+                પ્રકરણ માટે અધ્યયન સામગ્રી સંચાલિત કરો અને નવા સંસાધનો ઉમેરો
               </p>
+              {resourcesData && (
+                <div className="mt-3 flex flex-wrap justify-center sm:justify-start gap-2">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                    <Book className="w-3 h-3 mr-1" />
+                    સ્વાધ્યાય: {resourcesData.resources?.svadhyay?.length || 0}
+                  </span>
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    <Users className="w-3 h-3 mr-1" />
+                    સ્વાધ્યાય પોથી: {resourcesData.resources?.svadhyay_pothi?.length || 0}
+                  </span>
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                    <Settings className="w-3 h-3 mr-1" />
+                    અન્ય: {resourcesData.resources?.other?.length || 0}
+                  </span>
+                </div>
+              )}
+            </div>
+            
+            {/* Mobile Actions */}
+            <div className="sm:hidden">
+              <button
+                onClick={openCreateModal}
+                className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 flex items-center justify-center z-40"
+              >
+                <Plus className="h-6 w-6" />
+              </button>
+            </div>
+            
+            {/* Desktop Actions */}
+            <div className="hidden sm:flex gap-3">
+              <button
+                onClick={openCreateModal}
+                className="inline-flex items-center justify-center px-4 py-3 bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                નવું સંસાધન ઉમેરો
+              </button>
             </div>
           </div>
-          
-          <button
-            onClick={openCreateModal}
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-2"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Add Resource</span>
-          </button>
         </div>
 
         {/* Resources Grid */}
         {resourcesData && (
-          <div className="space-y-8">
+          <div className="space-y-6 sm:space-y-8">
             {/* Svadhyay Section */}
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center space-x-2">
-                <Book className="w-5 h-5 text-blue-500" />
-                <span>Svadhyay ({resourcesData.resources?.svadhyay?.length || 0})</span>
+            <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6 flex items-center space-x-3">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <Book className="w-5 h-5 text-blue-600" />
+                </div>
+                <span>સ્વાધ્યાય ({resourcesData.resources?.svadhyay?.length || 0})</span>
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
                 {resourcesData.resources?.svadhyay?.map((resource) => (
                   <ResourceCard
                     key={resource.id}
@@ -329,21 +487,37 @@ const ChapterResourcesPage: React.FC = () => {
                     onEdit={handleEdit}
                     onDelete={handleDelete}
                     onPreview={handlePreview}
+                    onRemoveFile={handleRemoveFile}
                   />
                 )) || []}
                 {(!resourcesData.resources?.svadhyay || resourcesData.resources.svadhyay.length === 0) && (
-                  <p className="text-gray-500 col-span-full">No svadhyay resources yet.</p>
+                  <div className="col-span-full bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-8 text-center border border-blue-100">
+                    <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Book className="w-8 h-8 text-blue-600" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">સ્વાધ્યાય સંસાધનો નથી</h3>
+                    <p className="text-gray-600 mb-4">આ પ્રકરણ માટે સ્વાધ્યાય સંસાધનો ઉમેરો</p>
+                    <button
+                      onClick={openCreateModal}
+                      className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      પહેલું સંસાધન ઉમેરો
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
 
             {/* Svadhyay Pothi Section */}
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center space-x-2">
-                <Users className="w-5 h-5 text-green-500" />
-                <span>Svadhyay Pothi ({resourcesData.resources?.svadhyay_pothi?.length || 0})</span>
+            <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6 flex items-center space-x-3">
+                <div className="p-2 bg-green-100 rounded-lg">
+                  <Users className="w-5 h-5 text-green-600" />
+                </div>
+                <span>સ્વાધ્યાય પોથી ({resourcesData.resources?.svadhyay_pothi?.length || 0})</span>
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
                 {resourcesData.resources?.svadhyay_pothi?.map((resource) => (
                   <ResourceCard
                     key={resource.id}
@@ -351,21 +525,37 @@ const ChapterResourcesPage: React.FC = () => {
                     onEdit={handleEdit}
                     onDelete={handleDelete}
                     onPreview={handlePreview}
+                    onRemoveFile={handleRemoveFile}
                   />
                 )) || []}
                 {(!resourcesData.resources?.svadhyay_pothi || resourcesData.resources.svadhyay_pothi.length === 0) && (
-                  <p className="text-gray-500 col-span-full">No svadhyay pothi resources yet.</p>
+                  <div className="col-span-full bg-gradient-to-br from-green-50 to-blue-50 rounded-xl p-8 text-center border border-green-100">
+                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Users className="w-8 h-8 text-green-600" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">સ્વાધ્યાય પોથી સંસાધનો નથી</h3>
+                    <p className="text-gray-600 mb-4">આ પ્રકરણ માટે સ્વાધ્યાય પોથી સંસાધનો ઉમેરો</p>
+                    <button
+                      onClick={openCreateModal}
+                      className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      પહેલું સંસાધન ઉમેરો
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
 
             {/* Other Section */}
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center space-x-2">
-                <Settings className="w-5 h-5 text-gray-500" />
-                <span>Other ({resourcesData.resources?.other?.length || 0})</span>
+            <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6 flex items-center space-x-3">
+                <div className="p-2 bg-gray-100 rounded-lg">
+                  <Settings className="w-5 h-5 text-gray-600" />
+                </div>
+                <span>અન્ય ({resourcesData.resources?.other?.length || 0})</span>
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
                 {resourcesData.resources?.other?.map((resource) => (
                   <ResourceCard
                     key={resource.id}
@@ -373,27 +563,73 @@ const ChapterResourcesPage: React.FC = () => {
                     onEdit={handleEdit}
                     onDelete={handleDelete}
                     onPreview={handlePreview}
+                    onRemoveFile={handleRemoveFile}
                   />
                 )) || []}
                 {(!resourcesData.resources?.other || resourcesData.resources.other.length === 0) && (
-                  <p className="text-gray-500 col-span-full">No other resources yet.</p>
+                  <div className="col-span-full bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl p-8 text-center border border-gray-100">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Settings className="w-8 h-8 text-gray-600" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">અન્ય સંસાધનો નથી</h3>
+                    <p className="text-gray-600 mb-4">આ પ્રકરણ માટે અન્ય સંસાધનો ઉમેરો</p>
+                    <button
+                      onClick={openCreateModal}
+                      className="inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      પહેલું સંસાધન ઉમેરો
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Overall Empty State */}
+        {resourcesData && !resourcesData.resources && (
+          <div className="bg-white rounded-2xl shadow-lg p-8 sm:p-12 text-center">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-purple-100 to-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <FileText className="h-10 w-10 sm:h-12 sm:w-12 text-purple-600" />
+            </div>
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3">
+              કોઈ સંસાધનો નથી
+            </h3>
+            <p className="text-gray-600 mb-6 max-w-md mx-auto">
+              આ પ્રકરણ માટે પહેલું સંસાધન ઉમેરીને શરૂઆત કરો અને વિદ્યાર્થીઓ માટે અધ્યયન સામગ્રી ઉપલબ્ધ કરાવો.
+            </p>
+            <button
+              onClick={openCreateModal}
+              className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
+            >
+              <Plus className="h-5 w-5 mr-2" />
+              પહેલું સંસાધન ઉમેરો
+            </button>
           </div>
         )}
       </div>
 
       {/* Enhanced Preview Modal with Edit/Delete Actions */}
       {previewResource && (
-        <div className="fixed inset-0 bg-black/20 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg w-full max-w-5xl max-h-[95vh] overflow-hidden">
-            <div className="flex items-center justify-between p-4 border-b">
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-5xl max-h-[95vh] overflow-hidden">
+            <div className="flex items-center justify-between p-4 sm:p-6 border-b bg-gradient-to-r from-purple-50 to-blue-50">
               <div className="flex items-center space-x-3">
-                <h3 className="text-lg font-semibold">{previewResource.title}</h3>
-                <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
-                  {previewResource.resourceType === 'video' ? 'Video' : 'PDF'}
-                </span>
+                <div className="p-2 bg-white rounded-lg shadow-sm">
+                  <ResourceTypeIcon type={previewResource.type} />
+                </div>
+                <div>
+                  <h3 className="text-lg sm:text-xl font-bold text-gray-900">{previewResource.title}</h3>
+                  <div className="flex items-center space-x-2 mt-1">
+                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full font-medium">
+                      {previewResource.resourceType === 'video' ? 'વિડિયો' : 'PDF'}
+                    </span>
+                    <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded-full font-medium">
+                      {previewResource.type.replace('_', ' ')}
+                    </span>
+                  </div>
+                </div>
               </div>
               <div className="flex items-center space-x-2">
                 {/* Edit Button */}
@@ -402,33 +638,33 @@ const ChapterResourcesPage: React.FC = () => {
                     handleEdit(previewResource);
                     setPreviewResource(null);
                   }}
-                  className="flex items-center px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                  title="Edit Resource"
+                  className="flex items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-all duration-200 transform hover:scale-105"
+                  title="સંસાધન સંપાદિત કરો"
                 >
                   <Edit className="w-4 h-4 mr-2" />
-                  Edit
+                  <span className="hidden sm:inline">સંપાદિત કરો</span>
                 </button>
                 
                 {/* Delete Button */}
                 <button
                   onClick={() => {
-                    if (window.confirm('Are you sure you want to delete this resource?')) {
+                    if (window.confirm('શું તમે ખરેખર આ સંસાધન દૂર કરવા માગો છો?')) {
                       handleDelete(previewResource.id);
                       setPreviewResource(null);
                     }
                   }}
-                  className="flex items-center px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                  title="Delete Resource"
+                  className="flex items-center px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-all duration-200 transform hover:scale-105"
+                  title="સંસાધન દૂર કરો"
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
-                  Delete
+                  <span className="hidden sm:inline">દૂર કરો</span>
                 </button>
                 
                 {/* Close Button */}
                 <button
                   onClick={() => setPreviewResource(null)}
                   className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                  title="Close Preview"
+                  title="બંધ કરો"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -437,17 +673,17 @@ const ChapterResourcesPage: React.FC = () => {
             
             {/* Resource Description */}
             {previewResource.description && (
-              <div className="px-4 py-2 bg-gray-50 border-b">
-                <p className="text-sm text-gray-600">{previewResource.description}</p>
+              <div className="px-4 sm:px-6 py-3 bg-gray-50 border-b">
+                <p className="text-sm text-gray-700 leading-relaxed">{previewResource.description}</p>
               </div>
             )}
             
             {/* Preview Content */}
-            <div className="p-4 h-[70vh]">
+            <div className="p-4 sm:p-6 h-[70vh]">
               {previewResource.resourceType === 'video' ? (
                 <div className="h-full">
                   {previewResource.url.includes('youtube.com') || previewResource.url.includes('youtu.be') ? (
-                    <div className="relative bg-gray-900 rounded-lg overflow-hidden h-full">
+                    <div className="relative bg-gray-900 rounded-xl overflow-hidden h-full shadow-lg">
                       <iframe
                         width="100%"
                         height="100%"
@@ -456,55 +692,55 @@ const ChapterResourcesPage: React.FC = () => {
                         frameBorder="0"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                         allowFullScreen
-                        className="rounded-lg"
+                        className="rounded-xl"
                         referrerPolicy="strict-origin-when-cross-origin"
                         sandbox="allow-scripts allow-same-origin allow-presentation"
                       />
                     </div>
                   ) : (
-                    <div className="flex items-center justify-center h-full bg-gray-100 rounded-lg">
+                    <div className="flex items-center justify-center h-full bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl">
                       <div className="text-center">
-                        <Video className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                        <p className="text-gray-600 mb-4">Video preview not available</p>
+                        <Video className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-600 font-medium mb-4">વિડિયો પૂર્વાવલોકન ઉપલબ્ધ નથી</p>
                         <a
                           href={previewResource.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                         >
                           <ExternalLink className="w-4 h-4 mr-2" />
-                          Open Video
+                          વિડિયો ખોલો
                         </a>
                       </div>
                     </div>
                   )}
                 </div>
               ) : (
-                <div className="h-full">
+                <div className="h-full bg-white rounded-xl shadow-inner">
                   <PDFViewer fileurl={previewResource.url} />
                 </div>
               )}
             </div>
             
             {/* Resource Details Footer */}
-            <div className="px-4 py-3 bg-gray-50 border-t">
+            <div className="px-4 sm:px-6 py-3 bg-gradient-to-r from-gray-50 to-blue-50 border-t">
               <div className="flex items-center justify-between text-sm text-gray-600">
                 <div className="flex items-center space-x-4">
-                  <span>Type: <span className="capitalize font-medium">{previewResource.type}</span></span>
+                  <span>પ્રકાર: <span className="capitalize font-medium text-gray-900">{previewResource.type.replace('_', ' ')}</span></span>
                   {previewResource.fileName && (
-                    <span>File: <span className="font-medium">{previewResource.fileName}</span></span>
+                    <span>ફાઇલ: <span className="font-medium text-gray-900">{previewResource.fileName}</span></span>
                   )}
                 </div>
                 <div className="flex items-center space-x-4">
-                  <span>Created: {new Date(previewResource.createdAt).toLocaleDateString()}</span>
+                  <span>બનાવવામાં આવ્યું: <span className="font-medium">{new Date(previewResource.createdAt).toLocaleDateString('gu-IN')}</span></span>
                   <a
                     href={previewResource.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center text-blue-600 hover:text-blue-700"
+                    className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium transition-colors"
                   >
                     <ExternalLink className="w-3 h-3 mr-1" />
-                    Open in New Tab
+                    નવી ટેબમાં ખોલો
                   </a>
                 </div>
               </div>
@@ -515,62 +751,90 @@ const ChapterResourcesPage: React.FC = () => {
 
       {/* Enhanced Modal with File Upload */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/20 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <h2 className="text-xl font-semibold mb-4">
-                {editingResource ? 'Edit Resource' : 'Create Resource'}
-              </h2>
-              
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="p-4 sm:p-6">
+              <div className="flex items-center justify-between mb-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Title <span className="text-red-500">*</span>
+                  <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                    {editingResource ? 'સંસાધન સંપાદિત કરો' : 'નવું સંસાધન ઉમેરો'}
+                  </h2>
+                  <p className="text-sm text-gray-600 mt-1">
+                    પ્રકરણ માટે વિડિયો અથવા PDF સંસાધન ઉમેરો
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    setIsModalOpen(false);
+                    setEditingResource(null);
+                    setUploadMode('url');
+                    setUploadingFile(false);
+                    reset();
+                    if (fileInputRef.current) {
+                      fileInputRef.current.value = '';
+                    }
+                  }}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    શીર્ષક <span className="text-red-500">*</span>
                   </label>
                   <input
                     {...register('title')}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Enter resource title"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+                    placeholder="સંસાધનનું શીર્ષક દાખલ કરો"
                   />
                   {errors.title && (
-                    <p className="text-red-600 text-sm mt-1">{errors.title.message}</p>
+                    <p className="text-red-600 text-sm mt-2 flex items-center">
+                      <AlertTriangle className="w-4 h-4 mr-1" />
+                      {errors.title.message}
+                    </p>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Description
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    વર્ણન
                   </label>
                   <textarea
                     {...register('description')}
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Enter resource description (optional)"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors resize-none"
+                    placeholder="સંસાધનનું વર્ણન દાખલ કરો (વૈકલ્પિક)"
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Category <span className="text-red-500">*</span>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      વર્ગ <span className="text-red-500">*</span>
                     </label>
                     <select
                       {...register('type')}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
                     >
-                      <option value="">Select category</option>
-                      <option value="svadhyay">Svadhyay</option>
-                      <option value="svadhyay_pothi">Svadhyay Pothi</option>
-                      <option value="other">Other</option>
+                      <option value="">વર્ગ પસંદ કરો</option>
+                      <option value="svadhyay">સ્વાધ્યાય</option>
+                      <option value="svadhyay_pothi">સ્વાધ્યાય પોથી</option>
+                      <option value="other">અન્ય</option>
                     </select>
                     {errors.type && (
-                      <p className="text-red-600 text-sm mt-1">{errors.type.message}</p>
+                      <p className="text-red-600 text-sm mt-2 flex items-center">
+                        <AlertTriangle className="w-4 h-4 mr-1" />
+                        {errors.type.message}
+                      </p>
                     )}
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Resource Type <span className="text-red-500">*</span>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      સંસાધનનો પ્રકાર <span className="text-red-500">*</span>
                     </label>
                     <select
                       {...register('resourceType')}
@@ -584,48 +848,51 @@ const ChapterResourcesPage: React.FC = () => {
                         // Trigger the register onChange as well
                         register('resourceType').onChange(e);
                       }}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
                     >
-                      <option value="">Select type</option>
-                      <option value="video">Video</option>
+                      <option value="">પ્રકાર પસંદ કરો</option>
+                      <option value="video">વિડિયો</option>
                       <option value="pdf">PDF</option>
                     </select>
                     {errors.resourceType && (
-                      <p className="text-red-600 text-sm mt-1">{errors.resourceType.message}</p>
+                      <p className="text-red-600 text-sm mt-2 flex items-center">
+                        <AlertTriangle className="w-4 h-4 mr-1" />
+                        {errors.resourceType.message}
+                      </p>
                     )}
                   </div>
                 </div>
 
                 {/* Upload Mode Toggle - Only for PDF */}
                 {watch('resourceType') === 'pdf' && (
-                  <div className="space-y-3">
-                    <label className="block text-sm font-medium text-gray-700">
-                      How would you like to add the PDF? <span className="text-red-500">*</span>
+                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4 sm:p-6 border border-blue-100">
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">
+                      PDF કેવી રીતે ઉમેરવું છે? <span className="text-red-500">*</span>
                     </label>
-                    <div className="flex space-x-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <button
                         type="button"
                         onClick={() => setUploadMode('url')}
-                        className={`flex items-center px-4 py-2 rounded-lg border-2 transition-colors ${
+                        className={`flex items-center justify-center px-4 py-3 rounded-xl border-2 font-medium transition-all duration-200 ${
                           uploadMode === 'url'
-                            ? 'border-blue-500 bg-blue-50 text-blue-700'
-                            : 'border-gray-300 hover:border-gray-400'
+                            ? 'border-blue-500 bg-blue-500 text-white shadow-lg transform scale-105'
+                            : 'border-gray-300 bg-white text-gray-700 hover:border-blue-300 hover:bg-blue-50'
                         }`}
                       >
-                        <LinkIcon className="w-4 h-4 mr-2" />
-                        Google Drive Link
+                        <LinkIcon className="w-5 h-5 mr-2" />
+                        Google Drive લિંક
                       </button>
                       <button
                         type="button"
                         onClick={() => setUploadMode('file')}
-                        className={`flex items-center px-4 py-2 rounded-lg border-2 transition-colors ${
+                        className={`flex items-center justify-center px-4 py-3 rounded-xl border-2 font-medium transition-all duration-200 ${
                           uploadMode === 'file'
-                            ? 'border-blue-500 bg-blue-50 text-blue-700'
-                            : 'border-gray-300 hover:border-gray-400'
+                            ? 'border-purple-500 bg-purple-500 text-white shadow-lg transform scale-105'
+                            : 'border-gray-300 bg-white text-gray-700 hover:border-purple-300 hover:bg-purple-50'
                         }`}
                       >
-                        <Upload className="w-4 h-4 mr-2" />
-                        Upload PDF
+                        <Upload className="w-5 h-5 mr-2" />
+                        PDF અપલોડ કરો
                       </button>
                     </div>
                   </div>
@@ -634,21 +901,33 @@ const ChapterResourcesPage: React.FC = () => {
                 {/* URL Input - Different labels for Video vs PDF */}
                 {(uploadMode === 'url' || watch('resourceType') === 'video') && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      {watch('resourceType') === 'video' ? 'YouTube URL' : 'PDF URL (Google Drive or Direct Link)'} <span className="text-red-500">*</span>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      {watch('resourceType') === 'video' ? 'YouTube URL' : 'PDF URL (Google Drive અથવા સીધી લિંક)'} <span className="text-red-500">*</span>
                     </label>
-                    <input
-                      {...register('url')}
-                      type="url"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder={
-                        watch('resourceType') === 'video' 
-                          ? "https://www.youtube.com/watch?v=... or https://youtu.be/..."
-                          : "https://drive.google.com/... or direct PDF link"
-                      }
-                    />
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        {watch('resourceType') === 'video' ? (
+                          <Video className="h-5 w-5 text-red-400" />
+                        ) : (
+                          <LinkIcon className="h-5 w-5 text-blue-400" />
+                        )}
+                      </div>
+                      <input
+                        {...register('url')}
+                        type="url"
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+                        placeholder={
+                          watch('resourceType') === 'video' 
+                            ? "https://www.youtube.com/watch?v=... અથવા https://youtu.be/..."
+                            : "https://drive.google.com/... અથવા સીધી PDF લિંક"
+                        }
+                      />
+                    </div>
                     {errors.url && (
-                      <p className="text-red-600 text-sm mt-1">{errors.url.message?.toString()}</p>
+                      <p className="text-red-600 text-sm mt-2 flex items-center">
+                        <AlertTriangle className="w-4 h-4 mr-1" />
+                        {errors.url.message?.toString()}
+                      </p>
                     )}
                   </div>
                 )}
@@ -662,76 +941,156 @@ const ChapterResourcesPage: React.FC = () => {
                     
                     {/* Show current file if exists */}
                     {(editingResource?.fileName || watch('fileName')) && (
-                      <div className="mb-3 p-3 bg-green-50 border border-green-200 rounded-lg">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2">
-                            <FileText className="w-4 h-4 text-green-600" />
-                            <span className="text-sm font-medium text-green-800">Current File:</span>
-                            <span className="text-sm text-green-700">
-                              {editingResource?.fileName || watch('fileName')}
-                            </span>
+                      <div className="mb-4 p-4 bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-start space-x-3 flex-1">
+                            <div className="p-2 bg-green-100 rounded-full">
+                              <FileText className="w-4 h-4 text-green-600" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="text-sm font-semibold text-green-800 mb-1">Current Uploaded File</h4>
+                              <p className="text-sm text-green-700 truncate mb-2">
+                                {editingResource?.fileName || watch('fileName')}
+                              </p>
+                              <div className="flex items-center space-x-4 text-xs text-green-600">
+                                <span>📄 PDF Document</span>
+                                {editingResource?.url && (
+                                  <a
+                                    href={editingResource.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center space-x-1 hover:text-green-800 hover:underline"
+                                  >
+                                    <ExternalLink className="w-3 h-3" />
+                                    <span>View File</span>
+                                  </a>
+                                )}
+                              </div>
+                            </div>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (window.confirm('Remove current file? You will need to upload a new one.')) {
-                                setValue('fileName', '');
-                                setValue('url', '');
-                                if (fileInputRef.current) {
-                                  fileInputRef.current.value = '';
+                          <div className="flex items-center space-x-2 ml-3">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (window.confirm('Remove current file? You will need to upload a new one or provide a URL.')) {
+                                  if (editingResource) {
+                                    // If editing, remove the file from the resource
+                                    handleRemoveFile(editingResource);
+                                  } else {
+                                    // If creating, just clear the form values
+                                    setValue('fileName', '');
+                                    setValue('url', '');
+                                    if (fileInputRef.current) {
+                                      fileInputRef.current.value = '';
+                                    }
+                                    toast.success('File removed from form');
+                                  }
                                 }
-                                toast.success('File removed');
-                              }
-                            }}
-                            className="text-red-600 hover:text-red-700 p-1"
-                            title="Remove current file"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
+                              }}
+                              className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all duration-200"
+                              title="Remove current file"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
                         </div>
+                        {editingResource && (
+                          <div className="mt-3 p-2 bg-blue-100 rounded-lg">
+                            <p className="text-xs text-blue-700 flex items-center">
+                              <AlertTriangle className="w-3 h-3 mr-1" />
+                              Uploading a new file will automatically replace this one
+                            </p>
+                          </div>
+                        )}
                       </div>
                     )}
                     
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept=".pdf"
-                        onChange={async (e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            if (file.size > 30 * 1024 * 1024) {
-                              toast.error('File size must be less than 30MB');
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".pdf"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          // Validate file size
+                          if (file.size > 30 * 1024 * 1024) {
+                            toast.error('File size must be less than 30MB');
+                            e.target.value = ''; // Reset input
+                            return;
+                          }
+                          
+                          // Validate file type
+                          if (file.type !== 'application/pdf') {
+                            toast.error('Only PDF files are allowed');
+                            e.target.value = ''; // Reset input
+                            return;
+                          }
+                          
+                          // If editing and there's an existing file, confirm replacement
+                          if (editingResource?.fileName && editingResource.url) {
+                            const confirmReplace = window.confirm(
+                              `Replace existing file "${editingResource.fileName}" with "${file.name}"? The old file will be automatically deleted.`
+                            );
+                            if (!confirmReplace) {
+                              e.target.value = ''; // Reset input
                               return;
                             }
-                            setUploadingFile(true);
-                            try {
-                              const formData = new FormData();
-                              formData.append('pdf', file);
-                              const response = await uploadAPI.uploadPdf(file);
-                              setValue('url', response.url);
-                              setValue('fileName', response.fileName);
-                              toast.success('PDF uploaded successfully');
-                            } catch (error) {
-                              toast.error('PDF upload failed');
-                              console.error('Upload error:', error);
-                            } finally {
-                              setUploadingFile(false);
-                            }
                           }
-                        }}
-                        className="hidden"
-                      />
-                      <div className="cursor-pointer" onClick={() => fileInputRef.current?.click()}>
-                        <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                        <p className="text-sm text-gray-600">
-                          {uploadingFile ? 'Uploading PDF...' : 
-                           (editingResource?.fileName || watch('fileName')) ? 'Click to replace PDF file' : 'Click to upload PDF or drag and drop'}
-                        </p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          PDF files only (max 30MB)
-                        </p>
-                      </div>
+                          
+                          setUploadingFile(true);
+                          try {
+                            // Just prepare the file for submission
+                            // The actual upload will happen in onSubmit
+                            setValue('fileName', file.name);
+                            // Set a placeholder URL to indicate file is ready
+                            setValue('url', `file://${file.name}`);
+                            
+                            toast.success(`PDF "${file.name}" ready for upload`);
+                          } catch (error: any) {
+                            toast.error('File preparation failed');
+                            console.error('File error:', error);
+                            e.target.value = ''; // Reset input on error
+                          } finally {
+                            setUploadingFile(false);
+                          }
+                        }
+                      }}
+                      className="hidden"
+                    />
+                    
+                    <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 cursor-pointer group"
+                         onClick={() => !uploadingFile && fileInputRef.current?.click()}>
+                      
+                      {uploadingFile ? (
+                        <div className="flex flex-col items-center">
+                          <div className="animate-spin rounded-full h-8 w-8 border-4 border-blue-200 border-t-blue-600 mb-3"></div>
+                          <p className="text-sm font-medium text-blue-600 mb-1">Uploading PDF...</p>
+                          <p className="text-xs text-gray-500">Please wait while we process your file</p>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center">
+                          <div className="p-3 bg-gray-100 group-hover:bg-blue-100 rounded-full mb-4 transition-colors duration-200">
+                            <Upload className="w-8 h-8 text-gray-400 group-hover:text-blue-500 transition-colors duration-200" />
+                          </div>
+                          <p className="text-sm font-semibold text-gray-700 mb-1">
+                            {(editingResource?.fileName || watch('fileName')) ? 
+                              'Click to replace PDF file' : 
+                              'Click to upload PDF file'
+                            }
+                          </p>
+                          <p className="text-xs text-gray-500 mb-3">
+                            or drag and drop your PDF here
+                          </p>
+                          <div className="flex items-center justify-center space-x-4 text-xs text-gray-400">
+                            <span className="flex items-center">
+                              <FileText className="w-3 h-3 mr-1" />
+                              PDF files only
+                            </span>
+                            <span>•</span>
+                            <span>Max 30MB</span>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -817,7 +1176,7 @@ const ChapterResourcesPage: React.FC = () => {
                   </div>
                 )}
 
-                <div className="flex justify-end space-x-3 pt-4 border-t">
+                <div className="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-3 pt-6 border-t border-gray-200 mt-8">
                   <button
                     type="button"
                     onClick={() => {
@@ -830,22 +1189,22 @@ const ChapterResourcesPage: React.FC = () => {
                         fileInputRef.current.value = '';
                       }
                     }}
-                    className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+                    className="px-6 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl font-medium transition-all duration-200 transform hover:scale-105"
                   >
-                    Cancel
+                    રદ કરો
                   </button>
                   <button
                     type="submit"
                     disabled={isSubmitting || uploadingFile}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center"
+                    className="px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:transform-none flex items-center justify-center"
                   >
                     {isSubmitting || uploadingFile ? (
                       <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
-                        {uploadingFile ? 'Uploading...' : 'Saving...'}
+                        <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
+                        {uploadingFile ? 'અપલોડ થઈ રહ્યું છે...' : 'સેવ થઈ રહ્યું છે...'}
                       </>
                     ) : (
-                      editingResource ? 'Update' : 'Create'
+                      editingResource ? 'અપડેટ કરો' : 'બનાવો'
                     )}
                   </button>
                 </div>

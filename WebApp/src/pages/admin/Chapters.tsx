@@ -17,7 +17,9 @@ import {
   ArrowLeft,
   Settings,
   BookOpen,
-  Users
+  Users,
+  Edit,
+  Trash2
 } from 'lucide-react';
 import { standardsAPI } from '../../services/standards';
 import { chaptersAPI } from '../../services/chapters';
@@ -41,6 +43,7 @@ const AdminChapters: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [showResourceModal, setShowResourceModal] = useState(false);
+  const [chapterToDelete, setChapterToDelete] = useState<any>(null);
   
   const { id: subjectParamsId } = useParams<{ id?: string }>();
 
@@ -141,9 +144,39 @@ const AdminChapters: React.FC = () => {
     },
   });
 
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: ChapterFormData }) => 
+      chaptersAPI.update(id, data),
+    onSuccess: () => {
+      toast.success('પ્રકરણ સફળતાપૂર્વક અપડેટ થયું');
+      queryClient.invalidateQueries({ queryKey: ['standards'] });
+      queryClient.invalidateQueries({ queryKey: ['standards-with-subjects'] });
+      closeModal();
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'પ્રકરણ અપડેટ કરવામાં નિષ્ફળ');
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: chaptersAPI.delete,
+    onSuccess: () => {
+      toast.success('પ્રકરણ સફળતાપૂર્વક ડિલીટ થયું');
+      queryClient.invalidateQueries({ queryKey: ['standards'] });
+      queryClient.invalidateQueries({ queryKey: ['standards-with-subjects'] });
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'પ્રકરણ ડિલીટ કરવામાં નિષ્ફળ');
+    },
+  });
+
   const onSubmit = async (data: ChapterFormData) => {
     try {
-      await createMutation.mutateAsync(data);
+      if (editingChapter) {
+        await updateMutation.mutateAsync({ id: editingChapter.id, data });
+      } else {
+        await createMutation.mutateAsync(data);
+      }
     } catch (error) {
       console.error('Form submission error:', error);
     }
@@ -175,6 +208,49 @@ const AdminChapters: React.FC = () => {
     }
     
     setIsCreateModalOpen(true);
+  };
+
+  const openEditModal = (chapter: any) => {
+    setEditingChapter(chapter);
+    reset();
+    
+    // Set form values
+    setValue('name', chapter.name);
+    setValue('description', chapter.description || '');
+    setValue('subjectId', chapter.subject.id);
+    
+    // Set modal selections
+    setModalSelectedStandardId(chapter.subject.standard.id);
+    setModalSelectedSubjectId(chapter.subject.id);
+    
+    setIsCreateModalOpen(true);
+  };
+
+  const handleDeleteChapter = async (chapter: any) => {
+    const resourcesCount = chapter._count?.resources || 0;
+    
+    if (resourcesCount > 0) {
+      toast.error(`આ પ્રકરણમાં ${resourcesCount} સંસાધનો છે. પહેલા બધા સંસાધનો ડિલીટ કરો અને પછી પ્રકરણ ડિલીટ કરો.`);
+      return;
+    }
+
+    setChapterToDelete(chapter);
+  };
+
+  const confirmDelete = async () => {
+    if (!chapterToDelete) return;
+
+    try {
+      await deleteMutation.mutateAsync(chapterToDelete.id);
+      setChapterToDelete(null);
+    } catch (error) {
+      console.error('Delete error:', error);
+      setChapterToDelete(null);
+    }
+  };
+
+  const cancelDelete = () => {
+    setChapterToDelete(null);
   };
 
   const handleManageResources = (chapterId: string) => {
@@ -445,6 +521,8 @@ const AdminChapters: React.FC = () => {
               key={chapter.id}
               chapter={chapter}
               onManageResources={handleManageResources}
+              onEdit={openEditModal}
+              onDelete={handleDeleteChapter}
             />
           ))}
         </div>
@@ -490,6 +568,7 @@ const AdminChapters: React.FC = () => {
             errors={errors}
             isSubmitting={isSubmitting}
             createMutation={createMutation}
+            updateMutation={updateMutation}
             setValue={setValue}
             closeModal={closeModal}
           />
@@ -502,6 +581,16 @@ const AdminChapters: React.FC = () => {
             chapters={filteredChapters}
           />
         )}
+
+        {/* Delete Confirmation Modal */}
+        {chapterToDelete && (
+          <DeleteConfirmationModal
+            chapter={chapterToDelete}
+            onConfirm={confirmDelete}
+            onCancel={cancelDelete}
+            isDeleting={deleteMutation.isPending}
+          />
+        )}
       </div>
     </div>
   );
@@ -511,7 +600,9 @@ const AdminChapters: React.FC = () => {
 const ChapterCard: React.FC<{
   chapter: any;
   onManageResources: (chapterId: string) => void;
-}> = ({ chapter, onManageResources }) => {
+  onEdit: (chapter: any) => void;
+  onDelete: (chapter: any) => void;
+}> = ({ chapter, onManageResources, onEdit, onDelete }) => {
   const resourcesCount = chapter._count?.resources || 0;
 
   return (
@@ -572,13 +663,35 @@ const ChapterCard: React.FC<{
             {new Date(chapter.createdAt).toLocaleDateString('gu-IN')}
           </span>
         </div>
-        <button
-          onClick={() => onManageResources(chapter.id)}
-          className="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 py-2 px-4 rounded-lg text-sm font-medium transition-colors flex items-center justify-center space-x-2"
-        >
-          <Settings className="w-4 h-4" />
-          <span>Manage Resources</span>
-        </button>
+        
+        {/* Action Buttons */}
+        <div className="space-y-2">
+          <button
+            onClick={() => onManageResources(chapter.id)}
+            className="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 py-2 px-4 rounded-lg text-sm font-medium transition-colors flex items-center justify-center space-x-2"
+          >
+            <Settings className="w-4 h-4" />
+            <span>Manage Resources</span>
+          </button>
+          
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => onEdit(chapter)}
+              className="bg-amber-50 hover:bg-amber-100 text-amber-700 py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center space-x-1"
+            >
+              <Edit className="w-4 h-4" />
+              <span>Edit</span>
+            </button>
+            
+            <button
+              onClick={() => onDelete(chapter)}
+              className="bg-red-50 hover:bg-red-100 text-red-700 py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center space-x-1"
+            >
+              <Trash2 className="w-4 h-4" />
+              <span>Delete</span>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -599,9 +712,11 @@ const CreateChapterModal: React.FC<{
   errors: any;
   isSubmitting: boolean;
   createMutation: any;
+  updateMutation: any;
   setValue: any;
   closeModal: () => void;
 }> = ({ 
+  editingChapter,
   standards,
   modalSelectedStandardId,
   setModalSelectedStandardId,
@@ -614,6 +729,7 @@ const CreateChapterModal: React.FC<{
   errors,
   isSubmitting,
   createMutation,
+  updateMutation,
   setValue,
   closeModal
 }) => {
@@ -632,8 +748,12 @@ const CreateChapterModal: React.FC<{
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-2xl">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-xl font-bold text-gray-900">નવું પ્રકરણ ઉમેરો</h3>
-              <p className="text-sm text-gray-600 mt-1">પ્રકરણની મૂળભૂત માહિતી ઉમેરો</p>
+              <h3 className="text-xl font-bold text-gray-900">
+                {editingChapter ? 'પ્રકરણ અપડેટ કરો' : 'નવું પ્રકરણ ઉમેરો'}
+              </h3>
+              <p className="text-sm text-gray-600 mt-1">
+                {editingChapter ? 'પ્રકરણની માહિતી અપડેટ કરો' : 'પ્રકરણની મૂળભૂત માહિતી ઉમેરો'}
+              </p>
             </div>
             <button
               onClick={closeModal}
@@ -765,18 +885,18 @@ const CreateChapterModal: React.FC<{
             </button>
             <button
               type="submit"
-              disabled={isSubmitting || createMutation.isPending || !modalSelectedSubjectId}
+              disabled={isSubmitting || (editingChapter ? updateMutation.isPending : createMutation.isPending) || !modalSelectedSubjectId}
               className="flex-1 inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white rounded-xl font-semibold transition-all transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
-              {isSubmitting || createMutation.isPending ? (
+              {isSubmitting || (editingChapter ? updateMutation.isPending : createMutation.isPending) ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
-                  સેવ થઈ રહ્યું છે...
+                  {editingChapter ? 'અપડેટ થઈ રહ્યું છે...' : 'સેવ થઈ રહ્યું છે...'}
                 </>
               ) : (
                 <>
                   <Save className="h-4 w-4 mr-2" />
-                  પ્રકરણ ઉમેરો
+                  {editingChapter ? 'અપડેટ કરો' : 'પ્રકરણ ઉમેરો'}
                 </>
               )}
             </button>
@@ -1013,6 +1133,80 @@ const AddResourceModal: React.FC<{
             </button>
           </div>
         </form>
+      </div>
+    </div>
+  );
+};
+
+// Delete Confirmation Modal Component
+const DeleteConfirmationModal: React.FC<{
+  chapter: any;
+  onConfirm: () => void;
+  onCancel: () => void;
+  isDeleting: boolean;
+}> = ({ chapter, onConfirm, onCancel, isDeleting }) => {
+  return (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
+      <div className="relative bg-white w-full max-w-md mx-auto rounded-2xl shadow-2xl">
+        {/* Modal Header */}
+        <div className="px-6 py-4 border-b border-gray-200">
+          <div className="flex items-center">
+            <div className="flex-shrink-0 w-10 h-10 mx-auto bg-red-100 rounded-full flex items-center justify-center">
+              <Trash2 className="w-5 h-5 text-red-600" />
+            </div>
+            <div className="ml-3">
+              <h3 className="text-lg font-semibold text-gray-900">પ્રકરણ ડિલીટ કરો</h3>
+              <p className="text-sm text-gray-600">આ ક્રિયા પાછી કરી શકાશે નહીં</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Modal Content */}
+        <div className="px-6 py-4">
+          <p className="text-sm text-gray-700 mb-4">
+            શું તમે ખરેખર <span className="font-semibold text-gray-900">"{chapter.name}"</span> પ્રકરણને ડિલીટ કરવા માંગો છો?
+          </p>
+          
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+            <div className="flex items-center">
+              <AlertTriangle className="h-4 w-4 text-red-600 mr-2 flex-shrink-0" />
+              <div className="text-sm text-red-700">
+                <p className="font-medium">ચેતવણી:</p>
+                <p>આ પ્રકરણ અને તેના સાથે સંકળાયેલા બધા સંસાધનો કાયમ માટે ડિલીટ થઈ જશે.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Modal Actions */}
+        <div className="px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row gap-3">
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={isDeleting}
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+          >
+            રદ કરો
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={isDeleting}
+            className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+          >
+            {isDeleting ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+                ડિલીટ થઈ રહ્યું છે...
+              </>
+            ) : (
+              <>
+                <Trash2 className="w-4 h-4 mr-2" />
+                હા, ડિલીટ કરો
+              </>
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -154,11 +154,9 @@ router.post('/', authenticateToken, async (req, res) => {
 router.put('/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const { error, value } = chapterUpdateSchema.validate(req.body);
+    const value =  req.body
     
-    if (error) {
-      return res.status(400).json({ error: error.details[0].message });
-    }
+   
 
     // Check if chapter exists
     const existingChapter = await prisma.chapter.findUnique({

@@ -85,5 +85,10 @@ export const chapterResourcesAPI = {
 
   delete: async (id: string): Promise<void> => {
     await api.delete(`/chapter-resources/${id}`);
+  },
+
+  removeFile: async (id: string): Promise<ChapterResource> => {
+    const response = await api.delete(`/chapter-resources/${id}/file`);
+    return response.data;
   }
 };
