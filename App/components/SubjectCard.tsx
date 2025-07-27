@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -34,6 +34,7 @@ export default function SubjectCard({
         {/* Purple accent bar */}
         <View className="h-1 bg-purple-600" />
 
+        {/* Decoratives */}
         <View className="absolute -top-4 -right-4 opacity-10">
           <View className="w-20 h-20 rounded-full border-2 border-purple-600" />
         </View>
@@ -67,9 +68,25 @@ export default function SubjectCard({
             </View>
           </View>
 
-          {/* Arrow Icon */}
-          <View className="absolute top-3 right-3 bg-purple-600 rounded-full p-1.5 shadow-md">
-            <Ionicons name="chevron-forward" size={isSmallScreen ? 10 : 12} color="white" />
+          {/* Action Icons */}
+          <View className="absolute top-3 right-3 flex-row items-center space-x-1">
+            {/* Bookmark Icon
+            <TouchableOpacity
+              onPress={handleBookmarkPress}
+              activeOpacity={0.8}
+              className={`rounded-full p-1.5 shadow-md ${isBookmarked ? 'bg-amber-500' : 'bg-gray-400'}`}
+            >
+              <Ionicons 
+                name={isBookmarked ? 'bookmark' : 'bookmark-outline'} 
+                size={isSmallScreen ? 10 : 12} 
+                color="white" 
+              />
+            </TouchableOpacity> */}
+            
+            {/* Arrow Icon */}
+            <View className="bg-purple-600 rounded-full p-1.5 shadow-md">
+              <Ionicons name="chevron-forward" size={isSmallScreen ? 10 : 12} color="white" />
+            </View>
           </View>
         </View>
       </View>

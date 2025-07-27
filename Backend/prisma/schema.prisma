@@ -48,22 +48,41 @@ model Subject {
 }
 
 model Chapter {
-  id                  String  @id @default(cuid())
-  name                String
-  description         String?
-  subjectId           String
-  subject             Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-  videoUrl            String? // YouTube video URL
-  
-  // Local PDF URLs for solution and textbook
-  solutionPdfUrl      String? // Local URL for solution PDF (/uploads/filename.pdf)
-  solutionPdfFileName String? // Original filename for solution PDF
-  
-  textbookPdfUrl      String? // Local URL for textbook PDF (/uploads/filename.pdf)
-  textbookPdfFileName String? // Original filename for textbook PDF
-  
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  id          String              @id @default(cuid())
+  name        String
+  description String?
+  subjectId   String
+  subject     Subject             @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  resources   ChapterResource[]
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
 
   @@map("chapters")
+}
+
+model ChapterResource {
+  id          String              @id @default(cuid())
+  title       String
+  description String?
+  type        ChapterResourceType // svadhyay, svadhyay_pothi, other
+  resourceType ResourceType       // video, pdf
+  url         String              // URL for the resource
+  fileName    String?             // Original filename for uploaded files
+  chapterId   String
+  chapter     Chapter             @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  @@map("chapter_resources")
+}
+
+enum ChapterResourceType {
+  svadhyay
+  svadhyay_pothi
+  other
+}
+
+enum ResourceType {
+  video
+  pdf
 }

@@ -2,24 +2,8 @@ import express from 'express';
 import { prisma } from '../lib/prisma';
 import { authenticateToken } from '../middleware/auth';
 import { chapterSchema, chapterUpdateSchema } from '../utils/validation';
-import { LocalFileService } from '../services/localFileService';
-import * as fs from 'fs';
 
 const router = express.Router();
-const fileService = LocalFileService.getInstance();
-
-// Utility function to safely delete a local file
-const deleteLocalFileIfExists = async (fileUrl: string | null) => {
-  if (!fileUrl) return;
-  
-  try {
-    await fileService.deleteFile(fileUrl);
-    console.log(`Successfully deleted local file: ${fileUrl}`);
-  } catch (error) {
-    console.error(`Error deleting local file ${fileUrl}:`, error);
-    // Don't throw error - we don't want file deletion failure to prevent chapter deletion
-  }
-};
 
 // Get all chapters for a subject (public)
 router.get('/subject/:subjectId', async (req, res) => {
@@ -42,6 +26,14 @@ router.get('/subject/:subjectId', async (req, res) => {
             },
           },
         },
+        resources: {
+          orderBy: { createdAt: 'desc' },
+        },
+        _count: {
+          select: {
+            resources: true,
+          },
+        },
       },
     });
 
@@ -52,7 +44,7 @@ router.get('/subject/:subjectId', async (req, res) => {
   }
 });
 
-// Get single chapter by ID (public)
+// Get single chapter by ID with resources (public)
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -72,6 +64,14 @@ router.get('/:id', async (req, res) => {
             },
           },
         },
+        resources: {
+          orderBy: { createdAt: 'desc' },
+        },
+        _count: {
+          select: {
+            resources: true,
+          },
+        },
       },
     });
 
@@ -79,7 +79,17 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Chapter not found' });
     }
 
-    res.json(chapter);
+    // Group resources by type for easier frontend consumption
+    const groupedResources = {
+      svadhyay: chapter.resources.filter(r => r.type === 'svadhyay'),
+      svadhyay_pothi: chapter.resources.filter(r => r.type === 'svadhyay_pothi'),
+      other: chapter.resources.filter(r => r.type === 'other'),
+    };
+
+    res.json({
+      ...chapter,
+      groupedResources,
+    });
   } catch (error) {
     console.error('Get chapter error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -94,16 +104,7 @@ router.post('/', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: error.details[0].message });
     }
 
-    const { 
-      name, 
-      description, 
-      subjectId, 
-      videoUrl, 
-      solutionPdfUrl, 
-      solutionPdfFileName, 
-      textbookPdfUrl, 
-      textbookPdfFileName 
-    } = value;
+    const { name, description, subjectId } = value;
 
     // Check if subject exists
     const subject = await prisma.subject.findUnique({
@@ -119,11 +120,6 @@ router.post('/', authenticateToken, async (req, res) => {
         name,
         description,
         subjectId,
-        videoUrl,
-        solutionPdfUrl,
-        solutionPdfFileName,
-        textbookPdfUrl,
-        textbookPdfFileName,
       },
       include: {
         subject: {
@@ -136,6 +132,12 @@ router.post('/', authenticateToken, async (req, res) => {
                 name: true,
               },
             },
+          },
+        },
+        resources: true,
+        _count: {
+          select: {
+            resources: true,
           },
         },
       },
@@ -152,11 +154,9 @@ router.post('/', authenticateToken, async (req, res) => {
 router.put('/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const { error, value } = chapterUpdateSchema.validate(req.body);
+    const value =  req.body
     
-    if (error) {
-      return res.status(400).json({ error: error.details[0].message });
-    }
+   
 
     // Check if chapter exists
     const existingChapter = await prisma.chapter.findUnique({
@@ -165,15 +165,6 @@ router.put('/:id', authenticateToken, async (req, res) => {
 
     if (!existingChapter) {
       return res.status(404).json({ error: 'Chapter not found' });
-    }
-
-    // Clean up old PDF files if they're being replaced
-    if (value.textbookPdfUrl && value.textbookPdfUrl !== existingChapter.textbookPdfUrl) {
-      await deleteLocalFileIfExists(existingChapter.textbookPdfUrl);
-    }
-    
-    if (value.solutionPdfUrl && value.solutionPdfUrl !== existingChapter.solutionPdfUrl) {
-      await deleteLocalFileIfExists(existingChapter.solutionPdfUrl);
     }
 
     const updatedChapter = await prisma.chapter.update({
@@ -190,6 +181,14 @@ router.put('/:id', authenticateToken, async (req, res) => {
                 name: true,
               },
             },
+          },
+        },
+        resources: {
+          orderBy: { createdAt: 'desc' },
+        },
+        _count: {
+          select: {
+            resources: true,
           },
         },
       },
@@ -209,28 +208,22 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 
     const chapter = await prisma.chapter.findUnique({
       where: { id },
+      include: {
+        resources: true,
+      },
     });
 
     if (!chapter) {
       return res.status(404).json({ error: 'Chapter not found' });
     }
 
-    // Delete associated PDF files before deleting the chapter
-    if (chapter.textbookPdfUrl) {
-      await deleteLocalFileIfExists(chapter.textbookPdfUrl);
-    }
-    
-    if (chapter.solutionPdfUrl) {
-      await deleteLocalFileIfExists(chapter.solutionPdfUrl);
-    }
-
-    // Delete the chapter from database
+    // Delete the chapter from database (this will cascade delete resources)
     await prisma.chapter.delete({
       where: { id },
     });
 
     res.json({ 
-      message: 'Chapter and associated files deleted successfully' 
+      message: 'Chapter and associated resources deleted successfully' 
     });
   } catch (error) {
     console.error('Delete chapter error:', error);

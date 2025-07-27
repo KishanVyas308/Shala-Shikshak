@@ -25,6 +25,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { standardsAPI } from '../../services/standards';
 import type { Standard } from '../../types';
+import { useNavigate } from 'react-router-dom';
 
 const standardSchema = z.object({
   name: z.string().min(1, 'નામ આવશ્યક છે').max(100, 'નામ ખૂબ લાંબું છે'),
@@ -39,9 +40,10 @@ interface SortableStandardProps {
   standard: Standard;
   onEdit: (standard: Standard) => void;
   onDelete: (id: string) => void;
+  onClick: (id: string) => void;
 }
 
-const SortableStandard: React.FC<SortableStandardProps> = ({ standard, onEdit, onDelete }) => {
+const SortableStandard: React.FC<SortableStandardProps> = ({ standard, onEdit, onDelete, onClick }) => {
   const {
     attributes,
     listeners,
@@ -59,6 +61,7 @@ const SortableStandard: React.FC<SortableStandardProps> = ({ standard, onEdit, o
   return (
     <div
       ref={setNodeRef}
+    
       style={style}
       className={`bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 transition-all duration-300 ${
         isDragging ? 'shadow-2xl opacity-75 scale-105 rotate-2' : 'hover:shadow-xl hover:-translate-y-1'
@@ -66,7 +69,10 @@ const SortableStandard: React.FC<SortableStandardProps> = ({ standard, onEdit, o
     >
       {/* Mobile Layout */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
-        <div className="flex items-start space-x-3 sm:space-x-4 flex-1">
+        <div className="flex items-start space-x-3 sm:space-x-4 flex-1 cursor-pointer"
+            onClick={() => onClick(standard.id)}
+
+        >
           <button
             {...attributes}
             {...listeners}
@@ -128,6 +134,8 @@ const AdminStandards: React.FC = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingStandard, setEditingStandard] = useState<Standard | null>(null);
   const [sortedStandards, setSortedStandards] = useState<Standard[]>([]);
+
+  const navigate = useNavigate();
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -251,6 +259,10 @@ const AdminStandards: React.FC = () => {
     }
   };
 
+  const handleOpen = (id: string) => {
+    navigate(`/admin/subjects/${id}`);
+  }
+
   const closeModal = () => {
     setIsCreateModalOpen(false);
     setEditingStandard(null);
@@ -354,6 +366,7 @@ const AdminStandards: React.FC = () => {
                       standard={standard}
                       onEdit={handleEdit}
                       onDelete={handleDelete}
+                      onClick={handleOpen}
                     />
                   ))}
                 </div>

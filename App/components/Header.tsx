@@ -13,6 +13,10 @@ interface HeaderProps {
     icon: keyof typeof Ionicons.glyphMap;
     onPress: () => void;
   };
+  leftAction?: {
+    icon: keyof typeof Ionicons.glyphMap;
+    onPress: () => void;
+  };
 }
 
 export default function Header({ 
@@ -20,7 +24,8 @@ export default function Header({
   subtitle, 
   showBack = false, 
   onBackPress,
-  rightAction 
+  rightAction,
+  leftAction 
 }: HeaderProps) {
   const insets = useSafeAreaInsets();
   
@@ -59,16 +64,28 @@ export default function Header({
           </View>
         </View>
         
-        {/* Right Action */}
-        {rightAction && (
-          <TouchableOpacity
-            onPress={rightAction.onPress}
-            className="p-2 rounded-full bg-white/20"
-            activeOpacity={0.7}
-          >
-            <Ionicons name={rightAction.icon} size={24} color="white" />
-          </TouchableOpacity>
-        )}
+        {/* Right Side */}
+        <View className="flex-row gap-3">
+          {leftAction && (
+            <TouchableOpacity
+              onPress={leftAction.onPress}
+              className="p-2 rounded-full bg-white/20"
+              activeOpacity={0.7}
+            >
+              <Ionicons name={leftAction.icon} size={24} color="white" />
+            </TouchableOpacity>
+          )}
+          
+          {rightAction && (
+            <TouchableOpacity
+              onPress={rightAction.onPress}
+              className="p-2 rounded-full bg-white/20"
+              activeOpacity={0.7}
+            >
+              <Ionicons name={rightAction.icon} size={24} color="white" />
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
     </View>

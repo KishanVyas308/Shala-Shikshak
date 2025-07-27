@@ -35,6 +35,19 @@ export interface Subject {
   updatedAt: string;
 }
 
+export interface ChapterResource {
+  id: string;
+  title: string;
+  description?: string;
+  type: 'svadhyay' | 'svadhyay_pothi' | 'other';
+  resourceType: 'video' | 'pdf';
+  url: string;
+  fileName?: string;
+  chapterId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Chapter {
   id: string;
   name: string;
@@ -48,11 +61,13 @@ export interface Chapter {
       name: string;
     };
   };
-  videoUrl?: string;
-  solutionPdfUrl?: string;
-  solutionPdfFileName?: string;
-  textbookPdfUrl?: string;
-  textbookPdfFileName?: string;
+  resources?: ChapterResource[];
+  _count?: {
+    resources: number;
+    svadhyayResources?: number;
+    svadhyayPothiResources?: number;
+    otherResources?: number;
+  };
   createdAt: string;
   updatedAt: string;
 }
@@ -84,11 +99,16 @@ export interface CreateChapterData {
   name: string;
   description?: string;
   subjectId: string;
-  videoUrl?: string;
-  solutionPdfUrl?: string;
-  solutionPdfFileName?: string;
-  textbookPdfUrl?: string;
-  textbookPdfFileName?: string;
+}
+
+export interface CreateChapterResourceData {
+  title: string;
+  description?: string;
+  type: 'svadhyay' | 'svadhyay_pothi' | 'other';
+  resourceType: 'video' | 'pdf';
+  url?: string;
+  fileName?: string;
+  chapterId: string;
 }
 
 export interface UploadResponse {

@@ -103,43 +103,6 @@ export default function Home() {
         showsVerticalScrollIndicator={false}
       >
 
-
-        {/* Statistics Cards */}
-        {/* <View className="flex-row mx-4 my-6 gap-3">
-          <View className="flex-1 bg-white rounded-xl p-4 shadow-lg">
-            <View className="items-center">
-              <Text className="font-gujarati text-2xl font-bold text-primary-600">
-                {sortedStandards.length.toString()}
-              </Text>
-              <Text className="font-gujarati text-secondary-600 text-sm">
-                મારા ધોરણો
-              </Text>
-            </View>
-          </View>
-          <View className="flex-1 bg-white rounded-xl p-4 shadow-lg">
-            <View className="items-center">
-              <Text className="font-gujarati text-2xl font-bold text-accent-600">
-                {sortedStandards.reduce((acc, std) => acc + (std._count?.subjects || 0), 0).toString()}
-              </Text>
-              <Text className="font-gujarati text-secondary-600 text-sm">
-                વિષયો
-              </Text>
-            </View>
-          </View>
-          <View className="flex-1 bg-white rounded-xl p-4 shadow-lg">
-            <View className="items-center">
-              <Text className="font-gujarati text-2xl font-bold text-success-600">
-                {sortedStandards.reduce((stdAcc, std) => 
-                  stdAcc + (std.subjects?.reduce((subAcc, subject) => 
-                    subAcc + (subject.chapters?.length || 0), 0) || 0), 0).toString()}
-              </Text>
-              <Text className="font-gujarati text-secondary-600 text-sm">
-                પ્રકરણો
-              </Text>
-            </View>
-          </View>
-        </View> */}
-
         {/* Standards List Header */}
         <View className="mx-4 my-4">
           <Text className="font-gujarati text-secondary-800 text-xl font-bold">
@@ -168,8 +131,32 @@ export default function Home() {
           </View>
         </View>
 
+        {/* Book mark  */}
+        <View className="mx-4 mb-6 p-4 bg-white rounded-lg shadow-md overflow-hidden relative ">
+          <View className="w-1 bg-purple-600 absolute left-0 top-0 bottom-0 z-30" />
+          <TouchableOpacity
+            onPress={() => router.push('/bookmarks')}
+            className="flex-row items-center justify-between "
+          >
+            {/* Decoratives */}
+            <View className="absolute -right-12 opacity-10">
+              <View className="w-28 h-28 rounded-full border-2 border-purple-600" />
+            </View>
+
+            <View className="flex-1">
+              <Text className="font-gujarati text-secondary-800 text-lg font-bold">
+                મારા બુકમાર્ક્સ
+              </Text>
+              <Text className="font-gujarati text-secondary-600 text-sm mt-0.5">
+                તમારા પસંદીદા વિષયો અને પ્રકરણો
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#7c3aed" />
+          </TouchableOpacity>
+        </View>
+
         {/* Footer */}
-        <View className="mx-4 mb-6 p-4 bg-white rounded-xl">
+        <View className="mx-4 mb-6  p-4 bg-white rounded-xl">
           <Text className="font-gujarati text-center text-secondary-500 text-sm">
             શિક્ષણ એ જીવનની સૌથી મોટી સંપત્તિ છે
           </Text>

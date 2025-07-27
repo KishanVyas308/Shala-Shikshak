@@ -7,11 +7,13 @@ import Standards from './pages/Standards'
 import StandardView from './pages/StandardView'
 import SubjectView from './pages/SubjectView'
 import ChapterView from './pages/ChapterView'
+import ChapterResourcesView from './pages/ChapterResourcesView'
 import Login from './pages/Login'
 import AdminDashboard from './pages/admin/Dashboard'
 import AdminStandards from './pages/admin/Standards'
 import AdminSubjects from './pages/admin/Subjects'
 import AdminChapters from './pages/admin/Chapters'
+import ChapterResources from './pages/admin/ChapterResources'
 import ProtectedRoute from './components/ProtectedRoute'
 
 
@@ -28,6 +30,7 @@ function App() {
             <Route path="/standard/:id" element={<StandardView />} />
             <Route path="/subject/:id" element={<SubjectView />} />
             <Route path="/chapter/:id" element={<ChapterView />} />
+            <Route path="/chapter/:id/resources" element={<ChapterResourcesView />} />
             <Route path="/login" element={<Login />} />
             
             {/* Admin Routes */}
@@ -41,14 +44,19 @@ function App() {
                 <AdminStandards />
               </ProtectedRoute>
             } />
-            <Route path="/admin/subjects" element={
+            <Route path="/admin/subjects/:id?" element={
               <ProtectedRoute>
                 <AdminSubjects />
               </ProtectedRoute>
             } />
-            <Route path="/admin/chapters" element={
+            <Route path="/admin/chapters/:id?" element={
               <ProtectedRoute>
                 <AdminChapters />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/chapter/:chapterId/resources" element={
+              <ProtectedRoute>
+                <ChapterResources />
               </ProtectedRoute>
             } />
           </Routes>

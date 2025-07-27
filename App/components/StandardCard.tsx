@@ -34,6 +34,15 @@ export default function StandardCard({
         {/* Accent Bar */}
         <View className="h-1 bg-purple-600" />
 
+
+        {/* Decoratives */}
+        <View className="absolute -top-4 -right-4 opacity-10">
+          <View className="w-20 h-20 rounded-full border-2 border-purple-600" />
+        </View>
+        <View className="absolute -bottom-6 -left-6 opacity-5">
+          <View className="w-32 h-32 rounded-full border-2 border-purple-600" />
+        </View>
+
         <View className={`${isSmallScreen ? 'p-3' : isMediumScreen ? 'p-4' : 'p-4'} relative flex min-h-[120px] `}>
           {/* Content */}
           <View className="flex flex-col space-y-2 flex-1 ">
@@ -82,6 +91,14 @@ export function AddStandardCard() {
     >
       <View className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden mx-1">
         <View className="h-1 bg-purple-600" />
+        {/* Decoratives */}
+        <View className="absolute -top-4 -right-4 opacity-10">
+          <View className="w-20 h-20 rounded-full border-2 border-purple-600" />
+        </View>
+         <View className="absolute -bottom-6 -left-6 opacity-5">
+          <View className="w-32 h-32 rounded-full border-2 border-purple-600" />
+        </View>
+
         <View className="p-4 flex items-center justify-center min-h-[120px]">
           <Ionicons name="add-circle-outline" size={40} color="#7c3aed" />
           <Text className="font-gujarati text-purple-700 font-medium mt-2">ધોરણ ઉમેરો</Text>

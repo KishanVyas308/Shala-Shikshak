@@ -62,10 +62,10 @@ export default function StandardView() {
         subtitle="વિષયો પસંદ કરો"
         showBack
         onBackPress={() => router.back()}
-        rightAction={{
-          icon: 'bookmark-outline',
-          onPress: () => {}
-        }}
+        // rightAction={{
+        //   icon: 'bookmark-outline',
+        //   onPress: () => {}
+        // }}
       />
       
       <ScrollView

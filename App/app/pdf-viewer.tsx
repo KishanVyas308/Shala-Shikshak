@@ -9,6 +9,38 @@ import WebView from 'react-native-webview';
 export default function PDFViewer() {
   const { url, title } = useLocalSearchParams<{ url: string; title: string }>();
 
+  // Check if URL is a Google Drive link or doesn't end with .pdf
+  const isGoogleDriveUrl = (url: string) => {
+    return !url.endsWith('.pdf') || url.includes('drive.google.com') || url.includes('docs.google.com');
+  };
+
+  // Convert Google Drive URL to viewer format
+  const getViewerUrl = (url: string) => {
+    if (isGoogleDriveUrl(url)) {
+      // If it's already a drive link, extract file ID and use viewer
+      if (url.includes('drive.google.com') || url.includes('docs.google.com')) {
+        const fileIdMatch = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+        if (fileIdMatch) {
+          return `https://drive.google.com/file/d/${fileIdMatch[1]}/preview`;
+        }
+        // If already in preview format, use as is
+        if (url.includes('/preview')) {
+          return url;
+        }
+        return `${url}/preview`;
+      } else {
+        // Assume it's a file ID for Google Drive
+        return `https://drive.google.com/file/d/${url}/preview`;
+      }
+    } else {
+      // Regular PDF URL - use PDF.js viewer
+      return `https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent(url)}`;
+    }
+  };
+
+  const viewerUrl = getViewerUrl(url || '');
+  const isDriveViewer = isGoogleDriveUrl(url || '');
+
   // Prevent screenshots and screen recording when component mounts
   useEffect(() => {
     const preventScreenCapture = async () => {
@@ -61,32 +93,64 @@ export default function PDFViewer() {
       />
 
       <WebView
-        source={{
-          uri: `https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent(url || '')}`
-        }}
+        source={{ uri: viewerUrl }}
         javaScriptEnabled={true}
         domStorageEnabled={true}
         startInLoadingState={true}
-        injectedJavaScript={`
-          // Hide download button and other controls
-          setTimeout(() => {
-            const toolbar = document.querySelector('#toolbarViewerRight');
-            if (toolbar) toolbar.style.display = 'none';
-            
-            const downloadButton = document.querySelector('#download');
-            if (downloadButton) downloadButton.style.display = 'none';
-            
-            const printButton = document.querySelector('#print');
-            if (printButton) printButton.style.display = 'none';
-            
-            const openFile = document.querySelector('#openFile');
-            if (openFile) openFile.style.display = 'none';
-          }, 1000);
-          true;
-        `}
+        injectedJavaScript={
+          isDriveViewer 
+            ? `
+              // For Google Drive viewer - hide download and sharing options
+              setTimeout(() => {
+                const toolbar = document.querySelector('[role="toolbar"]');
+                if (toolbar) {
+                  const buttons = toolbar.querySelectorAll('div[role="button"]');
+                  buttons.forEach(button => {
+                    const ariaLabel = button.getAttribute('aria-label');
+                    if (ariaLabel && (
+                      ariaLabel.includes('Download') || 
+                      ariaLabel.includes('Print') || 
+                      ariaLabel.includes('Share') ||
+                      ariaLabel.includes('ડાઉનલોડ') ||
+                      ariaLabel.includes('પ્રિન્ટ') ||
+                      ariaLabel.includes('શેર')
+                    )) {
+                      button.style.display = 'none';
+                    }
+                  });
+                }
+                
+                // Hide additional controls
+                const controls = document.querySelectorAll('[data-tooltip*="Download"], [data-tooltip*="Print"], [aria-label*="Download"], [aria-label*="Print"]');
+                controls.forEach(control => {
+                  control.style.display = 'none';
+                });
+              }, 2000);
+              true;
+            `
+            : `
+              // For PDF.js viewer - hide download button and other controls
+              setTimeout(() => {
+                const toolbar = document.querySelector('#toolbarViewerRight');
+                if (toolbar) toolbar.style.display = 'none';
+                
+                const downloadButton = document.querySelector('#download');
+                if (downloadButton) downloadButton.style.display = 'none';
+                
+                const printButton = document.querySelector('#print');
+                if (printButton) printButton.style.display = 'none';
+                
+                const openFile = document.querySelector('#openFile');
+                if (openFile) openFile.style.display = 'none';
+              }, 1000);
+              true;
+            `
+        }
         renderLoading={() => (
           <View className="flex-1 justify-center items-center">
-            <Text className="text-gray-600">PDF લોડ થઈ રહ્યું છે...</Text>
+            <Text className="text-gray-600">
+              {isDriveViewer ? 'Google Drive દસ્તાવેજ લોડ થઈ રહ્યો છે...' : 'PDF લોડ થઈ રહ્યું છે...'}
+            </Text>
           </View>
         )}
         onError={(syntheticEvent) => {
