@@ -68,7 +68,12 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'Range', 'X-Requested-With'],
   exposedHeaders: ['Content-Length', 'Content-Range', 'Accept-Ranges']
 }));
-app.use(morgan('combined'));
+
+// Conditional logging - only log errors in production
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev')); // Only in development
+}
+
 app.use(express.json()); // No size limit
 app.use(express.urlencoded({ extended: true })); // No size limit
 
