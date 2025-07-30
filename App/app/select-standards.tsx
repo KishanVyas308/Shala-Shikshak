@@ -3,6 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { standardsAPI } from '../services/standards';
 import { storageService } from '../services/storage';
 import Header from '../components/Header';
@@ -93,50 +94,55 @@ export default function SelectStandards() {
 
     if (isLoadingStandards || isInitializing) {
         return (
-            <View className="flex-1 bg-secondary-50">
-                <Header
-                    title="ધોરણ પસંદ કરો"
-                    subtitle="તમારા અભ્યાસ માટે યોગ્ય ધોરણ પસંદ કરો"
-                    showBack={hasExistingStandards}
-                    onBackPress={() => {
-                        try {
-                            router.back();
-                        } catch (error) {
-                            console.error('Navigation error:', error);
-                            router.replace('/');
-                        }
-                    }}
-                />
-                <LoadingState />
-            </View>
+            <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>
+                <View className="flex-1 bg-secondary-50">
+                    <Header
+                        title="ધોરણ પસંદ કરો"
+                        subtitle="તમારા અભ્યાસ માટે યોગ્ય ધોરણ પસંદ કરો"
+                        showBack={hasExistingStandards}
+                        onBackPress={() => {
+                            try {
+                                router.back();
+                            } catch (error) {
+                                console.error('Navigation error:', error);
+                                router.replace('/');
+                            }
+                        }}
+                    />
+                    <LoadingState />
+                </View>
+            </SafeAreaView>
         );
     }
 
     if (error) {
         return (
-            <View className="flex-1 bg-secondary-50">
-                <Header
-                    title="ધોરણ પસંદ કરો"
-                    subtitle="તમારા અભ્યાસ માટે યોગ્ય ધોરણ પસંદ કરો"
-                    showBack={hasExistingStandards}
-                    onBackPress={() => {
-                        try {
-                            router.back();
-                        } catch (error) {
-                            console.error('Navigation error:', error);
-                            router.replace('/');
-                        }
-                    }}
-                />
-                <ErrorState onRetry={() => refetch()} />
-            </View>
+            <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>
+                <View className="flex-1 bg-secondary-50">
+                    <Header
+                        title="ધોરણ પસંદ કરો"
+                        subtitle="તમારા અભ્યાસ માટે યોગ્ય ધોરણ પસંદ કરો"
+                        showBack={hasExistingStandards}
+                        onBackPress={() => {
+                            try {
+                                router.back();
+                            } catch (error) {
+                                console.error('Navigation error:', error);
+                                router.replace('/');
+                            }
+                        }}
+                    />
+                    <ErrorState onRetry={() => refetch()} />
+                </View>
+            </SafeAreaView>
         );
     }
 
     const sortedStandards = [...standards].sort((a, b) => a.order - b.order);
 
     return (
-        <View className="flex-1 bg-secondary-50">
+        <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>
+            <View className="flex-1 bg-secondary-50">
             <Header
                 title="ધોરણ પસંદ કરો"
                 subtitle="તમારા અભ્યાસ માટે યોગ્ય ધોરણ પસંદ કરો"
@@ -176,7 +182,7 @@ export default function SelectStandards() {
 
                 {/* Standards Grid */}
                 <View className="mx-4 mb-6">
-                    <View className="flex-row flex-wrap justify-between">
+                    <View className="flex-row flex-wrap gap-[2%] justify-start">
                         {sortedStandards.map((standard) => {
                             const isSelected = selectedStandards.includes(standard.id);
                             return (
@@ -280,5 +286,6 @@ export default function SelectStandards() {
                 </TouchableOpacity>
             </View>
         </View>
+        </SafeAreaView>
     );
 }

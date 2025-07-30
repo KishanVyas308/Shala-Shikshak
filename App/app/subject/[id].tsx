@@ -3,6 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity, TextInput, RefreshControl, Al
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { subjectsAPI } from '../../services/subjects';
 import { storageService } from '../../services/storage';
 import Header from '../../components/Header';
@@ -42,21 +43,24 @@ export default function SubjectView() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 bg-secondary-50">
-        <Header 
-          title="પ્રકરણો"
-          subtitle="લોડ થઈ રહ્યું છે..."
-          showBack
-          onBackPress={() => router.back()}
-        />
-        <LoadingState message="પ્રકરણો લોડ થઈ રહ્યા છે..." />
-      </View>
+      <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>
+        <View className="flex-1 bg-secondary-50">
+          <Header 
+            title="પ્રકરણો"
+            subtitle="લોડ થઈ રહ્યું છે..."
+            showBack
+            onBackPress={() => router.back()}
+          />
+          <LoadingState message="પ્રકરણો લોડ થઈ રહ્યા છે..." />
+        </View>
+      </SafeAreaView>
     );
   }
 
   if (error || !subject) {
     return (
-      <View className="flex-1 bg-secondary-50">
+      <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>
+        <View className="flex-1 bg-secondary-50">
         <Header 
           title="પ્રકરણો"
           subtitle="ભૂલ"
@@ -67,7 +71,8 @@ export default function SubjectView() {
           message="પ્રકરણો લોડ કરવામાં સમસ્યા આવી છે"
           onRetry={() => refetch()} 
         />
-      </View>
+        </View>
+      </SafeAreaView>
     );
   }
 
@@ -88,7 +93,8 @@ export default function SubjectView() {
   });
 
   return (
-    <View className="flex-1 bg-secondary-50">
+    <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>
+      <View className="flex-1 bg-secondary-50">
       <Header 
         title={subject.name}
         subtitle={subject.standard?.name || 'પ્રકરણો'}
@@ -125,7 +131,7 @@ export default function SubjectView() {
                 videoUrl={chapter.videoUrl}
                 textbookPdfUrl={chapter.textbookPdfUrl}
                 solutionPdfUrl={chapter.solutionPdfUrl}
-                onPress={() => {}}
+                onPress={() => router.push(`/chapter/${chapter.id}` as any)}
               />
             ))
           ) : (
@@ -145,6 +151,7 @@ export default function SubjectView() {
           )}
         </View>
       </ScrollView>
-    </View>
+      </View>
+    </SafeAreaView>
   );
 }

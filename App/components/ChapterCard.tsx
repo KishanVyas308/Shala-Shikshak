@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, Alert, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { storageService } from '../services/storage';
+import { useFontSize } from '../contexts/FontSizeContext';
 
 interface ChapterCardProps {
   id: string;
@@ -32,6 +33,8 @@ export default function ChapterCard({
   handleRemoveChapterBookmark
 }: ChapterCardProps) {
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const { getFontSizeClasses } = useFontSize();
+  const fontClasses = getFontSizeClasses();
   const resourceCount = [hasVideo, hasTextbook, hasSolution].filter(Boolean).length;
 
   useEffect(() => {
@@ -79,18 +82,21 @@ export default function ChapterCard({
   };
 
   return (
+
+    <TouchableOpacity onPress={onPress} >
+
   
       <View className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mx-4 mb-3">
         {/* Bookmark indicator */}
         <TouchableOpacity
           onPress={handleBookmarkPress}
-          className={`absolute top-3 right-3 rounded-full p-2 ${isBookmarked ? 'bg-purple-100' : 'bg-gray-100'}`}
+          className={`absolute top-3 right-3 rounded-full p-2 ${isBookmarked ? 'bg-primary-100' : 'bg-gray-100'}`}
           activeOpacity={0.7}
         >
           <Ionicons 
             name={isBookmarked ? "bookmark" : "bookmark-outline"} 
             size={18} 
-            color={isBookmarked ? "#7c3aed" : "#6b7280"} 
+            color={isBookmarked ? "#6C63FF" : "#6b7280"} 
           />
         </TouchableOpacity>
 
@@ -104,13 +110,13 @@ export default function ChapterCard({
 
               <View className="flex-1 mr-3">
                 {/* Chapter Name */}
-                <Text className="font-gujarati text-gray-900 text-base font-bold mb-1" numberOfLines={2}>
+                <Text className={`font-gujarati text-gray-900 font-bold mb-1 ${fontClasses.textLg}`} numberOfLines={2}>
                   {name}
                 </Text>
 
                 {/* Description */}
                 {description && (
-                  <Text className="font-gujarati text-gray-600 text-sm mb-2 leading-4" numberOfLines={1}>
+                  <Text className={`font-gujarati text-gray-600 mb-2 leading-4 ${fontClasses.text}`} numberOfLines={1}>
                     {description}
                   </Text>
                 )}
@@ -165,5 +171,7 @@ export default function ChapterCard({
           </View>
         </View>
       </View>
+    </TouchableOpacity>
+
   );
 }

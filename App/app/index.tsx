@@ -3,17 +3,21 @@ import { View, Text, ScrollView, RefreshControl, Modal, TouchableOpacity } from 
 import { router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { standardsAPI } from '../services/standards';
 import { storageService } from '../services/storage';
+import { useFontSize } from '../contexts/FontSizeContext';
 import Header from '../components/Header';
 import StandardCard, { AddStandardCard } from '../components/StandardCard';
 import LoadingState from '../components/LoadingState';
 import ErrorState from '../components/ErrorState';
+import { FontSizeControls } from '../components/FontSizeControls';
 
 export default function Home() {
   const [userStandardIds, setUserStandardIds] = useState<string[]>([]);
   const [isCheckingStandards, setIsCheckingStandards] = useState(true);
   const [isSettingsModalVisible, setIsSettingsModalVisible] = useState(false);
+  const { getFontSizeClasses } = useFontSize();
 
   const { data: standards = [], isLoading, error, refetch } = useQuery({
     queryKey: ['standards'],
@@ -47,29 +51,35 @@ export default function Home() {
   // Show loading while checking user standards
   if (isCheckingStandards) {
     return (
-      <View className="flex-1 bg-secondary-50">
-        <Header title="શાળા શિક્ષક" subtitle="શૈક્ષણિક પ્લેટફોર્મ" />
-        <LoadingState />
-      </View>
+      <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>
+        <View className="flex-1 bg-secondary-50">
+          <Header title="શાળા શિક્ષક" subtitle="શૈક્ષણિક પ્લેટફોર્મ" />
+          <LoadingState />
+        </View>
+      </SafeAreaView>
     );
   }
 
 
   if (isLoading) {
     return (
-      <View className="flex-1 bg-secondary-50">
-        <Header title="શાળા શિક્ષક" subtitle="શૈક્ષણિક પ્લેટફોર્મ" />
-        <LoadingState />
-      </View>
+      <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>
+        <View className="flex-1 bg-secondary-50">
+          <Header title="શાળા શિક્ષક" subtitle="શૈક્ષણિક પ્લેટફોર્મ" />
+          <LoadingState />
+        </View>
+      </SafeAreaView>
     );
   }
 
   if (error) {
     return (
-      <View className="flex-1 bg-secondary-50">
-        <Header title="શાળા શિક્ષક" subtitle="શૈક્ષણિક પ્લેટફોર્મ" />
-        <ErrorState onRetry={() => refetch()} />
-      </View>
+      <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>
+        <View className="flex-1 bg-secondary-50">
+          <Header title="શાળા શિક્ષક" subtitle="શૈક્ષણિક પ્લેટફોર્મ" />
+          <ErrorState onRetry={() => refetch()} />
+        </View>
+      </SafeAreaView>
     );
   }
 
@@ -85,7 +95,8 @@ export default function Home() {
   };
 
   return (
-    <View className="flex-1 bg-secondary-50">
+    <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>
+      <View className="flex-1 bg-secondary-50">
       <Header
         title="શાળા શિક્ષક"
         // subtitle="શૈક્ષણિક પ્લેટફોર્મ"
@@ -105,7 +116,7 @@ export default function Home() {
 
         {/* Standards List Header */}
         <View className="mx-4 my-4">
-          <Text className="font-gujarati text-secondary-800 text-xl font-bold">
+          <Text className={`font-gujarati text-secondary-800 font-bold ${getFontSizeClasses().title}`}>
             પસંદ કરેલા ધોરણો
           </Text>
 
@@ -133,14 +144,14 @@ export default function Home() {
 
         {/* Book mark  */}
         <View className="mx-4 mb-6 p-4 bg-white rounded-lg shadow-md overflow-hidden relative ">
-          <View className="w-1 bg-purple-600 absolute left-0 top-0 bottom-0 z-30" />
+          <View className="w-1 bg-primary-600 absolute left-0 top-0 bottom-0 z-30" />
           <TouchableOpacity
             onPress={() => router.push('/bookmarks')}
             className="flex-row items-center justify-between "
           >
             {/* Decoratives */}
             <View className="absolute -right-12 opacity-10">
-              <View className="w-28 h-28 rounded-full border-2 border-purple-600" />
+              <View className="w-28 h-28 rounded-full border-2 border-primary-600" />
             </View>
 
             <View className="flex-1">
@@ -151,7 +162,7 @@ export default function Home() {
                 તમારા પસંદીદા વિષયો અને પ્રકરણો
               </Text>
             </View>
-            <Ionicons name="chevron-forward" size={20} color="#7c3aed" />
+            <Ionicons name="chevron-forward" size={20} color="#6C63FF" />
           </TouchableOpacity>
         </View>
 
@@ -186,7 +197,7 @@ export default function Home() {
             {/* Modal Header */}
             <View className="px-6 py-4 border-b border-gray-100">
               <View className="flex-row items-center justify-between">
-                <Text className="font-gujarati text-lg font-bold text-secondary-800">
+                <Text className={`font-gujarati font-bold text-secondary-800 ${getFontSizeClasses().textXl}`}>
                   સેટિંગ્સ
                 </Text>
                 <TouchableOpacity
@@ -200,19 +211,27 @@ export default function Home() {
 
             {/* Modal Content */}
             <View className="py-2">
+              {/* Font Size Controls */}
+              <View className="px-6 py-4 border-b border-gray-100">
+                <Text className={`font-gujarati font-semibold text-secondary-800 mb-3 ${getFontSizeClasses().textLg}`}>
+                  ફોન્ટ સાઈઝ સેટિંગ્સ
+                </Text>
+                <FontSizeControls />
+              </View>
+
               <TouchableOpacity
                 onPress={handleChangeStandards}
                 className="flex-row items-center px-6 py-4 active:bg-gray-50"
                 activeOpacity={0.7}
               >
                 <View className="w-10 h-10 rounded-full bg-primary-100 items-center justify-center mr-4">
-                  <Ionicons name="school-outline" size={20} color="#7C3AED" />
+                  <Ionicons name="school-outline" size={20} color="#6C63FF" />
                 </View>
                 <View className="flex-1">
-                  <Text className="font-gujarati text-base font-semibold text-secondary-800">
+                  <Text className={`font-gujarati font-semibold text-secondary-800 ${getFontSizeClasses().textLg}`}>
                     ધોરણ બદલો
                   </Text>
-                  <Text className="font-gujarati text-sm text-secondary-600 mt-0.5">
+                  <Text className={`font-gujarati text-secondary-600 mt-0.5 ${getFontSizeClasses().text}`}>
                     તમારા ધોરણો પસંદ કરો અથવા બદલો
                   </Text>
                 </View>
@@ -222,6 +241,7 @@ export default function Home() {
           </TouchableOpacity>
         </TouchableOpacity>
       </Modal>
-    </View>
+      </View>
+    </SafeAreaView>
   );
 }

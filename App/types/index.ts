@@ -48,6 +48,15 @@ export interface Chapter {
       name: string;
     };
   };
+  resources?: ChapterResource[];
+  groupedResources?: {
+    svadhyay: ChapterResource[];
+    svadhyay_pothi: ChapterResource[];
+    other: ChapterResource[];
+  };
+  _count?: {
+    resources: number;
+  };
   videoUrl?: string;
   textbookPdfUrl?: string;
   textbookPdfFileId?: string;
@@ -55,6 +64,20 @@ export interface Chapter {
   solutionPdfUrl?: string;
   solutionPdfFileId?: string;
   solutionPdfFileName?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ChapterResource {
+  id: string;
+  title: string;
+  description?: string;
+  type: 'svadhyay' | 'svadhyay_pothi' | 'other';
+  resourceType: 'video' | 'pdf';
+  url: string;
+  fileName?: string;
+  chapterId: string;
+  chapter?: Chapter;
   createdAt: string;
   updatedAt: string;
 }

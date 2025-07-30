@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, Linking, Alert } from 'react-native';
 import { useLocalSearchParams, router, useFocusEffect } from 'expo-router';
 import * as ScreenCapture from 'expo-screen-capture';
 import Header from '../components/Header';
@@ -9,13 +9,31 @@ import WebView from 'react-native-webview';
 export default function PDFViewer() {
   const { url, title } = useLocalSearchParams<{ url: string; title: string }>();
 
+  // Check if URL is a YouTube link
+  const isYouTubeUrl = (url: string) => {
+    return url.includes('youtube.com') || url.includes('youtu.be');
+  };
+
   // Check if URL is a Google Drive link or doesn't end with .pdf
   const isGoogleDriveUrl = (url: string) => {
     return !url.endsWith('.pdf') || url.includes('drive.google.com') || url.includes('docs.google.com');
   };
 
-  // Convert Google Drive URL to viewer format
+  // Convert URL to appropriate viewer format
   const getViewerUrl = (url: string) => {
+    // Handle YouTube URLs
+    if (isYouTubeUrl(url)) {
+      // Convert to embed format for better WebView compatibility
+      if (url.includes('youtube.com/watch?v=')) {
+        const videoId = url.match(/v=([^&]+)/)?.[1];
+        return `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=1&fs=1&modestbranding=1`;
+      } else if (url.includes('youtu.be/')) {
+        const videoId = url.split('youtu.be/')[1]?.split('?')[0];
+        return `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=1&fs=1&modestbranding=1`;
+      }
+      return url;
+    }
+    
     if (isGoogleDriveUrl(url)) {
       // If it's already a drive link, extract file ID and use viewer
       if (url.includes('drive.google.com') || url.includes('docs.google.com')) {
@@ -39,7 +57,60 @@ export default function PDFViewer() {
   };
 
   const viewerUrl = getViewerUrl(url || '');
-  const isDriveViewer = isGoogleDriveUrl(url || '');
+  const isYouTubeViewer = isYouTubeUrl(url || '');
+  const isDriveViewer = isGoogleDriveUrl(url || '') && !isYouTubeViewer;
+
+  // Handle navigation requests (like "Open in app")
+  const handleShouldStartLoadWithRequest = (request: any) => {
+    const { url: requestUrl } = request;
+    
+    // Allow the initial load
+    if (requestUrl === viewerUrl) {
+      return true;
+    }
+    
+    // Handle YouTube app opening
+    if (isYouTubeViewer && (
+      requestUrl.includes('youtube://') || 
+      requestUrl.includes('vnd.youtube') ||
+      requestUrl.includes('youtube.com/redirect') ||
+      (requestUrl.includes('youtube.com') && requestUrl !== viewerUrl)
+    )) {
+      // Try to open in YouTube app
+      Linking.canOpenURL(requestUrl)
+        .then((supported) => {
+          if (supported) {
+            Linking.openURL(requestUrl);
+          } else {
+            // Fallback to original URL if YouTube app not available
+            const originalUrl = url || '';
+            Linking.openURL(originalUrl).catch(() => {
+              Alert.alert(
+                'Error',
+                'YouTube એપ્લિકેશન ખોલી શકાયું નથી',
+                [{ text: 'OK' }]
+              );
+            });
+          }
+        })
+        .catch(() => {
+          // Final fallback
+          const originalUrl = url || '';
+          Linking.openURL(originalUrl).catch(() => {
+            Alert.alert(
+              'Error', 
+              'YouTube એપ્લિકેશન ખોલી શકાયું નથી',
+              [{ text: 'OK' }]
+            );
+          });
+        });
+      
+      return false; // Prevent WebView from loading the URL
+    }
+    
+    // Allow other URLs to load normally
+    return true;
+  };
 
   // Prevent screenshots and screen recording when component mounts
   useEffect(() => {
@@ -97,8 +168,42 @@ export default function PDFViewer() {
         javaScriptEnabled={true}
         domStorageEnabled={true}
         startInLoadingState={true}
+        allowsFullscreenVideo={true}
+        mediaPlaybackRequiresUserAction={false}
+        allowsInlineMediaPlayback={true}
+        onShouldStartLoadWithRequest={handleShouldStartLoadWithRequest}
         injectedJavaScript={
-          isDriveViewer 
+          isYouTubeViewer 
+            ? `
+              // For YouTube videos - enable full screen and optimal viewing
+              setTimeout(() => {
+                // Ensure video can go full screen
+                const videos = document.querySelectorAll('video');
+                videos.forEach(video => {
+                  video.setAttribute('webkit-playsinline', 'false');
+                  video.setAttribute('playsinline', 'false');
+                  
+                  // Enable full screen controls
+                  video.addEventListener('loadedmetadata', () => {
+                    video.controls = true;
+                  });
+                });
+                
+                // Try to make the video player responsive
+                const iframe = document.querySelector('iframe');
+                if (iframe) {
+                  iframe.style.width = '100%';
+                  iframe.style.height = '100%';
+                  iframe.setAttribute('allowfullscreen', 'true');
+                  iframe.setAttribute('webkitallowfullscreen', 'true');
+                  iframe.setAttribute('mozallowfullscreen', 'true');
+                }
+                
+                console.log('YouTube video configured for full screen');
+              }, 1000);
+              true;
+            `
+            : isDriveViewer 
             ? `
               // For Google Drive viewer - hide download and sharing options
               setTimeout(() => {
@@ -149,7 +254,9 @@ export default function PDFViewer() {
         renderLoading={() => (
           <View className="flex-1 justify-center items-center">
             <Text className="text-gray-600">
-              {isDriveViewer ? 'Google Drive દસ્તાવેજ લોડ થઈ રહ્યો છે...' : 'PDF લોડ થઈ રહ્યું છે...'}
+              {isYouTubeViewer ? 'YouTube વિડિયો લોડ થઈ રહ્યો છે...' : 
+               isDriveViewer ? 'Google Drive દસ્તાવેજ લોડ થઈ રહ્યો છે...' : 
+               'PDF લોડ થઈ રહ્યું છે...'}
             </Text>
           </View>
         )}

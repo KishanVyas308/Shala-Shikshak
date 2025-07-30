@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useFontSize } from '../contexts/FontSizeContext';
 
 
 interface HeaderProps {
@@ -28,9 +29,11 @@ export default function Header({
   leftAction 
 }: HeaderProps) {
   const insets = useSafeAreaInsets();
+  const { getFontSizeClasses } = useFontSize();
+  const fontClasses = getFontSizeClasses();
   
   return (
-    <View className="relative bg-purple-700" style={{ paddingTop: insets.top }}>
+    <View className="relative bg-primary-600" style={{ paddingTop: insets.top }}>
       <View className="absolute inset-0 opacity-10">
         <View className="flex-row justify-between items-center px-4 py-2">
           {[...Array(6)].map((_, i) => (
@@ -39,7 +42,7 @@ export default function Header({
         </View>
       </View>
       
-      <View className="flex-row items-center justify-between px-6 py-4">
+      <View className="flex-row items-center justify-between px-6 py-4 min-h-[64px]">
         {/* Left Side */}
         <View className="flex-row items-center flex-1">
           {showBack && (
@@ -53,11 +56,18 @@ export default function Header({
           )}
           
           <View className="flex-1">
-            <Text className="font-gujarati text-white text-2xl font-bold text-shadow">
+            <Text 
+              className={`font-gujarati text-white font-bold text-shadow ${fontClasses.title}`}
+              numberOfLines={2}
+              adjustsFontSizeToFit={true}
+            >
               {title}
             </Text>
             {subtitle && (
-              <Text className="font-gujarati text-white/80 text-sm mt-1">
+              <Text 
+                className={`font-gujarati text-white/80 mt-1 ${fontClasses.text}`}
+                numberOfLines={1}
+              >
                 {subtitle}
               </Text>
             )}

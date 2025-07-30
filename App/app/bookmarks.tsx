@@ -3,10 +3,12 @@ import { View, Text, ScrollView, TouchableOpacity, RefreshControl, Alert, Linkin
 import { router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { standardsAPI } from '../services/standards';
 import { subjectsAPI } from '../services/subjects';
 import { chaptersAPI } from '../services/chapters';
 import { storageService } from '../services/storage';
+import { useFontSize } from '../contexts/FontSizeContext';
 import Header from '../components/Header';
 import LoadingState from '../components/LoadingState';
 import ErrorState from '../components/ErrorState';
@@ -17,6 +19,7 @@ export default function BookmarksPage() {
   const [bookmarkedSubjects, setBookmarkedSubjects] = useState<string[]>([]);
   const [bookmarkedChapters, setBookmarkedChapters] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { getFontSizeClasses } = useFontSize();
 
   // Load bookmarks
   useEffect(() => {
@@ -102,20 +105,23 @@ export default function BookmarksPage() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 bg-secondary-50">
-        <Header 
-          title="બુકમાર્ક્સ"
-          subtitle="મારા પસંદીદા અભ્યાસ સામગ્રી"
-          showBack
-          onBackPress={() => router.back()}
-        />
-        <LoadingState />
-      </View>
+      <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>
+        <View className="flex-1 bg-secondary-50">
+          <Header 
+            title="બુકમાર્ક્સ"
+            subtitle="મારા પસંદીદા અભ્યાસ સામગ્રી"
+            showBack
+            onBackPress={() => router.back()}
+          />
+          <LoadingState />
+        </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View className="flex-1 bg-secondary-50">
+    <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>
+      <View className="flex-1 bg-secondary-50">
       <Header 
         title="બુકમાર્ક્સ"
         subtitle="મારા પસંદીદા અભ્યાસ સામગ્રી"
@@ -128,9 +134,9 @@ export default function BookmarksPage() {
         <View className="bg-white rounded-xl p-2 flex-row">
           <TouchableOpacity
             onPress={() => setActiveTab('subjects')}
-            className={`flex-1 py-3 rounded-lg ${activeTab === 'subjects' ? 'bg-purple-600' : 'bg-transparent'}`}
+            className={`flex-1 py-3 rounded-lg ${activeTab === 'subjects' ? 'bg-primary-600' : 'bg-transparent'}`}
           >
-            <Text className={`font-gujarati text-center font-medium ${
+            <Text className={`font-gujarati text-center font-medium ${getFontSizeClasses().text} ${
               activeTab === 'subjects' ? 'text-white' : 'text-gray-600'
             }`}>
               વિષયો ({bookmarkedSubjects.length})
@@ -139,9 +145,9 @@ export default function BookmarksPage() {
           
           <TouchableOpacity
             onPress={() => setActiveTab('chapters')}
-            className={`flex-1 py-3 rounded-lg ${activeTab === 'chapters' ? 'bg-purple-600' : 'bg-transparent'}`}
+            className={`flex-1 py-3 rounded-lg ${activeTab === 'chapters' ? 'bg-primary-600' : 'bg-transparent'}`}
           >
-            <Text className={`font-gujarati text-center font-medium ${
+            <Text className={`font-gujarati text-center font-medium ${getFontSizeClasses().text} ${
               activeTab === 'chapters' ? 'text-white' : 'text-gray-600'
             }`}>
               પ્રકરણો ({bookmarkedChapters.length})
@@ -239,6 +245,7 @@ export default function BookmarksPage() {
 
         <View className="h-6" />
       </ScrollView>
-    </View>
+      </View>
+    </SafeAreaView>
   );
 }
