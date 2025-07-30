@@ -11,7 +11,7 @@
     "splash": {
       "image": "./assets/images/logo.png",
       "resizeMode": "contain",
-      "backgroundColor": "#9333ea"
+      "backgroundColor": "#F9F9F9"
     },
     "ios": {
       "supportsTablet": true,
@@ -34,7 +34,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/logo.png",
-        "backgroundColor": "#9333ea"
+        "backgroundColor": "#F9F9F9"
       },
       "edgeToEdgeEnabled": true,
       "package": "com.x100xTechs.shalashikshak",
@@ -57,7 +57,7 @@
           "image": "./assets/images/logo.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#9333ea"
+          "backgroundColor": "#F9F9F9"
         }
       ]
     ],

@@ -3,6 +3,7 @@ import { View, Text, ScrollView, RefreshControl } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { standardsAPI } from '../../services/standards';
 import Header from '../../components/Header';
 import SubjectCard from '../../components/SubjectCard';
@@ -20,21 +21,24 @@ export default function StandardView() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 bg-secondary-50">
-        <Header 
-          title="વિષયો"
-          subtitle="લોડ થઈ રહ્યું છે..."
-          showBack
-          onBackPress={() => router.back()}
-        />
-        <LoadingState message="વિષયો લોડ થઈ રહ્યા છે..." />
-      </View>
+      <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>
+        <View className="flex-1 bg-secondary-50">
+          <Header 
+            title="વિષયો"
+            subtitle="લોડ થઈ રહ્યું છે..."
+            showBack
+            onBackPress={() => router.back()}
+          />
+          <LoadingState message="વિષયો લોડ થઈ રહ્યા છે..." />
+        </View>
+      </SafeAreaView>
     );
   }
 
   if (error || !standard) {
     return (
-      <View className="flex-1 bg-secondary-50">
+      <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>
+        <View className="flex-1 bg-secondary-50">
         <Header 
           title="વિષયો"
           subtitle="ભૂલ"
@@ -45,7 +49,8 @@ export default function StandardView() {
           message="વિષયો લોડ કરવામાં સમસ્યા આવી છે"
           onRetry={() => refetch()} 
         />
-      </View>
+        </View>
+      </SafeAreaView>
     );
   }
 
@@ -56,7 +61,8 @@ export default function StandardView() {
   }) : [];
 
   return (
-    <View className="flex-1 bg-secondary-50">
+    <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>
+      <View className="flex-1 bg-secondary-50">
       <Header 
         title={standard.name}
         subtitle="વિષયો પસંદ કરો"
@@ -80,7 +86,7 @@ export default function StandardView() {
         {/* Subjects List */}
         <View className="px-4 pb-6 my-4">
           {sortedSubjects.length > 0 ? (
-            <View className="flex-row flex-wrap justify-between">
+            <View className="flex-row flex-wrap justify-start">
               {sortedSubjects.map((subject) => (
                 <SubjectCard
                   key={subject.id}
@@ -110,6 +116,7 @@ export default function StandardView() {
           )}
         </View>
       </ScrollView>
-    </View>
+      </View>
+    </SafeAreaView>
   );
 }

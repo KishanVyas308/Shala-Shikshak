@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useFontSize } from '../contexts/FontSizeContext';
 
 interface SubjectCardProps {
   id: string;
@@ -20,6 +21,8 @@ export default function SubjectCard({
   id
 }: SubjectCardProps) {
   const { width } = useWindowDimensions();
+  const { getFontSizeClasses } = useFontSize();
+  const fontClasses = getFontSizeClasses();
   const isSmallScreen = width < 380;
   const isMediumScreen = width >= 380 && width < 500;
 
@@ -31,29 +34,29 @@ export default function SubjectCard({
       style={{ minWidth: '30%', maxWidth: '33.33%' }}
     >
       <View className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden mx-1">
-        {/* Purple accent bar */}
-        <View className="h-1 bg-purple-600" />
+        {/* Primary accent bar */}
+        <View className="h-1 bg-primary-600" />
 
         {/* Decoratives */}
         <View className="absolute -top-4 -right-4 opacity-10">
-          <View className="w-20 h-20 rounded-full border-2 border-purple-600" />
+          <View className="w-20 h-20 rounded-full border-2 border-primary-600" />
         </View>
         <View className="absolute -bottom-6 -left-6 opacity-5">
-          <View className="w-32 h-32 rounded-full border-2 border-purple-600" />
+          <View className="w-32 h-32 rounded-full border-2 border-primary-600" />
         </View>
 
         <View className={`${isSmallScreen ? 'p-3' : isMediumScreen ? 'p-4' : 'p-4'} relative min-h-[120px] flex`}>
           {/* Content */}
           <View className="flex flex-col space-y-2 flex-1">
             {/* Subject Name */}
-            <Text className={`font-gujarati text-gray-900 mb-2 font-bold leading-tight ${isSmallScreen ? 'text-base' : 'text-lg'}`} numberOfLines={2}>
+            <Text className={`font-gujarati text-gray-900 mb-2 font-bold leading-tight ${fontClasses.textXl}`} numberOfLines={2}>
               {name}
             </Text>
 
             <View className="flex-1">
               {/* Description */}
               {description && (
-                <Text className={`font-gujarati text-gray-600 leading-4 ${isSmallScreen ? 'text-xs' : 'text-sm'}`} numberOfLines={2}>
+                <Text className={`font-gujarati text-gray-600 leading-4 ${fontClasses.text}`} numberOfLines={2}>
                   {description}
                 </Text>
               )}
@@ -61,8 +64,8 @@ export default function SubjectCard({
 
             {/* Chapter Count */}
             <View className="flex-row items-center mt-auto">
-              <Ionicons name="list-outline" size={isSmallScreen ? 14 : 16} color="#7c3aed" />
-              <Text className={`font-gujarati text-purple-700 font-medium ml-1 ${isSmallScreen ? 'text-xs' : 'text-sm'}`}>
+              <Ionicons name="list-outline" size={isSmallScreen ? 14 : 16} color="#6C63FF" />
+              <Text className={`font-gujarati text-primary-700 font-medium ml-1 ${fontClasses.text}`}>
                 {chapterCount} પ્રકરણો
               </Text>
             </View>
@@ -84,7 +87,7 @@ export default function SubjectCard({
             </TouchableOpacity> */}
             
             {/* Arrow Icon */}
-            <View className="bg-purple-600 rounded-full p-1.5 shadow-md">
+            <View className="bg-primary-600 rounded-full p-1.5 shadow-md">
               <Ionicons name="chevron-forward" size={isSmallScreen ? 10 : 12} color="white" />
             </View>
           </View>
