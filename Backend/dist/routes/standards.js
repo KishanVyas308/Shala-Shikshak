@@ -24,17 +24,17 @@ router.get('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             orderBy: { order: 'asc' },
             include: {
                 subjects: {
+                    orderBy: { createdAt: 'desc' },
                     include: {
                         chapters: {
-                            orderBy: { order: 'asc' },
-                            select: {
-                                id: true,
-                                name: true,
-                                order: true,
-                                videoUrl: true,
-                                solutionPdfUrl: true,
-                                textbookPdfUrl: true,
-                            },
+                            orderBy: { createdAt: 'desc' },
+                            include: {
+                                _count: {
+                                    select: {
+                                        resources: true,
+                                    }
+                                }
+                            }
                         },
                     },
                 },
@@ -58,9 +58,10 @@ router.get('/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             where: { id },
             include: {
                 subjects: {
+                    orderBy: { createdAt: 'desc' },
                     include: {
                         chapters: {
-                            orderBy: { order: 'asc' },
+                            orderBy: { createdAt: 'desc' },
                         },
                     },
                 },
@@ -232,15 +233,14 @@ router.put('/batch/reorder', auth_1.authenticateToken, (req, res) => __awaiter(v
                 subjects: {
                     include: {
                         chapters: {
-                            orderBy: { order: 'asc' },
-                            select: {
-                                id: true,
-                                name: true,
-                                order: true,
-                                videoUrl: true,
-                                solutionPdfUrl: true,
-                                textbookPdfUrl: true,
-                            },
+                            orderBy: { createdAt: 'asc' },
+                            include: {
+                                _count: {
+                                    select: {
+                                        resources: true,
+                                    }
+                                }
+                            }
                         },
                     },
                 },
