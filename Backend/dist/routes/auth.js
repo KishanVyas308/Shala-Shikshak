@@ -19,46 +19,45 @@ const prisma_1 = require("../lib/prisma");
 const validation_1 = require("../utils/validation");
 const router = express_1.default.Router();
 // Register admin (for development - remove in production)
-router.post('/register', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const { error, value } = validation_1.adminRegisterSchema.validate(req.body);
-        if (error) {
-            return res.status(400).json({ error: error.details[0].message });
-        }
-        const { name, email, password } = value;
-        // Check if admin already exists
-        const existingAdmin = yield prisma_1.prisma.admin.findUnique({
-            where: { email },
-        });
-        if (existingAdmin) {
-            return res.status(400).json({ error: 'Admin already exists with this email' });
-        }
-        // Hash password
-        const hashedPassword = yield bcryptjs_1.default.hash(password, 12);
-        // Create admin
-        const admin = yield prisma_1.prisma.admin.create({
-            data: {
-                name,
-                email,
-                password: hashedPassword,
-            },
-            select: {
-                id: true,
-                name: true,
-                email: true,
-                createdAt: true,
-            },
-        });
-        res.status(201).json({
-            message: 'Admin registered successfully',
-            admin,
-        });
-    }
-    catch (error) {
-        console.error('Register error:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-}));
+// router.post('/register', async (req, res) => {
+//   try {
+//     const { error, value } = adminRegisterSchema.validate(req.body);
+//     if (error) {
+//       return res.status(400).json({ error: error.details[0].message });
+//     }
+//     const { name, email, password } = value;
+//     // Check if admin already exists
+//     const existingAdmin = await prisma.admin.findUnique({
+//       where: { email },
+//     });
+//     if (existingAdmin) {
+//       return res.status(400).json({ error: 'Admin already exists with this email' });
+//     }
+//     // Hash password
+//     const hashedPassword = await bcrypt.hash(password, 12);
+//     // Create admin
+//     const admin = await prisma.admin.create({
+//       data: {
+//         name,
+//         email,
+//         password: hashedPassword,
+//       },
+//       select: {
+//         id: true,
+//         name: true,
+//         email: true,
+//         createdAt: true,
+//       },
+//     });
+//     res.status(201).json({
+//       message: 'Admin registered successfully',
+//       admin,
+//     });
+//   } catch (error) {
+//     console.error('Register error:', error);
+//     res.status(500).json({ error: 'Internal server error' });
+//   }
+// });
 // Login admin
 router.post('/login', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
