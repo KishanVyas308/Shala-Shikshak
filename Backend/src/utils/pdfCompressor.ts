@@ -74,7 +74,9 @@ export async function compressPDF(
     ].join(' ');
 
     console.log(`🔄 Compressing PDF: ${path.basename(inputPath)}`);
-    console.log(`📝 Command: ${gsCommand}`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`📝 Command: ${gsCommand}`);
+    }
 
     // Execute Ghostscript command with timeout
     const { stdout, stderr } = await execAsync(gsCommand, {
@@ -94,10 +96,12 @@ export async function compressPDF(
     // Calculate compression ratio
     const compressionRatio = Math.round(((originalSize - compressedSize) / originalSize) * 100);
 
-    console.log(`✅ PDF compressed successfully:`);
-    console.log(`   Original size: ${(originalSize / 1024 / 1024).toFixed(2)} MB`);
-    console.log(`   Compressed size: ${(compressedSize / 1024 / 1024).toFixed(2)} MB`);
-    console.log(`   Compression ratio: ${compressionRatio}%`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`✅ PDF compressed successfully:`);
+      console.log(`   Original size: ${(originalSize / 1024 / 1024).toFixed(2)} MB`);
+      console.log(`   Compressed size: ${(compressedSize / 1024 / 1024).toFixed(2)} MB`);
+      console.log(`   Compression ratio: ${compressionRatio}%`);
+    }
 
     return {
       success: true,
@@ -137,7 +141,9 @@ export async function checkGhostscriptAvailability(): Promise<boolean> {
     await execAsync('gs --version', { timeout: 5000 });
     return true;
   } catch (error) {
-    console.error('❌ Ghostscript not found. Please install Ghostscript to enable PDF compression.');
+    if (process.env.NODE_ENV === 'development') {
+      console.error('❌ Ghostscript not found. Please install Ghostscript to enable PDF compression.');
+    }
     return false;
   }
 }
@@ -167,7 +173,9 @@ export async function cleanupTempFile(filePath: string): Promise<void> {
   try {
     if (existsSync(filePath)) {
       await fs.unlink(filePath);
-      console.log(`🗑️ Cleaned up temp file: ${path.basename(filePath)}`);
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🗑️ Cleaned up temp file: ${path.basename(filePath)}`);
+      }
     }
   } catch (error) {
     console.error(`Failed to cleanup temp file ${filePath}:`, error);
