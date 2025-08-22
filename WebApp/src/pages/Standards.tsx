@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { BookOpen, ArrowRight, Users, GraduationCap } from 'lucide-react';
 import { standardsAPI } from '../services/standards';
+import WhatsAppJoinButton from '../components/WhatsAppJoinButton';
 import type { Standard } from '../types';
 
 const Standards: React.FC = () => {
@@ -115,6 +116,19 @@ const Standards: React.FC = () => {
               {sortedStandards.map((standard) => (
                 <StandardCard key={standard.id} standard={standard} />
               ))}
+            </div>
+            
+            {/* WhatsApp Join Section */}
+            <div className="mt-8 sm:mt-12 lg:mt-16 text-center">
+              <div className="bg-white rounded-xl lg:rounded-2xl shadow-lg p-6 sm:p-8 lg:p-10 max-w-md mx-auto">
+                <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 mb-2 sm:mb-3">
+                  અમારા WhatsApp ગ્રુપમાં જોડાઓ
+                </h3>
+                <p className="text-gray-600 text-sm sm:text-base mb-4 sm:mb-6">
+                  અધ્યયન સંબંધિત માહિતી અને અપડેટ્સ માટે અમારા WhatsApp ગ્રુપમાં જોડાઓ
+                </p>
+                <WhatsAppJoinButton size="lg" className="w-full justify-center" />
+              </div>
             </div>
           </>
         )}

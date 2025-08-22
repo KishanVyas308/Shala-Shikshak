@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { BookOpen, Users, Video, FileText, Plus, TrendingUp, Calendar, Activity } from 'lucide-react';
+import { BookOpen, Users, Video, FileText, Plus, TrendingUp, Calendar, Activity, MessageCircle } from 'lucide-react';
 import { standardsAPI } from '../../services/standards';
 
 const AdminDashboard: React.FC = () => {
@@ -91,11 +91,11 @@ const AdminDashboard: React.FC = () => {
       color: 'bg-purple-600 hover:bg-purple-700'
     },
     {
-      name: 'Resource Categories',
-      description: 'Manage svadhyay, pothi & other resources',
-      icon: Video,
-      link: '/admin/chapters',
-      color: 'bg-red-600 hover:bg-red-700'
+      name: 'WhatsApp Management',
+      description: 'Manage WhatsApp group links',
+      icon: Plus,
+      link: '/admin/whatsapp',
+      color: 'bg-green-600 hover:bg-green-700'
     },
   ];
 

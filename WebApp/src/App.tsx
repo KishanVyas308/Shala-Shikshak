@@ -14,6 +14,7 @@ import AdminStandards from './pages/admin/Standards'
 import AdminSubjects from './pages/admin/Subjects'
 import AdminChapters from './pages/admin/Chapters'
 import ChapterResources from './pages/admin/ChapterResources'
+import WhatsAppManagement from './pages/admin/WhatsAppManagement'
 import ProtectedRoute from './components/ProtectedRoute'
 
 
@@ -57,6 +58,11 @@ function App() {
             <Route path="/admin/chapter/:chapterId/resources" element={
               <ProtectedRoute>
                 <ChapterResources />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/whatsapp" element={
+              <ProtectedRoute>
+                <WhatsAppManagement />
               </ProtectedRoute>
             } />
           </Routes>

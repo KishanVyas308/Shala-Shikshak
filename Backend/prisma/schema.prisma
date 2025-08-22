@@ -86,3 +86,15 @@ enum ResourceType {
   video
   pdf
 }
+
+model WhatsAppLink {
+  id          String   @id @default(cuid())
+  name        String   // Display name for the group
+  description String?  // Optional description
+  url         String   // WhatsApp group invite link
+  isActive    Boolean  @default(false) // Only one can be active at a time
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("whatsapp_links")
+}

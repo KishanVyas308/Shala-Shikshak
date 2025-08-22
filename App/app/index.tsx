@@ -133,7 +133,9 @@ export default function Home() {
                 description={standard.description}
                 subjectCount={standard._count?.subjects || 0}
                 order={standard.order}
-                onPress={() => router.push(`/standard/${standard.id}`)}
+                onPress={() => {
+                  router.push(`/standard/${standard.id}`);
+                }}
               />
             ))}
 
@@ -146,7 +148,9 @@ export default function Home() {
         <View className="mx-4 mb-6 p-4 bg-white rounded-lg shadow-md overflow-hidden relative ">
           <View className="w-1 bg-primary-600 absolute left-0 top-0 bottom-0 z-30" />
           <TouchableOpacity
-            onPress={() => router.push('/bookmarks')}
+            onPress={() => {
+              router.push('/bookmarks');
+            }}
             className="flex-row items-center justify-between "
           >
             {/* Decoratives */}
