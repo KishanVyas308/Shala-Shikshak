@@ -18,20 +18,24 @@
 
 /* Custom component styles */
 @layer components {
-  .gradient-bg {
-    background: linear-gradient(135deg, #6C63FF 0%, #8B7FFF 25%, #A89FFF 50%, #C4BFFF 75%, #E0DFFF 100%);
+  .school-bg {
+    background-color: #16a34a;
   }
   
-  .gradient-bg-soft {
-    background: linear-gradient(135deg, #f0f0ff 0%, #e6e3ff 50%, #d1cbff 100%);
+  .school-bg-soft {
+    background-color: #dcfce7;
+  }
+  
+  .school-accent-bg {
+    background-color: #eab308;
   }
   
   .card-shadow {
-    box-shadow: 0 4px 16px rgba(108, 99, 255, 0.1);
+    box-shadow: 0 4px 16px rgba(34, 197, 94, 0.1);
   }
   
   .card-shadow-hover {
-    box-shadow: 0 8px 32px rgba(108, 99, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(34, 197, 94, 0.2);
   }
   
   .text-shadow {

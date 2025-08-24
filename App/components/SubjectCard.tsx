@@ -64,7 +64,7 @@ export default function SubjectCard({
 
             {/* Chapter Count */}
             <View className="flex-row items-center mt-auto">
-              <Ionicons name="list-outline" size={isSmallScreen ? 14 : 16} color="#6C63FF" />
+              <Ionicons name="list-outline" size={isSmallScreen ? 14 : 16} color="#16a34a" />
               <Text className={`font-gujarati text-primary-700 font-medium ml-1 ${fontClasses.text}`}>
                 {chapterCount} પ્રકરણો
               </Text>

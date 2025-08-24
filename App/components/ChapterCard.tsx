@@ -96,7 +96,7 @@ export default function ChapterCard({
           <Ionicons 
             name={isBookmarked ? "bookmark" : "bookmark-outline"} 
             size={18} 
-            color={isBookmarked ? "#6C63FF" : "#6b7280"} 
+            color={isBookmarked ? "#16a34a" : "#6b7280"} 
           />
         </TouchableOpacity>
 

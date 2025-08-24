@@ -65,7 +65,7 @@ export default function StandardCard({
 
             {/* Subject Count */}
             <View className="flex-row items-center mt-auto">
-              <Ionicons name="book-outline" size={isSmallScreen ? 14 : 16} color="#6C63FF" />
+              <Ionicons name="book-outline" size={isSmallScreen ? 14 : 16} color="#16a34a" />
               <Text className={`font-gujarati text-primary-700 font-medium ml-1 ${fontClasses.text}`}>
                 {subjectCount} વિષયો
               </Text>
@@ -106,7 +106,7 @@ export function AddStandardCard() {
         </View>
 
         <View className="p-4 flex items-center justify-center min-h-[120px]">
-          <Ionicons name="add-circle-outline" size={40} color="#6C63FF" />
+          <Ionicons name="add-circle-outline" size={40} color="#16a34a" />
           <Text className={`font-gujarati text-primary-700 font-medium mt-2 ${fontClasses.text}`}>ધોરણ ઉમેરો</Text>
         </View>
       </View>

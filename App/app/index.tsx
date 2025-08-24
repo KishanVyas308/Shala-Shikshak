@@ -166,7 +166,7 @@ export default function Home() {
                 તમારા પસંદીદા વિષયો અને પ્રકરણો
               </Text>
             </View>
-            <Ionicons name="chevron-forward" size={20} color="#6C63FF" />
+            <Ionicons name="chevron-forward" size={20} color="#16a34a" />
           </TouchableOpacity>
         </View>
 
@@ -229,7 +229,7 @@ export default function Home() {
                 activeOpacity={0.7}
               >
                 <View className="w-10 h-10 rounded-full bg-primary-100 items-center justify-center mr-4">
-                  <Ionicons name="school-outline" size={20} color="#6C63FF" />
+                  <Ionicons name="school-outline" size={20} color="#16a34a" />
                 </View>
                 <View className="flex-1">
                   <Text className={`font-gujarati font-semibold text-secondary-800 ${getFontSizeClasses().textLg}`}>

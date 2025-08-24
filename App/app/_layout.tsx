@@ -21,7 +21,7 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
         <FontSizeProvider>
-          <StatusBar style="dark" backgroundColor="#6C63FF" />
+          <StatusBar style="dark" backgroundColor="#16a34a" />
           <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>
             <Stack
               screenOptions={{
@@ -35,7 +35,7 @@ export default function RootLayout() {
               options={{
                 title: 'શાળા શિક્ષક',
                 gestureEnabled: false,
-                headerTintColor: '#6C63FF',
+                headerTintColor: '#16a34a',
               }} 
             />
             <Stack.Screen 
@@ -43,7 +43,7 @@ export default function RootLayout() {
               options={{
                 title: 'ધોરણ પસંદ કરો',
                 gestureEnabled: true,
-                headerTintColor: '#6C63FF',
+                headerTintColor: '#16a34a',
               }} 
             />
             <Stack.Screen 
@@ -51,7 +51,7 @@ export default function RootLayout() {
               options={{
                 title: 'બુકમાર્ક્સ',
                 gestureEnabled: true,
-                headerTintColor: '#6C63FF',
+                headerTintColor: '#16a34a',
               }} 
             />
             <Stack.Screen 
@@ -59,7 +59,7 @@ export default function RootLayout() {
               options={{
                 title: 'વિષયો',
                 gestureEnabled: true,
-                headerTintColor: '#6C63FF',
+                headerTintColor: '#16a34a',
               }} 
             />
             <Stack.Screen 
@@ -67,7 +67,7 @@ export default function RootLayout() {
               options={{
                 title: 'પ્રકરણો',
                 gestureEnabled: true,
-                headerTintColor: '#6C63FF',
+                headerTintColor: '#16a34a',
               }} 
             />
             <Stack.Screen 
@@ -75,7 +75,7 @@ export default function RootLayout() {
               options={{
                 title: 'પ્રકરણ સંસાધનો',
                 gestureEnabled: true,
-                headerTintColor: '#6C63FF',
+                headerTintColor: '#16a34a',
               }} 
             />
             <Stack.Screen 
@@ -83,7 +83,7 @@ export default function RootLayout() {
               options={{
                 title: 'PDF વ્યૂઅર',
                 gestureEnabled: true,
-                headerTintColor: '#6C63FF',
+                headerTintColor: '#16a34a',
               }} 
             />
           </Stack>
