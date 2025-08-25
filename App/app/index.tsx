@@ -6,18 +6,20 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { standardsAPI } from '../services/standards';
 import { storageService } from '../services/storage';
+import { AnalyticsService } from '../services/analytics';
 import { useFontSize } from '../contexts/FontSizeContext';
 import Header from '../components/Header';
 import StandardCard, { AddStandardCard } from '../components/StandardCard';
 import LoadingState from '../components/LoadingState';
 import ErrorState from '../components/ErrorState';
 import { FontSizeControls } from '../components/FontSizeControls';
+import WhatsAppJoinCard, { fetchActiveLink } from '../components/WhatsAppJoinCard';
 
 export default function Home() {
   const [userStandardIds, setUserStandardIds] = useState<string[]>([]);
   const [isCheckingStandards, setIsCheckingStandards] = useState(true);
   const [isSettingsModalVisible, setIsSettingsModalVisible] = useState(false);
-  const { getFontSizeClasses } = useFontSize();
+  const { getFontSizeClasses, fontSize } = useFontSize();
 
   const { data: standards = [], isLoading, error, refetch } = useQuery({
     queryKey: ['standards'],
@@ -28,6 +30,12 @@ export default function Home() {
   useEffect(() => {
     const checkUserStandards = async () => {
       try {
+        // Track home page view
+        await AnalyticsService.trackHome();
+        
+        // Initialize WhatsApp link fetch
+        fetchActiveLink();
+        
         const hasSelected = await storageService.hasSelectedStandards();
         if (!hasSelected) {
           // No standards selected, redirect to selection screen
@@ -91,7 +99,7 @@ export default function Home() {
 
   const handleChangeStandards = () => {
     setIsSettingsModalVisible(false);
-    router.push('./select-standards' as any);
+    router.replace('./select-standards' as any);
   };
 
   return (
@@ -127,13 +135,14 @@ export default function Home() {
           <View className="flex-row flex-wrap justify-start">
             {sortedStandards.map((standard) => (
               <StandardCard
-                key={standard.id}
+                key={`${standard.id}-${fontSize}`}
                 id={standard.id}
                 name={standard.name}
                 description={standard.description}
                 subjectCount={standard._count?.subjects || 0}
                 order={standard.order}
-                onPress={() => {
+                onPress={async () => {
+                  await AnalyticsService.trackStandardView(standard.id);
                   router.push(`/standard/${standard.id}`);
                 }}
               />
@@ -148,7 +157,8 @@ export default function Home() {
         <View className="mx-4 mb-6 p-4 bg-white rounded-lg shadow-md overflow-hidden relative ">
           <View className="w-1 bg-primary-600 absolute left-0 top-0 bottom-0 z-30" />
           <TouchableOpacity
-            onPress={() => {
+            onPress={async () => {
+              await AnalyticsService.trackBookmarks();
               router.push('/bookmarks');
             }}
             className="flex-row items-center justify-between "
@@ -159,10 +169,10 @@ export default function Home() {
             </View>
 
             <View className="flex-1">
-              <Text className="font-gujarati text-secondary-800 text-lg font-bold">
+              <Text className={`font-gujarati text-secondary-800 font-bold ${getFontSizeClasses().textLg}`}>
                 મારા બુકમાર્ક્સ
               </Text>
-              <Text className="font-gujarati text-secondary-600 text-sm mt-0.5">
+              <Text className={`font-gujarati text-secondary-600 mt-0.5 ${getFontSizeClasses().text}`}>
                 તમારા પસંદીદા વિષયો અને પ્રકરણો
               </Text>
             </View>
@@ -170,12 +180,15 @@ export default function Home() {
           </TouchableOpacity>
         </View>
 
+        {/* WhatsApp Join Card */}
+        <WhatsAppJoinCard />
+
         {/* Footer */}
         <View className="mx-4 mb-6  p-4 bg-white rounded-xl">
-          <Text className="font-gujarati text-center text-secondary-500 text-sm">
+          <Text className={`font-gujarati text-center text-secondary-500 ${getFontSizeClasses().text}`}>
             શિક્ષણ એ જીવનની સૌથી મોટી સંપત્તિ છે
           </Text>
-          <Text className="font-english text-center text-secondary-400 text-xs mt-1">
+          <Text className={`font-english text-center text-secondary-400 mt-1 ${getFontSizeClasses().text}`}>
             Education is the greatest wealth of life
           </Text>
         </View>

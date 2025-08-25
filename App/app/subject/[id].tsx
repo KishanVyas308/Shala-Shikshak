@@ -6,6 +6,8 @@ import { useQuery } from '@tanstack/react-query';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { subjectsAPI } from '../../services/subjects';
 import { storageService } from '../../services/storage';
+import { AnalyticsService } from '../../services/analytics';
+import { useFontSize } from '../../contexts/FontSizeContext';
 import Header from '../../components/Header';
 import ChapterCard from '../../components/ChapterCard';
 import LoadingState from '../../components/LoadingState';
@@ -16,6 +18,7 @@ export default function SubjectView() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'video' | 'pdf'>('all');
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const { getFontSizeClasses, fontSize } = useFontSize();
 
   const { data: subject, isLoading, error, refetch } = useQuery({
     queryKey: ['subjects', id],
@@ -23,10 +26,13 @@ export default function SubjectView() {
     enabled: !!id,
   });
 
-  // Check bookmark status
+  // Check bookmark status and track view
   useEffect(() => {
     const checkBookmarkStatus = async () => {
       if (subject) {
+        // Track subject view
+        await AnalyticsService.trackSubjectView(subject.id);
+        
         const bookmarked = await storageService.isSubjectBookmarked(subject.id);
         setIsBookmarked(bookmarked);
       }
@@ -121,7 +127,7 @@ export default function SubjectView() {
           {sortedChapters.length > 0 ? (
             sortedChapters.map((chapter) => (
               <ChapterCard
-                key={chapter.id}
+                key={`${chapter.id}-${fontSize}`}
                 id={chapter.id}
                 name={chapter.name}
                 description={chapter.description}
@@ -131,7 +137,10 @@ export default function SubjectView() {
                 videoUrl={chapter.videoUrl}
                 textbookPdfUrl={chapter.textbookPdfUrl}
                 solutionPdfUrl={chapter.solutionPdfUrl}
-                onPress={() => router.push(`/chapter/${chapter.id}` as any)}
+                onPress={async () => {
+                  await AnalyticsService.trackChapterView(chapter.id);
+                  router.push(`/chapter/${chapter.id}` as any);
+                }}
               />
             ))
           ) : (
@@ -140,10 +149,10 @@ export default function SubjectView() {
                 <View className="bg-secondary-100 rounded-full p-4 mb-4">
                   <Ionicons name="document-outline" size={48} color="#64748b" />
                 </View>
-                <Text className="font-gujarati text-secondary-700 text-lg font-semibold text-center mb-2">
+                <Text className={`font-gujarati text-secondary-700 font-semibold text-center mb-2 ${getFontSizeClasses().textLg}`}>
                   કોઈ પ્રકરણ મળ્યું નથી
                 </Text>
-                <Text className="font-gujarati text-secondary-500 text-sm text-center">
+                <Text className={`font-gujarati text-secondary-500 text-center ${getFontSizeClasses().text}`}>
                   {searchTerm ? 'આ શોધ માટે કોઈ પ્રકરણ મળ્યું નથી' : 'આ વિષય માટે હજુ સુધી કોઈ પ્રકરણ ઉમેરવામાં આવ્યું નથી'}
                 </Text>
               </View>

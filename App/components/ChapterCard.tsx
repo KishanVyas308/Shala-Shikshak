@@ -134,7 +134,7 @@ export default function ChapterCard({
                   activeOpacity={0.7}
                 >
                   <Ionicons name="play" size={14} color="#dc2626" />
-                  <Text className="font-gujarati text-red-700 text-xs font-medium ml-1">
+                  <Text className={`font-gujarati text-red-700 font-medium ml-1 ${fontClasses.text}`}>
                     વિડિયો
                   </Text>
                 </TouchableOpacity>
@@ -147,7 +147,7 @@ export default function ChapterCard({
                   activeOpacity={0.7}
                 >
                   <Ionicons name="book" size={14} color="#2563eb" />
-                  <Text className="font-gujarati text-blue-700 text-xs font-medium ml-1">
+                  <Text className={`font-gujarati text-blue-700 font-medium ml-1 ${fontClasses.text}`}>
                     પાઠ્યપુસ્તક
                   </Text>
                 </TouchableOpacity>
@@ -160,7 +160,7 @@ export default function ChapterCard({
                   activeOpacity={0.7}
                 >
                   <Ionicons name="checkmark-circle" size={14} color="#16a34a" />
-                  <Text className="font-gujarati text-green-700 text-xs font-medium ml-1">
+                  <Text className={`font-gujarati text-green-700 font-medium ml-1 ${fontClasses.text}`}>
                     ઉકેલ
                   </Text>
                 </TouchableOpacity>

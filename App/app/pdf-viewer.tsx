@@ -2,12 +2,22 @@ import React, { useEffect } from 'react';
 import { View, Text, Linking, Alert } from 'react-native';
 import { useLocalSearchParams, router, useFocusEffect } from 'expo-router';
 import * as ScreenCapture from 'expo-screen-capture';
+import { AnalyticsService } from '../services/analytics';
+import { useFontSize } from '../contexts/FontSizeContext';
 import Header from '../components/Header';
 
 import WebView from 'react-native-webview';
 
 export default function PDFViewer() {
   const { url, title } = useLocalSearchParams<{ url: string; title: string }>();
+  const { getFontSizeClasses } = useFontSize();
+
+  // Track PDF viewer usage
+  useEffect(() => {
+    if (url) {
+      AnalyticsService.trackScreen('pdf-viewer');
+    }
+  }, [url]);
 
   // Check if URL is a YouTube link
   const isYouTubeUrl = (url: string) => {
@@ -253,7 +263,7 @@ export default function PDFViewer() {
         }
         renderLoading={() => (
           <View className="flex-1 justify-center items-center">
-            <Text className="text-gray-600">
+            <Text className={`text-gray-600 ${getFontSizeClasses().text}`}>
               {isYouTubeViewer ? 'YouTube વિડિયો લોડ થઈ રહ્યો છે...' : 
                isDriveViewer ? 'Google Drive દસ્તાવેજ લોડ થઈ રહ્યો છે...' : 
                'PDF લોડ થઈ રહ્યું છે...'}

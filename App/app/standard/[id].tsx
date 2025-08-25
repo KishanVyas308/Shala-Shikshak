@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, ScrollView, RefreshControl } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { standardsAPI } from '../../services/standards';
+import { AnalyticsService } from '../../services/analytics';
+import { useFontSize } from '../../contexts/FontSizeContext';
 import Header from '../../components/Header';
 import SubjectCard from '../../components/SubjectCard';
 import LoadingState from '../../components/LoadingState';
@@ -12,6 +14,14 @@ import ErrorState from '../../components/ErrorState';
 
 export default function StandardView() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { getFontSizeClasses, fontSize } = useFontSize();
+  
+  // Track standard view
+  useEffect(() => {
+    if (id) {
+      AnalyticsService.trackStandardView(id);
+    }
+  }, [id]);
   
   const { data: standard, isLoading, error, refetch } = useQuery({
     queryKey: ['standards', id],
@@ -89,13 +99,16 @@ export default function StandardView() {
             <View className="flex-row flex-wrap justify-start">
               {sortedSubjects.map((subject) => (
                 <SubjectCard
-                  key={subject.id}
+                  key={`${subject.id}-${fontSize}`}
                   id={subject.id}
                   name={subject.name}
                   description={subject.description}
                   chapterCount={subject.chapters?.length || 0}
                   standardName={standard.name}
-                  onPress={() => router.push(`/subject/${subject.id}`)}
+                  onPress={async () => {
+                    await AnalyticsService.trackSubjectView(subject.id);
+                    router.push(`/subject/${subject.id}`);
+                  }}
                 />
               ))}
             </View>
@@ -105,10 +118,10 @@ export default function StandardView() {
                 <View className="bg-secondary-100 rounded-full p-4 mb-4">
                   <Ionicons name="library-outline" size={48} color="#64748b" />
                 </View>
-                <Text className="font-gujarati text-secondary-700 text-lg font-semibold text-center mb-2">
+                <Text className={`font-gujarati text-secondary-700 font-semibold text-center mb-2 ${getFontSizeClasses().textLg}`}>
                   કોઈ વિષય ઉપલબ્ધ નથી
                 </Text>
-                <Text className="font-gujarati text-secondary-500 text-sm text-center">
+                <Text className={`font-gujarati text-secondary-500 text-center ${getFontSizeClasses().text}`}>
                   આ ધોરણ માટે હજુ સુધી કોઈ વિષય ઉમેરવામાં આવ્યો નથી
                 </Text>
               </View>

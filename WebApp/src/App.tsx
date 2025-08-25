@@ -1,8 +1,10 @@
 import { Routes, Route } from 'react-router-dom'
+import { useEffect } from 'react'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from './contexts/AuthContext'
 import { usePageTracking } from './hooks/usePageTracking'
 import Navbar from './components/Navbar'
+import WhatsAppJoinButton, { fetchActiveLink } from './components/WhatsAppJoinButton'
 import Home from './pages/Home'
 import Standards from './pages/Standards'
 import StandardView from './pages/StandardView'
@@ -22,6 +24,11 @@ import ProtectedRoute from './components/ProtectedRoute'
 function AppContent() {
   // Track page views
   usePageTracking();
+
+  // Initialize WhatsApp link fetch on app start
+  useEffect(() => {
+    fetchActiveLink();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -75,6 +82,10 @@ function AppContent() {
           } />
         </Routes>
       </main>
+      
+      {/* Floating WhatsApp Button */}
+      <WhatsAppJoinButton variant="floating" />
+      
       <Toaster 
         position="top-right"
         toastOptions={{
