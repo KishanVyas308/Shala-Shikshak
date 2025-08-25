@@ -1,13 +1,20 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { BookOpen, Users, Video, FileText, Plus, TrendingUp, Calendar, Activity } from 'lucide-react';
+import { BookOpen, Users, Video, FileText, Plus, TrendingUp, Calendar, Activity, BarChart3 } from 'lucide-react';
 import { standardsAPI } from '../../services/standards';
+import { AnalyticsService } from '../../services/analytics';
 
 const AdminDashboard: React.FC = () => {
   const { data: standards = [] } = useQuery({
     queryKey: ['standards'],
     queryFn: standardsAPI.getAll,
+  });
+
+  const { data: analytics } = useQuery({
+    queryKey: ['dashboard-analytics-overview'],
+    queryFn: () => AnalyticsService.getAnalyticsOverview(7), // Last 7 days
+    refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
   });
 
   const standardsArray = Array.isArray(standards) ? standards : [];
@@ -91,11 +98,18 @@ const AdminDashboard: React.FC = () => {
       color: 'bg-purple-600 hover:bg-purple-700'
     },
     {
-      name: 'Resource Categories',
-      description: 'Manage svadhyay, pothi & other resources',
-      icon: Video,
-      link: '/admin/chapters',
-      color: 'bg-red-600 hover:bg-red-700'
+      name: 'View Analytics',
+      description: 'Check site analytics',
+      icon: BarChart3,
+      link: '/admin/analytics',
+      color: 'bg-indigo-600 hover:bg-indigo-700'
+    },
+    {
+      name: 'WhatsApp Management',
+      description: 'Manage WhatsApp group links',
+      icon: Plus,
+      link: '/admin/whatsapp',
+      color: 'bg-green-600 hover:bg-green-700'
     },
   ];
 
@@ -161,6 +175,71 @@ const AdminDashboard: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
+          {/* Analytics Overview */}
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Analytics</h2>
+                <Link
+                  to="/admin/analytics"
+                  className="text-indigo-600 hover:text-indigo-500 text-sm font-medium"
+                >
+                  View all
+                </Link>
+              </div>
+              {analytics ? (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 bg-blue-50 rounded-xl">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Total Views ({analytics.totalViews > 0 ? '7 days' : 'No data'})</p>
+                      <p className="text-2xl font-bold text-blue-600">{analytics.totalViews}</p>
+                    </div>
+                    <BarChart3 className="h-8 w-8 text-blue-600" />
+                  </div>
+                  <div className="flex items-center justify-between p-4 bg-green-50 rounded-xl">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Unique Visitors</p>
+                      <p className="text-2xl font-bold text-green-600">{analytics.uniqueViews}</p>
+                    </div>
+                    <Users className="h-8 w-8 text-green-600" />
+                  </div>
+                  <div className="flex items-center justify-between p-4 bg-purple-50 rounded-xl">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Recent Views (24h)</p>
+                      <p className="text-2xl font-bold text-purple-600">{analytics.recentViews}</p>
+                    </div>
+                    <TrendingUp className="h-8 w-8 text-purple-600" />
+                  </div>
+                  {analytics.topPages.length > 0 && (
+                    <div className="pt-4 border-t border-gray-100">
+                      <p className="text-sm font-medium text-gray-600 mb-3">Most Popular Pages</p>
+                      <div className="space-y-2">
+                        {analytics.topPages.slice(0, 3).map((page, index) => (
+                          <div key={index} className="flex justify-between text-sm">
+                            <div className="flex-1 mr-2">
+                              <span className="text-gray-900 font-medium truncate block">{page.displayName}</span>
+                              {page.parentName && (
+                                <span className="text-xs text-gray-500">{page.parentName}</span>
+                              )}
+                            </div>
+                            <span className="text-gray-900 font-medium">{page.views}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <BarChart3 className="h-8 w-8 text-gray-400" />
+                  </div>
+                  <p className="text-sm">Analytics loading...</p>
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Quick Actions */}
           <div className="lg:col-span-2">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8">
@@ -203,78 +282,68 @@ const AdminDashboard: React.FC = () => {
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Recent Standards */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Recent Standards</h2>
+        {/* Recent Standards */}
+        <div className="mt-6 sm:mt-8">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Recent Standards</h2>
+              <Link
+                to="/admin/standards"
+                className="text-indigo-600 hover:text-indigo-500 text-sm font-medium"
+              >
+                View all
+              </Link>
+            </div>
+            {standardsArray.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {standardsArray.slice(0, 4).map((standard, index) => (
+                  <div 
+                    key={standard.id} 
+                    className="group flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 rounded-xl transition-all duration-200 hover:shadow-sm"
+                    style={{ animationDelay: `${index * 100}ms` }}
+                  >
+                    <div className="flex items-center flex-1 min-w-0">
+                      <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center mr-3">
+                        <span className="text-white font-semibold text-sm">
+                          {standard.name.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-gray-900 text-sm truncate group-hover:text-indigo-600 transition-colors">
+                          {standard.name}
+                        </h3>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {standard._count?.subjects || 0} subjects
+                        </p>
+                      </div>
+                    </div>
+                    <Link
+                      to={`/admin/standards`}
+                      className="text-indigo-600 hover:text-indigo-500 text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                    >
+                      Manage
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <BookOpen className="h-8 w-8 text-gray-400" />
+                </div>
+                <h3 className="font-semibold text-gray-900 mb-2">No standards yet</h3>
+                <p className="text-sm text-gray-500 mb-4">Create your first standard to get started.</p>
                 <Link
                   to="/admin/standards"
-                  className="text-indigo-600 hover:text-indigo-500 text-sm font-medium"
+                  className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
                 >
-                  View all
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Standard
                 </Link>
               </div>
-              {standardsArray.length > 0 ? (
-                <div className="space-y-4">
-                  {standardsArray.slice(0, 4).map((standard, index) => (
-                    <div 
-                      key={standard.id} 
-                      className="group flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 rounded-xl transition-all duration-200 hover:shadow-sm"
-                      style={{ animationDelay: `${index * 100}ms` }}
-                    >
-                      <div className="flex items-center flex-1 min-w-0">
-                        <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center mr-3">
-                          <span className="text-white font-semibold text-sm">
-                            {standard.name.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-gray-900 text-sm truncate group-hover:text-indigo-600 transition-colors">
-                            {standard.name}
-                          </h3>
-                          <p className="text-xs text-gray-500 mt-1">
-                            {standard._count?.subjects || 0} subjects
-                          </p>
-                        </div>
-                      </div>
-                      <Link
-                        to={`/admin/standards`}
-                        className="text-indigo-600 hover:text-indigo-500 text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                      >
-                        Manage
-                      </Link>
-                    </div>
-                  ))}
-                  {standardsArray.length > 4 && (
-                    <div className="pt-4 border-t border-gray-100">
-                      <Link
-                        to="/admin/standards"
-                        className="block w-full text-center py-3 text-indigo-600 hover:text-indigo-500 text-sm font-medium hover:bg-indigo-50 rounded-lg transition-colors"
-                      >
-                        View {standardsArray.length - 4} more standards
-                      </Link>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-gray-500">
-                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <BookOpen className="h-8 w-8 text-gray-400" />
-                  </div>
-                  <h3 className="font-semibold text-gray-900 mb-2">No standards yet</h3>
-                  <p className="text-sm text-gray-500 mb-4">Create your first standard to get started.</p>
-                  <Link
-                    to="/admin/standards"
-                    className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create Standard
-                  </Link>
-                </div>
-              )}
-            </div>
+            )}
           </div>
         </div>
 

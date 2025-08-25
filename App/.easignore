@@ -1,0 +1,10 @@
+# Ignore backend and database files
+Backend/data/
+*.sock
+*.db
+*.log
+
+# Common unnecessary files
+node_modules/
+dist/
+build/

@@ -12,6 +12,9 @@ import subjectRoutes from './routes/subjects';
 import chapterRoutes from './routes/chapters';
 import chapterResourceRoutes from './routes/chapterResources';
 import uploadRoutes from './routes/upload';
+import whatsappRoutes from './routes/whatsapp';
+import pageViewRoutes from './routes/pageViews';
+import analyticsRoutes from './routes/analytics';
 
 // Load environment variables
 dotenv.config();
@@ -64,13 +67,13 @@ app.use(helmet({
 app.use(cors({
   origin: ['http://localhost:3000', 'http://localhost:5173', 'https://shalashikshak.in', 'https://shala-shikshak.pages.dev'],
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Range', 'X-Requested-With'],
   exposedHeaders: ['Content-Length', 'Content-Range', 'Accept-Ranges']
 }));
 
 // Conditional logging - only log errors in production
-if (process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV === 'development') { 
   app.use(morgan('dev')); // Only in development
 }
 
@@ -124,6 +127,10 @@ app.use('/api/subjects', subjectRoutes);
 app.use('/api/chapters', chapterRoutes);
 app.use('/api/chapter-resources', chapterResourceRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/whatsapp', whatsappRoutes);
+app.use('/api/page-views', pageViewRoutes);
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/page-views', pageViewRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

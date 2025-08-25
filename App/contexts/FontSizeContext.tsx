@@ -27,40 +27,40 @@ const fontSizeLevels: FontSizeLevel[] = ['small', 'medium', 'large', 'extra-larg
 
 const fontSizeClasses = {
   small: {
-    text: 'text-xs',
-    textLg: 'text-sm', 
-    textXl: 'text-base',
-    text2xl: 'text-lg',
-    text3xl: 'text-xl',
-    title: 'text-lg',
-    subtitle: 'text-sm',
-  },
-  medium: {
     text: 'text-sm',
-    textLg: 'text-base',
-    textXl: 'text-lg', 
+    textLg: 'text-base', 
+    textXl: 'text-lg',
     text2xl: 'text-xl',
     text3xl: 'text-2xl',
     title: 'text-xl',
     subtitle: 'text-base',
   },
-  large: {
+  medium: {
     text: 'text-base',
     textLg: 'text-lg',
-    textXl: 'text-xl',
-    text2xl: 'text-2xl', 
+    textXl: 'text-xl', 
+    text2xl: 'text-2xl',
     text3xl: 'text-3xl',
-    title: 'text-xl',
+    title: 'text-2xl',
     subtitle: 'text-lg',
   },
-  'extra-large': {
+  large: {
     text: 'text-lg',
     textLg: 'text-xl',
     textXl: 'text-2xl',
-    text2xl: 'text-3xl',
-    text3xl: 'text-4xl', 
-    title: 'text-xl',
+    text2xl: 'text-3xl', 
+    text3xl: 'text-4xl',
+    title: 'text-3xl',
     subtitle: 'text-xl',
+  },
+  'extra-large': {
+    text: 'text-xl',
+    textLg: 'text-2xl',
+    textXl: 'text-3xl',
+    text2xl: 'text-4xl',
+    text3xl: 'text-5xl', 
+    title: 'text-4xl',
+    subtitle: 'text-2xl',
   },
 };
 

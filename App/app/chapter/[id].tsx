@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Dimensions, RefreshControl, Linking, Alert } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { chapterResourcesAPI } from '../../services/chapterResources';
+import { AnalyticsService } from '../../services/analytics';
 import { useFontSize } from '../../contexts/FontSizeContext';
 import type { ChapterResource } from '../../types';
 import Header from '../../components/Header';
@@ -18,6 +19,13 @@ export default function ChapterView() {
   const { id: chapterId } = useLocalSearchParams<{ id: string }>();
   const [selectedType, setSelectedType] = useState<'svadhyay' | 'svadhyay_pothi' | 'other'>('svadhyay');
   const { getFontSizeClasses } = useFontSize();
+
+  // Track chapter view
+  useEffect(() => {
+    if (chapterId) {
+      AnalyticsService.trackChapterView(chapterId);
+    }
+  }, [chapterId]);
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['chapter-resources-grouped', chapterId],
@@ -102,18 +110,18 @@ export default function ChapterView() {
       >
         {/* Chapter Info */}
         <View className="mx-4 mt-4 mb-6 p-4 bg-white rounded-xl shadow-sm">
-          <Text className="font-gujarati text-lg font-bold text-gray-800 mb-2">
+          <Text className={`font-gujarati font-bold text-gray-800 mb-2 ${getFontSizeClasses().textLg}`}>
             {data.chapter.name}
           </Text>
           {data.chapter.description && (
-            <Text className="font-gujarati text-sm text-gray-600 mb-3">
+            <Text className={`font-gujarati text-gray-600 mb-3 ${getFontSizeClasses().text}`}>
               {data.chapter.description}
             </Text>
           )}
           <View className="flex-row items-center">
             <View className="flex-row items-center mr-4">
               <Ionicons name="folder-outline" size={16} color="#6B7280" />
-              <Text className="font-gujarati text-xs text-gray-500 ml-1">
+              <Text className={`font-gujarati text-gray-500 ml-1 ${getFontSizeClasses().text}`}>
                 કુલ સંસાધનો: {data.counts.total}
               </Text>
             </View>
@@ -122,7 +130,7 @@ export default function ChapterView() {
        
         {/* Category Selection */}
         <View className="mx-4 my-6">
-          <Text className="font-gujarati text-lg font-bold text-gray-800 mb-4">
+          <Text className={`font-gujarati font-bold text-gray-800 mb-4 ${getFontSizeClasses().textLg}`}>
             સંસાધન પ્રકાર
           </Text>
           <View className="flex-row justify-between">
@@ -154,13 +162,13 @@ export default function ChapterView() {
                       />
                     </View>
                     <Text 
-                      className="font-gujarati text-sm font-semibold text-center mb-1"
+                      className={`font-gujarati font-semibold text-center mb-1 ${getFontSizeClasses().text}`}
                       style={{ color: isSelected ? category.color : '#374151' }}
                     >
                       {category.label}
                     </Text>
                     <Text 
-                      className="font-gujarati text-xs text-center mb-2"
+                      className={`font-gujarati text-center mb-2 ${getFontSizeClasses().text}`}
                       style={{ color: isSelected ? category.color + 'CC' : '#6B7280' }}
                     >
                       {category.description}
@@ -170,7 +178,7 @@ export default function ChapterView() {
                       style={{ backgroundColor: category.color + '15' }}
                     >
                       <Text 
-                        className="font-gujarati text-xs font-bold"
+                        className={`font-gujarati font-bold ${getFontSizeClasses().text}`}
                         style={{ color: category.color }}
                       >
                         {category.count}
@@ -257,6 +265,9 @@ const ResourceCard: React.FC<ResourceCardProps> = ({ resource, width, categoryCo
   
   const handleResourcePress = async () => {
     try {
+      // Track PDF view
+      await AnalyticsService.trackPDFView(resource.id);
+      
       if (resource.resourceType === 'video') {
         // For YouTube videos, always use our PDF viewer (which can handle YouTube via WebView)
         router.push({

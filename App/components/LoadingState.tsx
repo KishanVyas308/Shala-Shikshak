@@ -24,7 +24,7 @@ export default function LoadingState({
           <View className="absolute -inset-2">
             <ActivityIndicator 
               size={size === 'large' ? 'large' : 'small'} 
-              color="#6C63FF" 
+              color="#16a34a" 
             />
           </View>
         </View>

@@ -8,6 +8,7 @@ import { standardsAPI } from '../services/standards';
 import { subjectsAPI } from '../services/subjects';
 import { chaptersAPI } from '../services/chapters';
 import { storageService } from '../services/storage';
+import { AnalyticsService } from '../services/analytics';
 import { useFontSize } from '../contexts/FontSizeContext';
 import Header from '../components/Header';
 import LoadingState from '../components/LoadingState';
@@ -19,11 +20,12 @@ export default function BookmarksPage() {
   const [bookmarkedSubjects, setBookmarkedSubjects] = useState<string[]>([]);
   const [bookmarkedChapters, setBookmarkedChapters] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { getFontSizeClasses } = useFontSize();
+  const { getFontSizeClasses, fontSize } = useFontSize();
 
-  // Load bookmarks
+  // Load bookmarks and track page view
   useEffect(() => {
     loadBookmarks();
+    AnalyticsService.trackBookmarks();
   }, []);
 
   const loadBookmarks = async () => {
@@ -174,10 +176,10 @@ export default function BookmarksPage() {
                       className="flex-1 mr-3"
                       onPress={() => router.push(`/subject/${subject.id}`)}
                     >
-                      <Text className="font-gujarati text-gray-900 text-lg font-bold mb-1">
+                      <Text className={`font-gujarati text-gray-900 font-bold mb-1 ${getFontSizeClasses().textLg}`}>
                         {subject.name}
                       </Text>
-                      <Text className="font-gujarati text-gray-600 text-sm">
+                      <Text className={`font-gujarati text-gray-600 ${getFontSizeClasses().text}`}>
                         {subject.standard?.name} • {subject.chapters?.length || 0} પ્રકરણો
                       </Text>
                     </TouchableOpacity>
@@ -196,10 +198,10 @@ export default function BookmarksPage() {
                 <View className="bg-gray-100 rounded-full p-4 mb-4">
                   <Ionicons name="bookmark-outline" size={48} color="#6b7280" />
                 </View>
-                <Text className="font-gujarati text-gray-900 text-lg font-bold text-center mb-2">
+                <Text className={`font-gujarati text-gray-900 font-bold text-center mb-2 ${getFontSizeClasses().textLg}`}>
                   કોઈ વિષય બુકમાર્ક નથી
                 </Text>
-                <Text className="font-gujarati text-gray-600 text-sm text-center">
+                <Text className={`font-gujarati text-gray-600 text-center ${getFontSizeClasses().text}`}>
                   તમે હજુ સુધી કોઈ વિષય બુકમાર્ક કર્યો નથી
                 </Text>
               </View>
@@ -213,7 +215,7 @@ export default function BookmarksPage() {
             {chapters.length > 0 ? (
               chapters.map((chapter) => (
                 <ChapterCard 
-                  key={chapter.id}
+                  key={`${chapter.id}-${fontSize}`}
                   id={chapter.id}
                   name={chapter.name}
                   description={chapter.description}
@@ -223,7 +225,10 @@ export default function BookmarksPage() {
                   videoUrl={chapter.videoUrl}
                   textbookPdfUrl={chapter.textbookPdfUrl}
                   solutionPdfUrl={chapter.solutionPdfUrl}
-                  onPress={() => {}}
+                  onPress={async () => {
+                    await AnalyticsService.trackChapterView(chapter.id);
+                    router.push(`/chapter/${chapter.id}` as any);
+                  }}
                   handleRemoveChapterBookmark={() => handleRemoveChapterBookmark(chapter.id)}
                 />
               ))
@@ -232,10 +237,10 @@ export default function BookmarksPage() {
                 <View className="bg-gray-100 rounded-full p-4 mb-4">
                   <Ionicons name="bookmark-outline" size={48} color="#6b7280" />
                 </View>
-                <Text className="font-gujarati text-gray-900 text-lg font-bold text-center mb-2">
+                <Text className={`font-gujarati text-gray-900 font-bold text-center mb-2 ${getFontSizeClasses().textLg}`}>
                   કોઈ પ્રકરણ બુકમાર્ક નથી
                 </Text>
-                <Text className="font-gujarati text-gray-600 text-sm text-center">
+                <Text className={`font-gujarati text-gray-600 text-center ${getFontSizeClasses().text}`}>
                   તમે હજુ સુધી કોઈ પ્રકરણ બુકમાર્ક કર્યું નથી
                 </Text>
               </View>

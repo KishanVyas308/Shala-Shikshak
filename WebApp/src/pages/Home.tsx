@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpen, Users, GraduationCap, FileText, PlayCircle, Star, ArrowRight } from 'lucide-react';
+import WhatsAppJoinButton from '../components/WhatsAppJoinButton';
 
 const Home: React.FC = () => {
   const features = [
@@ -66,6 +67,11 @@ const Home: React.FC = () => {
               >
                 અમારા વિશે જાણો
               </Link>
+            </div>
+            
+            {/* WhatsApp Join Button */}
+            <div className="mt-6 sm:mt-8 flex justify-center">
+              <WhatsAppJoinButton size="lg" className="shadow-lg" />
             </div>
           </div>
         </div>

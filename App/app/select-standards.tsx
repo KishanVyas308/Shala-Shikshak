@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
@@ -6,6 +6,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { standardsAPI } from '../services/standards';
 import { storageService } from '../services/storage';
+import { AnalyticsService } from '../services/analytics';
+import { useFontSize } from '../contexts/FontSizeContext';
 import Header from '../components/Header';
 import LoadingState from '../components/LoadingState';
 import ErrorState from '../components/ErrorState';
@@ -14,16 +16,20 @@ export default function SelectStandards() {
     const [selectedStandards, setSelectedStandards] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isInitializing, setIsInitializing] = useState(true);
+    const { getFontSizeClasses } = useFontSize();
 
     const { data: standards = [], isLoading: isLoadingStandards, error, refetch } = useQuery({
         queryKey: ['standards'],
         queryFn: standardsAPI.getAll,
     });
 
-    // Load existing user standards on component mount
-    React.useEffect(() => {
+    // Load existing user standards on component mount and track page view
+    useEffect(() => {
         const loadExistingStandards = async () => {
             try {
+                // Track page view
+                await AnalyticsService.trackScreen('select-standards');
+                
                 const existingStandards = await storageService.getUserStandards();
                 setSelectedStandards(existingStandards);
             } catch (error) {
@@ -162,11 +168,11 @@ export default function SelectStandards() {
                 <View className="mx-4 my-6 p-4 bg-blue-50 rounded-xl border border-blue-200">
                     <View className="flex-row items-center mb-2">
                         <Ionicons name="information-circle" size={20} color="#3B82F6" />
-                        <Text className="font-gujarati text-blue-800 text-base font-semibold ml-2">
+                        <Text className={`font-gujarati text-blue-800 font-semibold ml-2 ${getFontSizeClasses().text}`}>
                             સૂચનાઓ
                         </Text>
                     </View>
-                    <Text className="font-gujarati text-blue-700 text-sm leading-5">
+                    <Text className={`font-gujarati text-blue-700 leading-5 ${getFontSizeClasses().text}`}>
                         • તમે એક અથવા વધુ ધોરણો પસંદ કરી શકો છો{'\n'}
                         • પસંદ કરેલા ધોરણો તમારા હોમ પેજ પર દેખાશે{'\n'}
                         • તમે બાદમાં સેટિંગ્સમાંથી આ બદલી શકશો
@@ -175,7 +181,7 @@ export default function SelectStandards() {
 
                 {/* Selection Counter */}
                 <View className="mx-4 mb-4">
-                    <Text className="font-gujarati text-secondary-800 text-lg font-bold">
+                    <Text className={`font-gujarati text-secondary-800 font-bold ${getFontSizeClasses().textLg}`}>
                         પસંદ કરેલા ધોરણો: {selectedStandards.length.toString()}
                     </Text>
                 </View>
@@ -186,7 +192,7 @@ export default function SelectStandards() {
                         {sortedStandards.map((standard) => {
                             const isSelected = selectedStandards.includes(standard.id);
                             return (
-                                <View key={standard.id} className="w-[32%] mb-4">
+                                <View key={standard.id} className="w-[31%] mb-4">
                                     <TouchableOpacity
                                         onPress={() => {
                                             try {
@@ -210,7 +216,7 @@ export default function SelectStandards() {
                                         {/* Header with Name and Selection */}
                                         <View className="flex-row items-center justify-between mb-3">
                                             {/* Standard Name */}
-                                            <Text className={`font-gujarati text-lg font-bold  ${isSelected ? 'text-primary-800' : 'text-secondary-800'
+                                            <Text className={`font-gujarati font-bold ${getFontSizeClasses().textLg} ${isSelected ? 'text-primary-800' : 'text-secondary-800'
                                                 }`} numberOfLines={2}>
                                                 {standard.name}
                                             </Text>
@@ -232,7 +238,7 @@ export default function SelectStandards() {
 
                                         {/* Description */}
                                         {standard.description && (
-                                            <Text numberOfLines={2} className={`font-gujarati text-xs mb-3 ${isSelected ? 'text-primary-600' : 'text-secondary-600'
+                                            <Text numberOfLines={2} className={`font-gujarati mb-3 ${getFontSizeClasses().text} ${isSelected ? 'text-primary-600' : 'text-secondary-600'
                                                 }`}>
                                                 {standard.description}
                                             </Text>
@@ -242,7 +248,7 @@ export default function SelectStandards() {
                                         <View className="mt-auto">
                                             <View className={`px-3 py-1.5 rounded-full self-start ${isSelected ? 'bg-primary-100' : 'bg-secondary-100'
                                                 }`}>
-                                                <Text className={`font-gujarati text-xs font-medium ${isSelected ? 'text-primary-700' : 'text-secondary-600'
+                                                <Text className={`font-gujarati font-medium ${getFontSizeClasses().text} ${isSelected ? 'text-primary-700' : 'text-secondary-600'
                                                     }`}>
                                                     {(standard._count?.subjects || 0).toString()} વિષયો
                                                 </Text>
@@ -273,12 +279,12 @@ export default function SelectStandards() {
                     {isLoading ? (
                         <View className="flex-row items-center">
                             <View className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-2" />
-                            <Text className="font-gujarati text-white text-lg font-semibold">
+                            <Text className={`font-gujarati text-white font-semibold ${getFontSizeClasses().textLg}`}>
                                 સેવ કરી રહ્યું છે...
                             </Text>
                         </View>
                     ) : (
-                        <Text className={`font-gujarati text-lg font-semibold ${selectedStandards.length > 0 ? 'text-white' : 'text-gray-500'
+                        <Text className={`font-gujarati font-semibold ${getFontSizeClasses().textLg} ${selectedStandards.length > 0 ? 'text-white' : 'text-gray-500'
                             }`}>
                             આગળ વધો ({selectedStandards.length.toString()} પસંદ કર્યા)
                         </Text>

@@ -5,36 +5,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Gujarati:wght@300;400;500;600;700;800&display=swap');
 
-/* Custom base styles */
-@layer base {
-  * {
-    font-family: 'Inter', system-ui, sans-serif;
-  }
-  
-  .font-gujarati {
-    font-family: 'Noto Sans Gujarati', system-ui, sans-serif;
-  }
-}
-
-/* Custom component styles */
-@layer components {
-  .gradient-bg {
-    background: linear-gradient(135deg, #6C63FF 0%, #8B7FFF 25%, #A89FFF 50%, #C4BFFF 75%, #E0DFFF 100%);
-  }
-  
-  .gradient-bg-soft {
-    background: linear-gradient(135deg, #f0f0ff 0%, #e6e3ff 50%, #d1cbff 100%);
-  }
-  
-  .card-shadow {
-    box-shadow: 0 4px 16px rgba(108, 99, 255, 0.1);
-  }
-  
-  .card-shadow-hover {
-    box-shadow: 0 8px 32px rgba(108, 99, 255, 0.2);
-  }
-  
-  .text-shadow {
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
+.font-gujarati {
+  font-family: 'Noto Sans Gujarati', system-ui, sans-serif;
 }

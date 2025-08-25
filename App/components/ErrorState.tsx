@@ -51,7 +51,7 @@ export default function ErrorState({
             className="w-full"
           >
             <LinearGradient
-              colors={['#6C63FF', '#8B7FFF']}
+              colors={['#16a34a', '#22c55e']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               className="rounded-xl py-4 px-6 flex-row items-center justify-center"

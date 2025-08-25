@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { BookOpen, ArrowRight, Users, GraduationCap } from 'lucide-react';
 import { standardsAPI } from '../services/standards';
+// import WhatsAppJoinButton from '../components/WhatsAppJoinButton';
 import type { Standard } from '../types';
 
 const Standards: React.FC = () => {
@@ -116,6 +117,7 @@ const Standards: React.FC = () => {
                 <StandardCard key={standard.id} standard={standard} />
               ))}
             </div>
+          
           </>
         )}
       </div>
