@@ -13,6 +13,8 @@ import chapterRoutes from './routes/chapters';
 import chapterResourceRoutes from './routes/chapterResources';
 import uploadRoutes from './routes/upload';
 import whatsappRoutes from './routes/whatsapp';
+import pageViewRoutes from './routes/pageViews';
+import analyticsRoutes from './routes/analytics';
 
 // Load environment variables
 dotenv.config();
@@ -126,6 +128,9 @@ app.use('/api/chapters', chapterRoutes);
 app.use('/api/chapter-resources', chapterResourceRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/whatsapp', whatsappRoutes);
+app.use('/api/page-views', pageViewRoutes);
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/page-views', pageViewRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

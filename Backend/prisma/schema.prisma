@@ -98,3 +98,19 @@ model WhatsAppLink {
 
   @@map("whatsapp_links")
 }
+
+model PageView {
+  id        String   @id @default(cuid())
+  page      String   // e.g., "/standards/123/subjects/456"
+  platform  String   @default("web") // "web" or "app"
+  userId    String?  // if you ever add user accounts
+  ipAddress String?  // capture client IP (optional, for uniqueness/geo)
+  userAgent String?  // capture browser/device info
+  createdAt DateTime @default(now())
+
+  @@index([page, createdAt]) // speeds up analytics queries
+  @@index([platform])
+  @@index([page, platform])
+  @@map("page_views")
+}
+

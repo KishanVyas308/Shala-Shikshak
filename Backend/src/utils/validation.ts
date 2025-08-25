@@ -73,3 +73,11 @@ export const chapterResourceUpdateSchema = Joi.object({
 export const youtubeUrlSchema = Joi.string().pattern(
   /^(https?:\/\/)?(www\.)?(youtube\.com\/(watch\?v=|embed\/)|youtu\.be\/)[\w-]+/
 );
+
+// PageView validation schemas
+export const pageViewSchema = Joi.object({
+  page: Joi.string().min(1).max(500).required(),
+  userId: Joi.string().optional().allow(null),
+  userAgent: Joi.string().max(1000).optional().allow(null),
+  platform: Joi.string().valid('web', 'app').default('web'),
+});
