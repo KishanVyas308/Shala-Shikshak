@@ -1,0 +1,12 @@
+# filepath: d:\All-Project\Freelance\shala shikshak\.easignore
+# Ignore Backend completely
+Backend/
+Backend/**/*
+
+# Ignore WebApp if not needed
+WebApp/
+WebApp/**/*
+
+# Keep only App folder content
+!App/
+!App/**/*
