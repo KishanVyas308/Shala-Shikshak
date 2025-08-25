@@ -11,7 +11,9 @@ import {
   X,
   Bell,
   Search,
-  User
+  User,
+  BarChart3,
+  MessageSquare
 } from 'lucide-react';
 
 const AdminLayout: React.FC = () => {
@@ -23,6 +25,8 @@ const AdminLayout: React.FC = () => {
     { name: 'ધોરણો', href: '/admin/standards', icon: GraduationCap, current: location.pathname === '/admin/standards' },
     { name: 'વિષયો', href: '/admin/subjects', icon: BookOpen, current: location.pathname === '/admin/subjects' },
     { name: 'પ્રકરણો', href: '/admin/chapters', icon: FileText, current: location.pathname === '/admin/chapters' },
+    { name: 'એનાલિટિક્સ', href: '/admin/analytics', icon: BarChart3, current: location.pathname === '/admin/analytics' },
+    { name: 'વ્હોટ્સએપ', href: '/admin/whatsapp', icon: MessageSquare, current: location.pathname === '/admin/whatsapp' },
     { name: 'સેટિંગ્સ', href: '/admin/settings', icon: Settings, current: location.pathname === '/admin/settings' },
   ];
 
