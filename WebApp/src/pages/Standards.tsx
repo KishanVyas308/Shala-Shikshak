@@ -123,7 +123,7 @@ const Standards: React.FC = () => {
       </div>
 
       {/* Floating Action Button for Mobile */}
-      <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 md:hidden z-40">
+      {/* <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 md:hidden z-40">
         <Link
           to="/"
           className="flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full shadow-xl hover:shadow-2xl transform transition-all duration-300 hover:scale-110 active:scale-95"
@@ -131,7 +131,7 @@ const Standards: React.FC = () => {
         >
           <ArrowRight className="h-5 w-5 sm:h-7 sm:w-7 rotate-180" />
         </Link>
-      </div>
+      </div> */}
     </div>
   );
 };

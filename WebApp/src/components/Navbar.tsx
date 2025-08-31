@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { BookOpen, LogOut, Settings, Home, User, Menu, X } from 'lucide-react';
+import { BookOpen, LogOut, Settings, Home, User, Menu, X, Info, Mail, Shield } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 const Navbar: React.FC = () => {
@@ -48,6 +48,42 @@ const Navbar: React.FC = () => {
             >
               <BookOpen className="h-4 w-4" />
               <span>અભ્યાસ</span>
+            </Link>
+
+            <Link
+              to="/about"
+              className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                isActive('/about') 
+                  ? 'text-indigo-600 bg-indigo-50' 
+                  : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50'
+              }`}
+            >
+              <Info className="h-4 w-4" />
+              <span>અમારા વિશે</span>
+            </Link>
+
+            <Link
+              to="/contact"
+              className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                isActive('/contact') 
+                  ? 'text-indigo-600 bg-indigo-50' 
+                  : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50'
+              }`}
+            >
+              <Mail className="h-4 w-4" />
+              <span>સંપર્ક</span>
+            </Link>
+
+            <Link
+              to="/privacy"
+              className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                isActive('/privacy') 
+                  ? 'text-indigo-600 bg-indigo-50' 
+                  : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50'
+              }`}
+            >
+              <Shield className="h-4 w-4" />
+              <span>Privacy Policy</span>
             </Link>
 
             {isAuthenticated ? (
@@ -131,6 +167,45 @@ const Navbar: React.FC = () => {
               >
                 <BookOpen className="h-5 w-5" />
                 <span>અભ્યાસ</span>
+              </Link>
+
+              <Link
+                to="/about"
+                onClick={closeMenu}
+                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                  isActive('/about') 
+                    ? 'text-indigo-600 bg-indigo-50' 
+                    : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50'
+                }`}
+              >
+                <Info className="h-5 w-5" />
+                <span>અમારા વિશે</span>
+              </Link>
+
+              <Link
+                to="/contact"
+                onClick={closeMenu}
+                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                  isActive('/contact') 
+                    ? 'text-indigo-600 bg-indigo-50' 
+                    : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50'
+                }`}
+              >
+                <Mail className="h-5 w-5" />
+                <span>સંપર્ક</span>
+              </Link>
+
+              <Link
+                to="/privacy"
+                onClick={closeMenu}
+                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                  isActive('/privacy') 
+                    ? 'text-indigo-600 bg-indigo-50' 
+                    : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50'
+                }`}
+              >
+                <Shield className="h-5 w-5" />
+                <span>Privacy Policy</span>
               </Link>
 
               {isAuthenticated ? (
