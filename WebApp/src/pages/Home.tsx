@@ -165,32 +165,95 @@ const Home: React.FC = () => {
 
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-8 sm:py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="flex justify-center items-center mb-6 sm:mb-8">
-            <BookOpen className="h-8 w-8 sm:h-10 sm:w-10 text-indigo-400 mr-2 sm:mr-3" />
-            <span className="text-xl sm:text-2xl font-bold">શાળા શિક્ષક</span>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8">
+            <div className="flex justify-center items-center mb-6 sm:mb-8">
+              <BookOpen className="h-8 w-8 sm:h-10 sm:w-10 text-indigo-400 mr-2 sm:mr-3" />
+              <span className="text-xl sm:text-2xl font-bold">શાળા શિક્ષક</span>
+            </div>
+            <p className="text-gray-400 mb-6 text-sm sm:text-base px-4 max-w-2xl mx-auto">
+              ગુજરાતી માધ્યમના વિદ્યાર્થીઓ માટે આધુનિક શિક્ષણ પ્લેટફોર્મ
+            </p>
           </div>
-          <p className="text-gray-400 mb-3 sm:mb-4 text-sm sm:text-base px-4">
-            ગુજરાતી માધ્યમના વિદ્યાર્થીઓ માટે આધુનિક શિક્ષણ પ્લેટફોર્મ
-          </p>
-          <p className="text-gray-500 text-xs sm:text-sm">
-            © 2025 શાળા શિક્ષક. તમામ અધિકારો સુરક્ષિત.
-          </p>
+
+          {/* Footer Links */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+            {/* Navigation Links */}
+            <div className="text-center md:text-left">
+              <h3 className="text-lg font-semibold mb-4 text-indigo-400">મુખ્ય પૃષ્ઠો</h3>
+              <div className="space-y-2">
+                <Link to="/" className="block text-gray-400 hover:text-white transition-colors text-sm">
+                  મુખ્ય પૃષ્ઠ
+                </Link>
+                <Link to="/standards" className="block text-gray-400 hover:text-white transition-colors text-sm">
+                  ધોરણો અને અભ્યાસ
+                </Link>
+                <Link to="/about" className="block text-gray-400 hover:text-white transition-colors text-sm">
+                  અમારા વિશે
+                </Link>
+              </div>
+            </div>
+
+            {/* Support Links */}
+            <div className="text-center">
+              <h3 className="text-lg font-semibold mb-4 text-indigo-400">સહાય અને માહિતી</h3>
+              <div className="space-y-2">
+                <Link to="/contact" className="block text-gray-400 hover:text-white transition-colors text-sm">
+                  સંપર્ક કરો
+                </Link>
+                <Link to="/privacy" className="block text-gray-400 hover:text-white transition-colors text-sm">
+                  ગોપનીયતા નીતિ
+                </Link>
+                <a 
+                  href="https://shalashikshak.in" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="block text-gray-400 hover:text-white transition-colors text-sm"
+                >
+                  આધિકારિક વેબસાઇટ
+                </a>
+              </div>
+            </div>
+
+            {/* Contact Info */}
+            <div className="text-center md:text-right">
+              <h3 className="text-lg font-semibold mb-4 text-indigo-400">સંપર્ક માહિતી</h3>
+              <div className="space-y-2 text-sm">
+                <p className="text-gray-400">
+                  <span className="block font-medium text-gray-300">સ્થાપક:</span>
+                  પંકજ કપાડિયા
+                </p>
+                <p className="text-gray-400">
+                  <span className="block font-medium text-gray-300">ઇમેઇલ:</span>
+                  <a href="mailto:100xTechs@gmail.com" className="hover:text-white transition-colors">
+                    100xTechs@gmail.com
+                  </a>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Copyright */}
+          <div className="border-t border-gray-800 pt-6 text-center">
+            <p className="text-gray-500 text-xs sm:text-sm">
+              © 2025 શાળા શિક્ષક. તમામ અધિકારો સુરક્ષિત.
+            </p>
+          </div>
         </div>
       </footer>
 
       {/* Floating Action Button for Mobile */}
       <div className="fixed bottom-6 right-6 md:hidden z-40">
-        <Link
+        {/* <Link
           to="/standards"
           className="flex items-center justify-center w-16 h-16 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full shadow-xl hover:shadow-2xl transform transition-all duration-300 hover:scale-110 active:scale-95 animate-pulse hover:animate-none"
           aria-label="અધ્યયન શરૂ કરો"
         >
           <BookOpen className="h-7 w-7" />
-        </Link>
-        <div className="absolute -top-12 right-0 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 pointer-events-none transition-opacity duration-300 whitespace-nowrap">
+        </Link> */}
+        {/* <div className="absolute -top-12 right-0 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 pointer-events-none transition-opacity duration-300 whitespace-nowrap">
           અધ્યયન શરૂ કરો
-        </div>
+        </div> */}
       </div>
     </div>
   );

@@ -12,6 +12,9 @@ import SubjectView from './pages/SubjectView'
 import ChapterView from './pages/ChapterView'
 import ChapterResourcesView from './pages/ChapterResourcesView'
 import Login from './pages/Login'
+import AboutUs from './pages/AboutUs'
+import ContactUs from './pages/ContactUs'
+import PrivacyPolicy from './pages/PrivacyPolicy'
 import AdminDashboard from './pages/admin/Dashboard'
 import AdminStandards from './pages/admin/Standards'
 import AdminSubjects from './pages/admin/Subjects'
@@ -42,6 +45,9 @@ function AppContent() {
           <Route path="/subject/:id" element={<SubjectView />} />
           <Route path="/chapter/:id" element={<ChapterView />} />
           <Route path="/chapter/:id/resources" element={<ChapterResourcesView />} />
+          <Route path="/about" element={<AboutUs />} />
+          <Route path="/contact" element={<ContactUs />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/login" element={<Login />} />
           
           {/* Admin Routes */}
