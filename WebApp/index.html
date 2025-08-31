@@ -1,46 +1,80 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="gu">
   <head>
     <meta charset="UTF-8" />
     <!-- Favicon - Book icon using data URI -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTQgMTlDNCAyMC4xIDQuOSAyMSA2IDIxSDE4QzE5LjEgMjEgMjAgMjAuMSAyMCAxOVY1QzIwIDMuOSAxOS4xIDMgMTggM0g2QzQuOSAzIDQgMy45IDQgNVYxOVoiIHN0cm9rZT0iIzk0MzNlYSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTkgOUgxNSIgc3Ryb2tlPSIjOTQzM2VhIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8cGF0aCBkPSJNOSAxM0gxNSIgc3Ryb2tlPSIjOTQzM2VhIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L3N2Zz4K" />
-    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgdmlld0JveD0iMCAwIDE4MCAxODAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxODAiIGhlaWdodD0iMTgwIiByeD0iNDAiIGZpbGw9IiM5NDMzZWEiLz4KPHN2ZyB4PSI0NSIgeT0iNDUiIHdpZHRoPSI5MCIgaGVpZ2h0PSI5MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIj4KPHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Ik00IDE5QzQgMjAuMSA0LjkgMjEgNiAyMUgxOEMxOS4xIDIxIDIwIDIwLjEgMjAgMTlWNUMyMCAzLjkgMTkuMSAzIDE4IDNINkM0LjkgMyA0IDMuOSA0IDVWMTlaIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8cGF0aCBkPSJNOSA5SDE1IiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8cGF0aCBkPSJNOSAxM0gxNSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPC9zdmc+Cjwvc3ZnPgo8L3N2Zz4K" />
-    
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTQgMTlDNCAyMC4xIDQuOSAyMSA2IDIxSDE4QzE5LjEgMjEgMjAgMjAuMSAyMCAxOVY1QzIwIDMuOSAxOS4xIDMgMTggM0g2QzQuOSAzIDQgMy45IDQgNVYxOVoiIHN0cm9rZT0iIzk0MzNlYSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTkgOUgxNSIgc3Ryb2tlPSIjOTQzM2VhIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8cGF0aCBkPSJNOSAxM0gxNSIgc3Ryb2tlPSIjOTQzM2VhIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L3N2Zz4K"
+    />
+    <link
+      rel="apple-touch-icon"
+      href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgdmlld0JveD0iMCAwIDE4MCAxODAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxODAiIGhlaWdodD0iMTgwIiByeD0iNDAiIGZpbGw9IiM5NDMzZWEiLz4KPHN2ZyB4PSI0NSIgeT0iNDUiIHdpZHRoPSI5MCIgaGVpZ2h0PSI5MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIj4KPHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Ik00IDE5QzQgMjAuMSA0LjkgMjEgNiAyMUgxOEMxOS4xIDIxIDIwIDIwLjEgMjAgMTlWNUMyMCAzLjkgMTkuMSAzIDE4IDNINkM0LjkgMyA0IDMuOSA0IDVWMTlaIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8cGF0aCBkPSJNOSA5SDE1IiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8cGF0aCBkPSJNOSAxM0gxNSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPC9zdmc+Cjwvc3ZnPgo8L3N2Zz4K"
+    />
+
     <!-- Basic Meta Tags -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
-    <meta name="description" content="શાળા શિક્ષક - ગુજરાતી શિક્ષણ પ્લેટફોર્મ. તમામ ધોરણો માટે વિડિયો લેક્ચર્સ, PDF પુસ્તકો અને ઉકેલ માર્ગદર્શિકા. Educational platform with video lectures, textbooks, and solution guides for all standards." />
-    <meta name="keywords" content="શાળા શિક્ષક, ગુજરાતી એજ્યુકેશન, વિડિયો લેક્ચર્સ, PDF પુસ્તકો, ઉકેલ માર્ગદર્શિકા, education, gujarati education, video lectures, textbooks, study material, online learning" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes"
+    />
+    <meta
+      name="description"
+      content="શાળા શિક્ષક - ગુજરાતી શિક્ષણ પ્લેટફોર્મ. તમામ ધોરણો માટે વિડિયો લેક્ચર્સ, PDF પુસ્તકો અને ઉકેલ માર્ગદર્શિકા. Educational platform with video lectures, textbooks, and solution guides for all standards."
+    />
+    <meta
+      name="keywords"
+      content="શાળા શિક્ષક, ગુજરાતી એજ્યુકેશન, વિડિયો લેક્ચર્સ, PDF પુસ્તકો, ઉકેલ માર્ગદર્શિકા, education, gujarati education, video lectures, textbooks, study material, online learning"
+    />
     <meta name="author" content="Shala Shikshak Team" />
     <meta name="robots" content="index, follow" />
     <meta name="googlebot" content="index, follow" />
-    
+
     <!-- Language and Region -->
     <meta http-equiv="content-language" content="gu, en" />
     <link rel="alternate" hreflang="gu" href="/" />
     <link rel="alternate" hreflang="en" href="/" />
-    
+
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="શાળા શિક્ષક - ગુજરાતી શિક્ષણ પ્લેટફોર્મ" />
-    <meta property="og:description" content="તમામ ધોરણો માટે વિડિયો લેક્ચર્સ, PDF પુસ્તકો અને ઉકેલ માર્ગદર્શિકા સાથે સંપૂર્ણ શિક્ષણ પ્લેટફોર્મ. Educational platform with comprehensive study materials for all standards." />
+    <meta
+      property="og:title"
+      content="શાળા શિક્ષક - ગુજરાતી શિક્ષણ પ્લેટફોર્મ"
+    />
+    <meta
+      property="og:description"
+      content="તમામ ધોરણો માટે વિડિયો લેક્ચર્સ, PDF પુસ્તકો અને ઉકેલ માર્ગદર્શિકા સાથે સંપૂર્ણ શિક્ષણ પ્લેટફોર્મ. Educational platform with comprehensive study materials for all standards."
+    />
     <meta property="og:image" content="/og-image.jpg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="શાળા શિક્ષક - Educational Platform" />
+    <meta
+      property="og:image:alt"
+      content="શાળા શિક્ષક - Educational Platform"
+    />
     <meta property="og:url" content="https://shala-shikshak.com" />
     <meta property="og:site_name" content="Shala Shikshak" />
     <meta property="og:locale" content="gu_IN" />
     <meta property="og:locale:alternate" content="en_US" />
-    
+
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="શાળા શિક્ષક - ગુજરાતી શિક્ષણ પ્લેટફોર્મ" />
-    <meta name="twitter:description" content="તમામ ધોરણો માટે વિડિયો લેક્ચર્સ, PDF પુસ્તકો અને ઉકેલ માર્ગદર્શિકા સાથે સંપૂર્ણ શિક્ષણ પ્લેટફોર્મ." />
+    <meta
+      name="twitter:title"
+      content="શાળા શિક્ષક - ગુજરાતી શિક્ષણ પ્લેટફોર્મ"
+    />
+    <meta
+      name="twitter:description"
+      content="તમામ ધોરણો માટે વિડિયો લેક્ચર્સ, PDF પુસ્તકો અને ઉકેલ માર્ગદર્શિકા સાથે સંપૂર્ણ શિક્ષણ પ્લેટફોર્મ."
+    />
     <meta name="twitter:image" content="/twitter-image.jpg" />
-    <meta name="twitter:image:alt" content="શાળા શિક્ષક - Educational Platform" />
+    <meta
+      name="twitter:image:alt"
+      content="શાળા શિક્ષક - Educational Platform"
+    />
     <meta name="twitter:site" content="@shala_shikshak" />
     <meta name="twitter:creator" content="@shala_shikshak" />
-    
+
     <!-- Mobile App -->
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -50,29 +84,38 @@
     <meta name="msapplication-TileColor" content="#9333ea" />
     <meta name="msapplication-TileImage" content="/ms-icon-144x144.png" />
     <meta name="theme-color" content="#9333ea" />
-    
+
     <!-- Preconnect for Performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://www.youtube.com" />
     <link rel="preconnect" href="https://i.ytimg.com" />
-    
+
     <!-- DNS Prefetch -->
     <link rel="dns-prefetch" href="//fonts.googleapis.com" />
     <link rel="dns-prefetch" href="//fonts.gstatic.com" />
     <link rel="dns-prefetch" href="//www.youtube.com" />
-    
+
     <!-- Security -->
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
     <meta http-equiv="X-Frame-Options" content="DENY" />
     <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
-    
+
     <!-- PWA -->
     <link rel="manifest" href="/manifest.json" />
-    
+
     <!-- Main Title -->
-    <title>શાળા શિક્ષક - ગુજરાતી શિક્ષણ પ્લેટફોર્મ | Educational Platform for All Standards</title>
+    <title>
+      શાળા શિક્ષક - ગુજરાતી શિક્ષણ પ્લેટફોર્મ | Educational Platform for All
+      Standards
+    </title>
+
+    <script
+      async
+      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6117946299642843"
+      crossorigin="anonymous"
+    ></script>
   </head>
   <body>
     <div id="root"></div>
