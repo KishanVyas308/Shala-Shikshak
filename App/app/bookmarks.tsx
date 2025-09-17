@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, RefreshControl, Alert, Linking } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, RefreshControl, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { standardsAPI } from '../services/standards';
 import { subjectsAPI } from '../services/subjects';
 import { chaptersAPI } from '../services/chapters';
 import { storageService } from '../services/storage';
 import { AnalyticsService } from '../services/analytics';
 import { useFontSize } from '../contexts/FontSizeContext';
+import { BottomBanner, UniversalBanner, useInterstitialAd, useAdFrequency } from '../components/Ads';
 import Header from '../components/Header';
 import LoadingState from '../components/LoadingState';
 import ErrorState from '../components/ErrorState';
@@ -21,6 +21,8 @@ export default function BookmarksPage() {
   const [bookmarkedChapters, setBookmarkedChapters] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { getFontSizeClasses, fontSize } = useFontSize();
+  const { showInterstitialAd } = useInterstitialAd();
+  const { shouldShowInterstitialAd, recordInterstitialShown } = useAdFrequency();
 
   // Load bookmarks and track page view
   useEffect(() => {
@@ -174,7 +176,21 @@ export default function BookmarksPage() {
                   <View className="flex-row items-center justify-between">
                     <TouchableOpacity
                       className="flex-1 mr-3"
-                      onPress={() => router.push(`/subject/${subject.id}`)}
+                      onPress={() => {
+                        // Try to show interstitial ad (with 40% chance and timing rules)
+                        if (shouldShowInterstitialAd()) {
+                          const adShown = showInterstitialAd(() => {
+                            recordInterstitialShown();
+                            router.push(`/subject/${subject.id}`);
+                          });
+                          // If ad wasn't shown due to loading issues, navigate anyway
+                          if (!adShown) {
+                            router.push(`/subject/${subject.id}`);
+                          }
+                        } else {
+                          router.push(`/subject/${subject.id}`);
+                        }
+                      }}
                     >
                       <Text className={`font-gujarati text-gray-900 font-bold mb-1 ${getFontSizeClasses().textLg}`}>
                         {subject.name}
@@ -227,7 +243,20 @@ export default function BookmarksPage() {
                   solutionPdfUrl={chapter.solutionPdfUrl}
                   onPress={async () => {
                     await AnalyticsService.trackChapterView(chapter.id);
-                    router.push(`/chapter/${chapter.id}` as any);
+                    
+                    // Try to show interstitial ad (with 40% chance and timing rules)
+                    if (shouldShowInterstitialAd()) {
+                      const adShown = showInterstitialAd(() => {
+                        recordInterstitialShown();
+                        router.push(`/chapter/${chapter.id}` as any);
+                      });
+                      // If ad wasn't shown due to loading issues, navigate anyway
+                      if (!adShown) {
+                        router.push(`/chapter/${chapter.id}` as any);
+                      }
+                    } else {
+                      router.push(`/chapter/${chapter.id}` as any);
+                    }
                   }}
                   handleRemoveChapterBookmark={() => handleRemoveChapterBookmark(chapter.id)}
                 />
@@ -248,8 +277,14 @@ export default function BookmarksPage() {
           </View>
         )}
 
+        {/* Mid-content Banner Ad */}
+        <UniversalBanner style={{ marginVertical: 15 }} />
+
         <View className="h-6" />
       </ScrollView>
+
+      {/* Bottom Banner Ad */}
+      <BottomBanner />
       </View>
     </SafeAreaView>
   );

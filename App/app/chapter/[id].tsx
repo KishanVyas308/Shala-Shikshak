@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Dimensions, RefreshControl, Linking, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Dimensions, RefreshControl, Alert } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { chapterResourcesAPI } from '../../services/chapterResources';
 import { AnalyticsService } from '../../services/analytics';
 import { useFontSize } from '../../contexts/FontSizeContext';
+import { useRewardedAd } from '../../components/Ads';
 import type { ChapterResource } from '../../types';
 import Header from '../../components/Header';
 import LoadingState from '../../components/LoadingState';
@@ -19,6 +20,7 @@ export default function ChapterView() {
   const { id: chapterId } = useLocalSearchParams<{ id: string }>();
   const [selectedType, setSelectedType] = useState<'svadhyay' | 'svadhyay_pothi' | 'other'>('svadhyay');
   const { getFontSizeClasses } = useFontSize();
+  const { loaded: adLoaded, showRewardedAd } = useRewardedAd();
 
   // Track chapter view
   useEffect(() => {
@@ -238,12 +240,14 @@ export default function ChapterView() {
             </View>
           ) : (
             <View className="flex-row flex-wrap justify-between">
-              {currentResources.map((resource, index) => (
+              {currentResources.map((resource) => (
                 <ResourceCard 
-                  key={resource.id} 
+                  key={resource.id}
                   resource={resource} 
                   width={cardWidth}
                   categoryColor={selectedCategory?.color || '#6B7280'}
+                  adLoaded={adLoaded}
+                  showRewardedAd={showRewardedAd}
                 />
               ))}
             </View>
@@ -258,12 +262,80 @@ interface ResourceCardProps {
   resource: ChapterResource;
   width: number;
   categoryColor: string;
+  adLoaded: boolean;
+  showRewardedAd: (onReward: () => void, onError?: () => void) => void;
 }
 
-const ResourceCard: React.FC<ResourceCardProps> = ({ resource, width, categoryColor }) => {
+const ResourceCard: React.FC<ResourceCardProps> = ({ resource, width, categoryColor, adLoaded, showRewardedAd }) => {
   const isVideo = resource.resourceType === 'video';
   
   const handleResourcePress = async () => {
+    try {
+      // Show rewarded ad before opening content
+      if (adLoaded) {
+        const resourceTypeName = isVideo ? 'વિડિયો' : 'PDF';
+        Alert.alert(
+          'સામગ્રી ખોલો',
+          `${resourceTypeName} જોવા માટે પહેલા જાહેરાત જુઓ અને પુરસ્કાર મેળવો!`,
+          [
+            {
+              text: 'રદ કરો',
+              style: 'cancel',
+            },
+            {
+              text: 'જાહેરાત જુઓ',
+              onPress: () => {
+                showRewardedAd(
+                  // On reward earned - open the content
+                  () => {
+                    openResourceContent();
+                  },
+                  // On error - show option to open anyway
+                  () => {
+                    Alert.alert(
+                      'જાહેરાત લોડ થઈ નથી',
+                      'તમે આગળ વધી શકો છો, પણ જાહેરાત જોવાથી અમને સપોર્ટ મળે છે.',
+                      [
+                        {
+                          text: 'પાછા જાઓ',
+                          style: 'cancel',
+                        },
+                        {
+                          text: 'આગળ વધો',
+                          onPress: () => openResourceContent(),
+                        },
+                      ]
+                    );
+                  }
+                );
+              },
+            },
+          ]
+        );
+      } else {
+        // If ad is not loaded, give option to proceed
+        Alert.alert(
+          'જાહેરાત તૈયાર નથી',
+          'જાહેરાત તૈયાર નથી, તમે આગળ વધી શકો છો.',
+          [
+            {
+              text: 'રદ કરો',
+              style: 'cancel',
+            },
+            {
+              text: 'આગળ વધો',
+              onPress: () => openResourceContent(),
+            },
+          ]
+        );
+      }
+    } catch (error) {
+      console.error('Error handling resource press:', error);
+      openResourceContent();
+    }
+  };
+
+  const openResourceContent = async () => {
     try {
       // Track PDF view
       await AnalyticsService.trackPDFView(resource.id);

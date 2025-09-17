@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { standardsAPI } from '../../services/standards';
 import { AnalyticsService } from '../../services/analytics';
 import { useFontSize } from '../../contexts/FontSizeContext';
+import { BottomBanner, useInterstitialAd, useAdFrequency } from '../../components/Ads';
 import Header from '../../components/Header';
 import SubjectCard from '../../components/SubjectCard';
 import LoadingState from '../../components/LoadingState';
@@ -15,6 +16,8 @@ import ErrorState from '../../components/ErrorState';
 export default function StandardView() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { getFontSizeClasses, fontSize } = useFontSize();
+  const { showInterstitialAd } = useInterstitialAd();
+  const { shouldShowInterstitialAd, recordInterstitialShown } = useAdFrequency();
   
   // Track standard view
   useEffect(() => {
@@ -91,25 +94,38 @@ export default function StandardView() {
         }
         showsVerticalScrollIndicator={false}
       >
-      
         
         {/* Subjects List */}
         <View className="px-4 pb-6 my-4">
           {sortedSubjects.length > 0 ? (
             <View className="flex-row flex-wrap justify-start">
-              {sortedSubjects.map((subject) => (
-                <SubjectCard
-                  key={`${subject.id}-${fontSize}`}
-                  id={subject.id}
-                  name={subject.name}
-                  description={subject.description}
-                  chapterCount={subject.chapters?.length || 0}
-                  standardName={standard.name}
-                  onPress={async () => {
-                    await AnalyticsService.trackSubjectView(subject.id);
-                    router.push(`/subject/${subject.id}`);
-                  }}
-                />
+              {sortedSubjects.map((subject, index) => (
+                <React.Fragment key={`${subject.id}-${fontSize}`}>
+                  <SubjectCard
+                    id={subject.id}
+                    name={subject.name}
+                    description={subject.description}
+                    chapterCount={subject.chapters?.length || 0}
+                    standardName={standard.name}
+                    onPress={async () => {
+                      await AnalyticsService.trackSubjectView(subject.id);
+                      
+                      // Try to show interstitial ad (with 40% chance and timing rules)
+                      if (shouldShowInterstitialAd()) {
+                        const adShown = showInterstitialAd(() => {
+                          recordInterstitialShown();
+                          router.push(`/subject/${subject.id}`);
+                        });
+                        // If ad wasn't shown due to loading issues, navigate anyway
+                        if (!adShown) {
+                          router.push(`/subject/${subject.id}`);
+                        }
+                      } else {
+                        router.push(`/subject/${subject.id}`);
+                      }
+                    }}
+                  />
+                </React.Fragment>
               ))}
             </View>
           ) : (
@@ -129,6 +145,9 @@ export default function StandardView() {
           )}
         </View>
       </ScrollView>
+
+      {/* Bottom Banner Ad */}
+      <BottomBanner />
       </View>
     </SafeAreaView>
   );
