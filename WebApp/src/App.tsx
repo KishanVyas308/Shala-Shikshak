@@ -23,6 +23,7 @@ import ChapterResources from './pages/admin/ChapterResources'
 import WhatsAppManagement from './pages/admin/WhatsAppManagement'
 import Analytics from './pages/admin/Analytics'
 import ProtectedRoute from './components/ProtectedRoute'
+import AppTxt from '../app-ads.txt'
 
 function AppContent() {
   // Track page views
@@ -49,7 +50,9 @@ function AppContent() {
           <Route path="/contact" element={<ContactUs />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/login" element={<Login />} />
-          
+          <Route path="/app-ads.txt" element={AppTxt} />
+
+
           {/* Admin Routes */}
           <Route path="/admin" element={
             <ProtectedRoute>
@@ -88,11 +91,11 @@ function AppContent() {
           } />
         </Routes>
       </main>
-      
+
       {/* Floating WhatsApp Button */}
       <WhatsAppJoinButton variant="floating" />
-      
-      <Toaster 
+
+      <Toaster
         position="top-right"
         toastOptions={{
           duration: 4000,
