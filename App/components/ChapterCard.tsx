@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { storageService } from '../services/storage';
 import { useFontSize } from '../contexts/FontSizeContext';
+import { useRewardedAd } from './Ads';
 
 interface ChapterCardProps {
   id: string;
@@ -34,6 +35,7 @@ export default function ChapterCard({
 }: ChapterCardProps) {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const { getFontSizeClasses } = useFontSize();
+  const { loaded: adLoaded, showRewardedAd } = useRewardedAd();
   const fontClasses = getFontSizeClasses();
   const resourceCount = [hasVideo, hasTextbook, hasSolution].filter(Boolean).length;
 
@@ -61,6 +63,71 @@ export default function ChapterCard({
 
   const handleResourcePress = async (url: string, type: string) => {
     try {
+      // Show rewarded ad before opening content
+      if (adLoaded) {
+        Alert.alert(
+          'સામગ્રી ખોલો',
+          `${type} જોવા માટે પહેલા જાહેરાત જુઓ અને પુરસ્કાર મેળવો!`,
+          [
+            {
+              text: 'રદ કરો',
+              style: 'cancel',
+            },
+            {
+              text: 'જાહેરાત જુઓ',
+              onPress: () => {
+                showRewardedAd(
+                  // On reward earned - open the content
+                  () => {
+                    openContent(url, type);
+                  },
+                  // On error - show option to open anyway
+                  () => {
+                    Alert.alert(
+                      'જાહેરાત લોડ થઈ નથી',
+                      'તમે આગળ વધી શકો છો, પણ જાહેરાત જોવાથી અમને સપોર્ટ મળે છે.',
+                      [
+                        {
+                          text: 'પાછા જાઓ',
+                          style: 'cancel',
+                        },
+                        {
+                          text: 'આગળ વધો',
+                          onPress: () => openContent(url, type),
+                        },
+                      ]
+                    );
+                  }
+                );
+              },
+            },
+          ]
+        );
+      } else {
+        // If ad is not loaded, give option to proceed
+        Alert.alert(
+          'જાહેરાત તૈયાર નથી',
+          'જાહેરાત તૈયાર નથી, તમે આગળ વધી શકો છો.',
+          [
+            {
+              text: 'રદ કરો',
+              style: 'cancel',
+            },
+            {
+              text: 'આગળ વધો',
+              onPress: () => openContent(url, type),
+            },
+          ]
+        );
+      }
+    } catch (error) {
+      console.error('Error handling resource press:', error);
+      openContent(url, type);
+    }
+  };
+
+  const openContent = async (url: string, type: string) => {
+    try {
       // Navigate to internal PDF viewer for PDFs, external for videos
       if (type.includes('PDF')) {
         router.push({
@@ -68,12 +135,19 @@ export default function ChapterCard({
           params: { url: url, title: `${name} - ${type}` }
         });
       } else {
-        // For video, open externally
-        const supported = await Linking.canOpenURL(url);
-        if (supported) {
-          await Linking.openURL(url);
+        // For video, open externally or in PDF viewer if it's a YouTube URL
+        if (url.includes('youtube.com') || url.includes('youtu.be')) {
+          router.push({
+            pathname: '/pdf-viewer' as any,
+            params: { url: url, title: `${name} - ${type}` }
+          });
         } else {
-          Alert.alert('ત્રુટિ', `${type} ખોલી શકાતું નથી`);
+          const supported = await Linking.canOpenURL(url);
+          if (supported) {
+            await Linking.openURL(url);
+          } else {
+            Alert.alert('ત્રુટિ', `${type} ખોલી શકાતું નથી`);
+          }
         }
       }
     } catch (error) {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, RefreshControl, Alert } from 'react-native';
+import { View, Text, ScrollView, RefreshControl } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
@@ -8,6 +8,7 @@ import { subjectsAPI } from '../../services/subjects';
 import { storageService } from '../../services/storage';
 import { AnalyticsService } from '../../services/analytics';
 import { useFontSize } from '../../contexts/FontSizeContext';
+import { BottomBanner, UniversalBanner } from '../../components/Ads';
 import Header from '../../components/Header';
 import ChapterCard from '../../components/ChapterCard';
 import LoadingState from '../../components/LoadingState';
@@ -120,29 +121,29 @@ export default function SubjectView() {
         showsVerticalScrollIndicator={false}
       >
 
-
-        
         {/* Chapters List */}
         <View className="pb-6 my-4">
           {sortedChapters.length > 0 ? (
-            sortedChapters.map((chapter) => (
-              <ChapterCard
-                key={`${chapter.id}-${fontSize}`}
-                id={chapter.id}
-                name={chapter.name}
-                description={chapter.description}
-                hasVideo={!!chapter.videoUrl}
-                hasTextbook={!!chapter.textbookPdfUrl}
-                hasSolution={!!chapter.solutionPdfUrl}
-                videoUrl={chapter.videoUrl}
-                textbookPdfUrl={chapter.textbookPdfUrl}
-                solutionPdfUrl={chapter.solutionPdfUrl}
-                onPress={async () => {
-                  await AnalyticsService.trackChapterView(chapter.id);
-                  router.push(`/chapter/${chapter.id}` as any);
-                }}
-              />
-            ))
+            <>
+              {sortedChapters.map((chapter) => (
+                <ChapterCard
+                  key={`${chapter.id}-${fontSize}`}
+                  id={chapter.id}
+                  name={chapter.name}
+                  description={chapter.description}
+                  hasVideo={!!chapter.videoUrl}
+                  hasTextbook={!!chapter.textbookPdfUrl}
+                  hasSolution={!!chapter.solutionPdfUrl}
+                  videoUrl={chapter.videoUrl}
+                  textbookPdfUrl={chapter.textbookPdfUrl}
+                  solutionPdfUrl={chapter.solutionPdfUrl}
+                  onPress={async () => {
+                    await AnalyticsService.trackChapterView(chapter.id);
+                    router.push(`/chapter/${chapter.id}` as any);
+                  }}
+                />
+              ))}
+            </>
           ) : (
             <View className="mx-4 mt-8">
               <View className="bg-white rounded-2xl p-8 items-center">
@@ -159,7 +160,13 @@ export default function SubjectView() {
             </View>
           )}
         </View>
+
+        {/* Mid-content Banner Ad */}
+        <UniversalBanner style={{ marginVertical: 10 }} />
       </ScrollView>
+
+      {/* Bottom Banner Ad */}
+      <BottomBanner />
       </View>
     </SafeAreaView>
   );

@@ -7,6 +7,34 @@ const STORAGE_KEYS = {
 };
 
 export const storageService = {
+  // Generic storage methods
+  async getData(key: string): Promise<string | null> {
+    try {
+      return await AsyncStorage.getItem(key);
+    } catch (error) {
+      console.error(`Error getting data for key ${key}:`, error);
+      return null;
+    }
+  },
+
+  async saveData(key: string, value: string): Promise<void> {
+    try {
+      await AsyncStorage.setItem(key, value);
+    } catch (error) {
+      console.error(`Error saving data for key ${key}:`, error);
+      throw error;
+    }
+  },
+
+  async removeData(key: string): Promise<void> {
+    try {
+      await AsyncStorage.removeItem(key);
+    } catch (error) {
+      console.error(`Error removing data for key ${key}:`, error);
+      throw error;
+    }
+  },
+
   // Get user selected standards
   async getUserStandards(): Promise<string[]> {
     try {

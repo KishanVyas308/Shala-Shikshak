@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, Linking, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, Linking, Alert, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { whatsappAPI, WhatsAppLink } from '../services/whatsappAPI';
 import { useFontSize } from '../contexts/FontSizeContext';
@@ -65,11 +65,6 @@ const WhatsAppJoinCard: React.FC<WhatsAppJoinCardProps> = ({ className = '' }) =
   const handleJoinPress = async () => {
     if (!activeLink) {
       console.log('No active link available');
-      return;
-    }
-
-    if (!activeLink.url) {
-      console.log('Active link URL is undefined:', activeLink);
       Alert.alert(
         'ત્રુટિ',
         'WhatsApp લિંક ઉપલબ્ધ નથી. કૃપા કરીને પછીથી પ્રયાસ કરો.',
@@ -78,18 +73,63 @@ const WhatsAppJoinCard: React.FC<WhatsAppJoinCardProps> = ({ className = '' }) =
       return;
     }
 
-    console.log('Opening WhatsApp URL:', activeLink.url);
+    if (!activeLink.url || typeof activeLink.url !== 'string') {
+      console.log('Active link URL is invalid:', activeLink);
+      Alert.alert(
+        'ત્રુટિ',
+        'WhatsApp લિંક માન્ય નથી. કૃપા કરીને પછીથી પ્રયાસ કરો.',
+        [{ text: 'ઓકે', style: 'default' }]
+      );
+      return;
+    }
+
+    // Ensure the URL starts with https://
+    let finalUrl = activeLink.url.trim();
+    if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
+      finalUrl = 'https://' + finalUrl;
+    }
+
+    console.log('Opening WhatsApp URL:', finalUrl);
 
     try {
-      const supported = await Linking.canOpenURL(activeLink.url);
+      // First check if the URL can be opened
+      const canOpen = await Linking.canOpenURL(finalUrl);
+      console.log('Can open URL:', canOpen);
       
-      if (supported) {
-        await Linking.openURL(activeLink.url);
+      if (canOpen) {
+        await Linking.openURL(finalUrl);
+        console.log('Successfully opened WhatsApp URL');
       } else {
+        console.log('Cannot open URL, checking alternatives...');
+        
+        // Try WhatsApp scheme if it's a chat.whatsapp.com link
+        if (finalUrl.includes('chat.whatsapp.com')) {
+          const whatsappScheme = finalUrl.replace('https://chat.whatsapp.com/', 'whatsapp://chat?code=');
+          const canOpenScheme = await Linking.canOpenURL(whatsappScheme);
+          console.log('Trying WhatsApp scheme:', whatsappScheme, 'Can open:', canOpenScheme);
+          
+          if (canOpenScheme) {
+            await Linking.openURL(whatsappScheme);
+            return;
+          }
+        }
+        
+        // If still can't open, show installation prompt
         Alert.alert(
           'WhatsApp ઉપલબ્ધ નથી',
           'કૃપા કરીને WhatsApp ઇન્સ્ટોલ કરો અને ફરીથી પ્રયાસ કરો.',
-          [{ text: 'ઓકે', style: 'default' }]
+          [
+            { text: 'રદ કરો', style: 'cancel' },
+            { 
+              text: 'WhatsApp ડાઉનલોડ કરો', 
+              onPress: () => {
+                const storeUrl = Platform.OS === 'ios' 
+                  ? 'https://apps.apple.com/app/whatsapp-messenger/id310633997'
+                  : 'https://play.google.com/store/apps/details?id=com.whatsapp';
+                Linking.openURL(storeUrl);
+              }
+            }
+          ]
         );
       }
     } catch (error) {
@@ -97,7 +137,13 @@ const WhatsAppJoinCard: React.FC<WhatsAppJoinCardProps> = ({ className = '' }) =
       Alert.alert(
         'ત્રુટિ',
         'WhatsApp ગ્રુપ ખોલવામાં સમસ્યા આવી છે. કૃપા કરીને ફરીથી પ્રયાસ કરો.',
-        [{ text: 'ઓકે', style: 'default' }]
+        [
+          { text: 'રદ કરો', style: 'cancel' },
+          { 
+            text: 'ફરી પ્રયાસ કરો', 
+            onPress: () => handleJoinPress()
+          }
+        ]
       );
     }
   };
