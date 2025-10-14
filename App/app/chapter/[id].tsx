@@ -7,8 +7,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { chapterResourcesAPI } from '../../services/chapterResources';
 import { AnalyticsService } from '../../services/analytics';
 import { useFontSize } from '../../contexts/FontSizeContext';
-import { useRewardedAd } from '../../components/Ads';
+import { useRewardedAd } from '../../lib/adHooks';
 import type { ChapterResource } from '../../types';
+import { addRecentChapter } from '../../lib/recentChapters';
 import Header from '../../components/Header';
 import LoadingState from '../../components/LoadingState';
 import ErrorState from '../../components/ErrorState';
@@ -20,20 +21,28 @@ export default function ChapterView() {
   const { id: chapterId } = useLocalSearchParams<{ id: string }>();
   const [selectedType, setSelectedType] = useState<'svadhyay' | 'svadhyay_pothi' | 'other'>('svadhyay');
   const { getFontSizeClasses } = useFontSize();
-  const { loaded: adLoaded, showRewardedAd } = useRewardedAd();
-
-  // Track chapter view
-  useEffect(() => {
-    if (chapterId) {
-      AnalyticsService.trackChapterView(chapterId);
-    }
-  }, [chapterId]);
+  const { isLoaded: adLoaded, showRewardedAd } = useRewardedAd();
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['chapter-resources-grouped', chapterId],
     queryFn: () => chapterResourcesAPI.getByChapterGrouped(chapterId!),
     enabled: !!chapterId,
   });
+
+  // Track chapter view and add to recent chapters
+  useEffect(() => {
+    if (chapterId && data?.chapter) {
+      AnalyticsService.trackChapterView(chapterId);
+      // Add to recent chapters
+      const chapter = data.chapter;
+      addRecentChapter({
+        id: chapter.id,
+        title: chapter.name,
+        subject: chapter.subject?.name || '',
+        standard: chapter.subject?.standard?.name || '',
+      });
+    }
+  }, [chapterId, data?.chapter]);
 
   if (isLoading) {
     return (
@@ -263,7 +272,7 @@ interface ResourceCardProps {
   width: number;
   categoryColor: string;
   adLoaded: boolean;
-  showRewardedAd: (onReward: () => void, onError?: () => void) => void;
+  showRewardedAd: (onReward: () => void, options?: { fallbackMessage?: string; allowFallback?: boolean; }) => boolean;
 }
 
 const ResourceCard: React.FC<ResourceCardProps> = ({ resource, width, categoryColor, adLoaded, showRewardedAd }) => {
@@ -271,63 +280,27 @@ const ResourceCard: React.FC<ResourceCardProps> = ({ resource, width, categoryCo
   
   const handleResourcePress = async () => {
     try {
-      // Show rewarded ad before opening content
+      // Try to show rewarded ad seamlessly, if available
       if (adLoaded) {
-        const resourceTypeName = isVideo ? 'વિડિયો' : 'PDF';
-        Alert.alert(
-          'સામગ્રી ખોલો',
-          `${resourceTypeName} જોવા માટે પહેલા જાહેરાત જુઓ અને પુરસ્કાર મેળવો!`,
-          [
-            {
-              text: 'રદ કરો',
-              style: 'cancel',
-            },
-            {
-              text: 'જાહેરાત જુઓ',
-              onPress: () => {
-                showRewardedAd(
-                  // On reward earned - open the content
-                  () => {
-                    openResourceContent();
-                  },
-                  // On error - show option to open anyway
-                  () => {
-                    Alert.alert(
-                      'જાહેરાત લોડ થઈ નથી',
-                      'તમે આગળ વધી શકો છો, પણ જાહેરાત જોવાથી અમને સપોર્ટ મળે છે.',
-                      [
-                        {
-                          text: 'પાછા જાઓ',
-                          style: 'cancel',
-                        },
-                        {
-                          text: 'આગળ વધો',
-                          onPress: () => openResourceContent(),
-                        },
-                      ]
-                    );
-                  }
-                );
-              },
-            },
-          ]
+        const success = showRewardedAd(
+          // On reward earned - open the content
+          () => {
+            openResourceContent();
+          },
+          // Options - silent fallback, no annoying popups
+          {
+            allowFallback: false, // Don't show fallback popup
+            fallbackMessage: '' // No message needed
+          }
         );
+        
+        // If ad couldn't be shown, proceed directly
+        if (!success) {
+          openResourceContent();
+        }
       } else {
-        // If ad is not loaded, give option to proceed
-        Alert.alert(
-          'જાહેરાત તૈયાર નથી',
-          'જાહેરાત તૈયાર નથી, તમે આગળ વધી શકો છો.',
-          [
-            {
-              text: 'રદ કરો',
-              style: 'cancel',
-            },
-            {
-              text: 'આગળ વધો',
-              onPress: () => openResourceContent(),
-            },
-          ]
-        );
+        // If no ad loaded, proceed directly - no popup needed
+        openResourceContent();
       }
     } catch (error) {
       console.error('Error handling resource press:', error);

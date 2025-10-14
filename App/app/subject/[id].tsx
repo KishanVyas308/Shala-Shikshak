@@ -8,7 +8,7 @@ import { subjectsAPI } from '../../services/subjects';
 import { storageService } from '../../services/storage';
 import { AnalyticsService } from '../../services/analytics';
 import { useFontSize } from '../../contexts/FontSizeContext';
-import { BottomBanner, UniversalBanner } from '../../components/Ads';
+import { BottomBannerAd, SmartBannerAd } from '../../components/OptimizedBannerAd';
 import Header from '../../components/Header';
 import ChapterCard from '../../components/ChapterCard';
 import LoadingState from '../../components/LoadingState';
@@ -162,11 +162,11 @@ export default function SubjectView() {
         </View>
 
         {/* Mid-content Banner Ad */}
-        <UniversalBanner style={{ marginVertical: 10 }} />
+        <SmartBannerAd style={{ marginVertical: 10 }} />
       </ScrollView>
 
       {/* Bottom Banner Ad */}
-      <BottomBanner />
+      <BottomBannerAd />
       </View>
     </SafeAreaView>
   );

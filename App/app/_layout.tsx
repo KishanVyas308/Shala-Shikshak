@@ -6,6 +6,7 @@ import { FontSizeProvider } from '../contexts/FontSizeContext';
 import { useEffect } from 'react';
 import "./global.css";
 import MobileAds from "react-native-google-mobile-ads";
+import { AdManager } from '../lib/AdManager';
 
 
 const queryClient = new QueryClient({
@@ -26,10 +27,13 @@ export default function RootLayout() {
   }, []);
 
   useEffect(() => {
+    // Initialize AdMob
     MobileAds()
       .initialize()
       .then(adapterStatuses => {
-        console.log('AdMob initialized', adapterStatuses);
+        console.log('✅ AdMob initialized', adapterStatuses);
+        // Initialize our ad system after AdMob is ready
+        AdManager.initialize();
       });
   }, []);
 
@@ -67,6 +71,14 @@ export default function RootLayout() {
                 name="bookmarks"
                 options={{
                   title: 'બુકમાર્ક્સ',
+                  gestureEnabled: true,
+                  headerTintColor: '#16a34a',
+                }}
+              />
+              <Stack.Screen
+                name="recent"
+                options={{
+                  title: 'તાજેતરના પ્રકરણો',
                   gestureEnabled: true,
                   headerTintColor: '#16a34a',
                 }}

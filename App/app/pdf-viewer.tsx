@@ -4,7 +4,7 @@ import { useLocalSearchParams, router, useFocusEffect } from 'expo-router';
 import * as ScreenCapture from 'expo-screen-capture';
 import { AnalyticsService } from '../services/analytics';
 import { useFontSize } from '../contexts/FontSizeContext';
-import { UniversalBanner } from '../components/Ads';
+import { SmartBannerAd } from '../components/OptimizedBannerAd';
 import Header from '../components/Header';
 import LoadingState from '../components/LoadingState';
 
@@ -465,7 +465,7 @@ export default function PDFViewer() {
       />
       
       {/* Banner Ad at bottom */}
-      <UniversalBanner />
+      <SmartBannerAd />
     </View>
   );
 }

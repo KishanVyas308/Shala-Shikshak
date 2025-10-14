@@ -9,7 +9,8 @@ import { chaptersAPI } from '../services/chapters';
 import { storageService } from '../services/storage';
 import { AnalyticsService } from '../services/analytics';
 import { useFontSize } from '../contexts/FontSizeContext';
-import { BottomBanner, UniversalBanner, useInterstitialAd, useAdFrequency } from '../components/Ads';
+import { BottomBannerAd, SmartBannerAd } from '../components/OptimizedBannerAd';
+import { useInterstitialAd, useAdFrequency } from '../lib/adHooks';
 import Header from '../components/Header';
 import LoadingState from '../components/LoadingState';
 import ErrorState from '../components/ErrorState';
@@ -278,13 +279,13 @@ export default function BookmarksPage() {
         )}
 
         {/* Mid-content Banner Ad */}
-        <UniversalBanner style={{ marginVertical: 15 }} />
+        <SmartBannerAd style={{ marginVertical: 15 }} />
 
         <View className="h-6" />
       </ScrollView>
 
       {/* Bottom Banner Ad */}
-      <BottomBanner />
+      <BottomBannerAd />
       </View>
     </SafeAreaView>
   );

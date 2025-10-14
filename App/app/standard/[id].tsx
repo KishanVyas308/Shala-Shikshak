@@ -7,7 +7,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { standardsAPI } from '../../services/standards';
 import { AnalyticsService } from '../../services/analytics';
 import { useFontSize } from '../../contexts/FontSizeContext';
-import { BottomBanner, useInterstitialAd, useAdFrequency } from '../../components/Ads';
+import { BottomBannerAd } from '../../components/OptimizedBannerAd';
+import { useInterstitialAd, useAdFrequency } from '../../lib/adHooks';
 import Header from '../../components/Header';
 import SubjectCard from '../../components/SubjectCard';
 import LoadingState from '../../components/LoadingState';
@@ -147,7 +148,7 @@ export default function StandardView() {
       </ScrollView>
 
       {/* Bottom Banner Ad */}
-      <BottomBanner />
+      <BottomBannerAd />
       </View>
     </SafeAreaView>
   );
