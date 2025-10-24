@@ -91,6 +91,11 @@ module.exports = {
         'xl': '16px',
         '2xl': '20px',
         '3xl': '24px',
+        '4xl': '32px',
+        '5xl': '40px',
+        '6xl': '48px',
+        '7xl': '56px',
+        '8xl': '64px',
       }
     }
   },

@@ -137,8 +137,8 @@ export default function Home() {
         >
 
           {/* Standards List Header */}
-          <View className="mx-4 my-4">
-            <Text className={`font-gujarati text-secondary-800 font-bold ${getFontSizeClasses().title}`}>
+          <View className="mx-6 my-4">
+            <Text className={`font-gujarati text-secondary-800 font-bold ${getFontSizeClasses().subtitle}`}>
               પસંદ કરેલા ધોરણો
             </Text>
 
@@ -157,7 +157,7 @@ export default function Home() {
                   order={standard.order}
                   onPress={async () => {
                     await AnalyticsService.trackStandardView(standard.id);
-                    
+
                     // Try to show interstitial ad (with 40% chance and timing rules)
                     if (shouldShowInterstitialAd()) {
                       const adShown = showInterstitialAd(() => {
@@ -180,7 +180,7 @@ export default function Home() {
             </View>
           </View>
 
-          
+
 
           {/* Quick Actions */}
           <View className="mx-4 mb-6">
@@ -190,7 +190,7 @@ export default function Home() {
               <TouchableOpacity
                 onPress={async () => {
                   await AnalyticsService.trackBookmarks();
-                  
+
                   // Try to show interstitial ad (with 40% chance and timing rules)
                   if (shouldShowInterstitialAd()) {
                     const adShown = showInterstitialAd(() => {
@@ -207,10 +207,10 @@ export default function Home() {
                 }}
                 className="flex-row items-center justify-between"
               >
-              {/* Decoratives */}
-              <View className="absolute -right-12 opacity-10">
-                <View className="w-28 h-28 rounded-full border-2 border-primary-600" />
-              </View>
+                {/* Decoratives */}
+                <View className="absolute -right-12 opacity-10">
+                  <View className="w-28 h-28 rounded-full border-2 border-primary-600" />
+                </View>
 
                 <View className="flex-1">
                   <Text className={`font-gujarati text-secondary-800 font-bold ${getFontSizeClasses().textLg}`}>
@@ -264,13 +264,26 @@ export default function Home() {
               Education is the greatest wealth of life
             </Text>
           </View>
+
+          <View className='flex'>
+
+            <Text className='text-2xl text-secondary-50'>
+              test
+            </Text>
+            <Text className='text-3xl text-secondary-50'>
+              test
+            </Text>
+            <Text className='text-4xl text-secondary-50'>
+              test
+            </Text>
+          </View>
         </ScrollView>
 
         {/* Banner Ad - Using New Optimized System */}
         <OptimizedBannerAd />
-        
+
         {/* Debug Ad Status (only in development) */}
-        <AdStatusDebug />
+        {/* <AdStatusDebug /> */}
 
         {/* Settings Modal */}
         <Modal
@@ -339,9 +352,8 @@ export default function Home() {
           </TouchableOpacity>
         </Modal>
       </View>
-      
-      {/* Ad Debug Component - Only visible in development */}
-      <AdStatusDebugComponent />
+
+
     </SafeAreaView>
   );
 }

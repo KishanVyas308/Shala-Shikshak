@@ -2,7 +2,7 @@
   "expo": {
     "name": "શાળા શિક્ષક",
     "slug": "shala-shikshak",
-    "version": "3.0.0",
+    "version": "4.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
     "scheme": "shalashikshak",
@@ -40,7 +40,8 @@
       "package": "com.x100xTechs.shalashikshak",
       "permissions": [
         "android.permission.INTERNET",
-        "android.permission.ACCESS_NETWORK_STATE"
+        "android.permission.ACCESS_NETWORK_STATE",
+        "com.google.android.gms.permission.AD_ID"
       ],
       "usesCleartextTraffic": true,
       "compileSdkVersion": 35,
