@@ -5,7 +5,8 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { FontSizeProvider } from '../contexts/FontSizeContext';
 import { useEffect } from 'react';
 import "./global.css";
-import MobileAds from "react-native-google-mobile-ads";
+import mobileAds, { InterstitialAd, AdEventType, BannerAd, BannerAdSize, TestIds } from "react-native-google-mobile-ads";
+import { RewardedAd, RewardedAdEventType } from "react-native-google-mobile-ads";
 
 
 const queryClient = new QueryClient({
@@ -19,94 +20,148 @@ const queryClient = new QueryClient({
   },
 });
 
+
+const rewardedAd = RewardedAd.createForAdRequest(
+  __DEV__ ? TestIds.REWARDED : "ca-app-pub-3397220667540126/1383655159", // replace with your actual ID
+  {
+    requestNonPersonalizedAdsOnly: true,
+  }
+);
+
+const interstitial = InterstitialAd.createForAdRequest(
+  __DEV__ ? TestIds.INTERSTITIAL : "ca-app-pub-3397220667540126/4759755392",
+  {
+    requestNonPersonalizedAdsOnly: true,
+  }
+);
+
 export default function RootLayout() {
+
   useEffect(() => {
-    // App initialization
-    console.log('App initialized successfully');
+    // Initialize SDK once
+    mobileAds()
+      .setRequestConfiguration({  })
+      .then(() => mobileAds().initialize());
+
+    // Preload first ad
+    interstitial.load();
+
+    // Reload on close
+    const listener = interstitial.addAdEventListener(AdEventType.CLOSED, () => {
+      interstitial.load(); // Prepare next ad
+    });
+
+    return () => listener();
   }, []);
 
   useEffect(() => {
-    MobileAds()
-      .initialize()
-      .then(adapterStatuses => {
-        console.log('AdMob initialized', adapterStatuses);
-      });
-  }, []);
+  rewardedAd.load();
+
+  const rewardListener = rewardedAd.addAdEventListener(RewardedAdEventType.EARNED_REWARD, reward => {
+    console.log('User earned reward:', reward);
+    rewardedAd.load();
+  });
+
+  return () => rewardListener();
+}, []);
 
 
   return (
-    <SafeAreaProvider>
-      <QueryClientProvider client={queryClient}>
-        <FontSizeProvider>
-          <StatusBar style="dark" backgroundColor="#16a34a" />
-          <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>
-            <Stack
-              screenOptions={{
-                headerShown: false,
-                contentStyle: { backgroundColor: '#f8fafc' },
-                animation: 'ios_from_right',
-              }}
-            >
-              <Stack.Screen
-                name="index"
-                options={{
-                  title: 'શાળા શિક્ષક',
-                  gestureEnabled: false,
-                  headerTintColor: '#16a34a',
+    <>
+
+      <SafeAreaProvider>
+        <QueryClientProvider client={queryClient}>
+          <FontSizeProvider>
+            <StatusBar style="dark" backgroundColor="#16a34a" />
+            <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>
+              <Stack
+                screenOptions={{
+                  headerShown: false,
+                  contentStyle: { backgroundColor: '#f8fafc' },
+                  animation: 'ios_from_right',
+                }}
+              >
+                <Stack.Screen
+                  name="index"
+                  options={{
+                    title: 'શાળા શિક્ષક',
+                    gestureEnabled: false,
+                    headerTintColor: '#16a34a',
+                  }}
+                />
+                <Stack.Screen
+                  name="select-standards"
+                  options={{
+                    title: 'ધોરણ પસંદ કરો',
+                    gestureEnabled: true,
+                    headerTintColor: '#16a34a',
+                  }}
+                />
+                <Stack.Screen
+                  name="bookmarks"
+                  options={{
+                    title: 'બુકમાર્ક્સ',
+                    gestureEnabled: true,
+                    headerTintColor: '#16a34a',
+                  }}
+                />
+                <Stack.Screen
+                  name="recent"
+                  options={{
+                    title: 'તાજેતરના પ્રકરણો',
+                    gestureEnabled: true,
+                    headerTintColor: '#16a34a',
+                  }}
+                />
+                <Stack.Screen
+                  name="standard/[id]"
+                  options={{
+                    title: 'વિષયો',
+                    gestureEnabled: true,
+                    headerTintColor: '#16a34a',
+                  }}
+                />
+                <Stack.Screen
+                  name="subject/[id]"
+                  options={{
+                    title: 'પ્રકરણો',
+                    gestureEnabled: true,
+                    headerTintColor: '#16a34a',
+                  }}
+                />
+                <Stack.Screen
+                  name="chapter/[id]"
+                  options={{
+                    title: 'પ્રકરણ સંસાધનો',
+                    gestureEnabled: true,
+                    headerTintColor: '#16a34a',
+                  }}
+                />
+                <Stack.Screen
+                  name="pdf-viewer"
+                  options={{
+                    title: 'PDF વ્યૂઅર',
+                    gestureEnabled: true,
+                    headerTintColor: '#16a34a',
+                  }}
+                />
+              </Stack>
+              <BannerAd
+                unitId={__DEV__ ? TestIds.BANNER : "ca-app-pub-3397220667540126/8068445014"}
+                size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+                requestOptions={{
+                  requestNonPersonalizedAdsOnly: true,
+                  networkExtras: {
+                    collapsible: "bottom",
+                  }
                 }}
               />
-              <Stack.Screen
-                name="select-standards"
-                options={{
-                  title: 'ધોરણ પસંદ કરો',
-                  gestureEnabled: true,
-                  headerTintColor: '#16a34a',
-                }}
-              />
-              <Stack.Screen
-                name="bookmarks"
-                options={{
-                  title: 'બુકમાર્ક્સ',
-                  gestureEnabled: true,
-                  headerTintColor: '#16a34a',
-                }}
-              />
-              <Stack.Screen
-                name="standard/[id]"
-                options={{
-                  title: 'વિષયો',
-                  gestureEnabled: true,
-                  headerTintColor: '#16a34a',
-                }}
-              />
-              <Stack.Screen
-                name="subject/[id]"
-                options={{
-                  title: 'પ્રકરણો',
-                  gestureEnabled: true,
-                  headerTintColor: '#16a34a',
-                }}
-              />
-              <Stack.Screen
-                name="chapter/[id]"
-                options={{
-                  title: 'પ્રકરણ સંસાધનો',
-                  gestureEnabled: true,
-                  headerTintColor: '#16a34a',
-                }}
-              />
-              <Stack.Screen
-                name="pdf-viewer"
-                options={{
-                  title: 'PDF વ્યૂઅર',
-                  gestureEnabled: true,
-                  headerTintColor: '#16a34a',
-                }}
-              />
-            </Stack>
-          </SafeAreaView>
-        </FontSizeProvider>
-      </QueryClientProvider>
-    </SafeAreaProvider>
+            </SafeAreaView>
+
+          </FontSizeProvider>
+        </QueryClientProvider>
+      </SafeAreaProvider>
+
+    </>
   );
 }

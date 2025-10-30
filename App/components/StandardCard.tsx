@@ -52,12 +52,19 @@ export default function StandardCard({
             {/* Standard Name */}
             <View className='flex-1 justify-evenly items-center'>
 
-              <Text className={`font-gujarati font-bold text-gray-900 leading-tight ${fontClasses.textXl}`} numberOfLines={2}>
+              <Text className={`font-gujarati font-bold text-gray-900 leading-tight ${fontClasses.text2xl}`} numberOfLines={2}>
                 {name.split(' ')[0]}
               </Text>
-              <Text className={`font-gujarati font-bold text-gray-900 leading-tight ${fontClasses.text}`} numberOfLines={2}>
+              <Text className={`font-gujarati font-bold text-gray-900 leading-tight ${fontClasses.text2xl}`} numberOfLines={2}>
                 {name.split(' ')[1]}
               </Text>
+              {
+                name.split(' ').length > 2 && (
+                  <Text className={`-mb-3 font-gujarati text-center text-gray-900 leading-tight text-xs`} numberOfLines={2}>
+                    {name.split(' ').slice(2).join(' ')}
+                  </Text>
+                )
+              }
             </View>
 
             {/* <View className="flex-1 "> */}

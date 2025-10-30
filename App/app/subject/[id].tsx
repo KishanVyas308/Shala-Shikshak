@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, RefreshControl } from 'react-native';
-import { useLocalSearchParams, router } from 'expo-router';
+import { useLocalSearchParams, router, useNavigation } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -8,11 +8,11 @@ import { subjectsAPI } from '../../services/subjects';
 import { storageService } from '../../services/storage';
 import { AnalyticsService } from '../../services/analytics';
 import { useFontSize } from '../../contexts/FontSizeContext';
-import { BottomBanner, UniversalBanner } from '../../components/Ads';
 import Header from '../../components/Header';
 import ChapterCard from '../../components/ChapterCard';
 import LoadingState from '../../components/LoadingState';
 import ErrorState from '../../components/ErrorState';
+import { showInterstitialAd } from '../../utils/showInterstitialAd';
 
 export default function SubjectView() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -47,6 +47,18 @@ export default function SubjectView() {
       setIsBookmarked(!isBookmarked);
     }
   };
+
+  // Handle Initial Ads
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("focus", () => {
+      // e.g., show ad every 3rd navigation or based on random chance
+      if (Math.random() < 0.33) showInterstitialAd();
+    });
+
+    return unsubscribe;
+  }, [navigation]);
 
   if (isLoading) {
     return (
@@ -161,12 +173,9 @@ export default function SubjectView() {
           )}
         </View>
 
-        {/* Mid-content Banner Ad */}
-        <UniversalBanner style={{ marginVertical: 10 }} />
+        
       </ScrollView>
 
-      {/* Bottom Banner Ad */}
-      <BottomBanner />
       </View>
     </SafeAreaView>
   );

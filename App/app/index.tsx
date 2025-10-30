@@ -8,21 +8,20 @@ import { standardsAPI } from '../services/standards';
 import { storageService } from '../services/storage';
 import { AnalyticsService } from '../services/analytics';
 import { useFontSize } from '../contexts/FontSizeContext';
-import { RewardedAdExample, BottomBanner, useInterstitialAd, useAdFrequency } from '../components/Ads';
 import Header from '../components/Header';
 import StandardCard, { AddStandardCard } from '../components/StandardCard';
 import LoadingState from '../components/LoadingState';
 import ErrorState from '../components/ErrorState';
 import { FontSizeControls } from '../components/FontSizeControls';
 import WhatsAppJoinCard, { fetchActiveLink } from '../components/WhatsAppJoinCard';
+import MinimalLoadingBar from '../components/MinimalLoadingBar';
 
 export default function Home() {
   const [userStandardIds, setUserStandardIds] = useState<string[]>([]);
   const [isCheckingStandards, setIsCheckingStandards] = useState(true);
   const [isSettingsModalVisible, setIsSettingsModalVisible] = useState(false);
   const { getFontSizeClasses, fontSize } = useFontSize();
-  const { showInterstitialAd } = useInterstitialAd();
-  const { shouldShowInterstitialAd, recordInterstitialShown } = useAdFrequency();
+
 
   const { data: standards = [], isLoading, error, refetch } = useQuery({
     queryKey: ['standards'],
@@ -117,6 +116,9 @@ export default function Home() {
           }}
         />
 
+        {/* Loading Bar - Shows when refreshing */}
+        <MinimalLoadingBar isVisible={isLoading} />
+
         <ScrollView
           className="flex-1 b"
           refreshControl={
@@ -126,8 +128,8 @@ export default function Home() {
         >
 
           {/* Standards List Header */}
-          <View className="mx-4 my-4">
-            <Text className={`font-gujarati text-secondary-800 font-bold ${getFontSizeClasses().title}`}>
+          <View className="mx-6 my-4">
+            <Text className={`font-gujarati text-secondary-800 font-bold ${getFontSizeClasses().subtitle}`}>
               પસંદ કરેલા ધોરણો
             </Text>
 
@@ -146,20 +148,10 @@ export default function Home() {
                   order={standard.order}
                   onPress={async () => {
                     await AnalyticsService.trackStandardView(standard.id);
-                    
-                    // Try to show interstitial ad (with 40% chance and timing rules)
-                    if (shouldShowInterstitialAd()) {
-                      const adShown = showInterstitialAd(() => {
-                        recordInterstitialShown();
-                        router.push(`/standard/${standard.id}`);
-                      });
-                      // If ad wasn't shown due to loading issues, navigate anyway
-                      if (!adShown) {
-                        router.push(`/standard/${standard.id}`);
-                      }
-                    } else {
-                      router.push(`/standard/${standard.id}`);
-                    }
+
+
+                    router.push(`/standard/${standard.id}`);
+
                   }}
                 />
               ))}
@@ -169,46 +161,66 @@ export default function Home() {
             </View>
           </View>
 
-          
 
-          {/* Bookmarks */}
-          <View className="mx-4 mb-6 p-4 bg-white rounded-lg shadow-md overflow-hidden relative ">
-            <View className="w-1 bg-primary-600 absolute left-0 top-0 bottom-0 z-30" />
+
+          {/* Quick Actions */}
+          <View className="mx-4 mb-6">
+            {/* Bookmarks */}
+            <View className="mb-4 p-4 bg-white rounded-lg shadow-md overflow-hidden relative">
+              <View className="w-1 bg-primary-600 absolute left-0 top-0 bottom-0 z-30" />
               <TouchableOpacity
-              onPress={async () => {
-                await AnalyticsService.trackBookmarks();
-                
-                // Try to show interstitial ad (with 40% chance and timing rules)
-                if (shouldShowInterstitialAd()) {
-                  const adShown = showInterstitialAd(() => {
-                    recordInterstitialShown();
-                    router.push('/bookmarks');
-                  });
-                  // If ad wasn't shown due to loading issues, navigate anyway
-                  if (!adShown) {
-                    router.push('/bookmarks');
-                  }
-                } else {
-                  router.push('/bookmarks');
-                }
-              }}
-              className="flex-row items-center justify-between "
-            >
-              {/* Decoratives */}
-              <View className="absolute -right-12 opacity-10">
-                <View className="w-28 h-28 rounded-full border-2 border-primary-600" />
-              </View>
+                onPress={async () => {
+                  await AnalyticsService.trackBookmarks();
 
-              <View className="flex-1">
-                <Text className={`font-gujarati text-secondary-800 font-bold ${getFontSizeClasses().textLg}`}>
-                  મારા બુકમાર્ક્સ
-                </Text>
-                <Text className={`font-gujarati text-secondary-600 mt-0.5 ${getFontSizeClasses().text}`}>
-                  તમારા પસંદીદા વિષયો અને પ્રકરણો
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={20} color="#16a34a" />
-            </TouchableOpacity>
+
+                  router.push('/bookmarks');
+
+                }}
+                className="flex-row items-center justify-between"
+              >
+                {/* Decoratives */}
+                <View className="absolute -right-12 opacity-10">
+                  <View className="w-28 h-28 rounded-full border-2 border-primary-600" />
+                </View>
+
+                <View className="flex-1">
+                  <Text className={`font-gujarati text-secondary-800 font-bold ${getFontSizeClasses().textLg}`}>
+                    મારા બુકમાર્ક્સ
+                  </Text>
+                  <Text className={`font-gujarati text-secondary-600 mt-0.5 ${getFontSizeClasses().text}`}>
+                    તમારા પસંદીદા વિષયો અને પ્રકરણો
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color="#16a34a" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Recent Chapters */}
+            <View className="p-4 bg-white rounded-lg shadow-md overflow-hidden relative">
+              <View className="w-1 bg-orange-600 absolute left-0 top-0 bottom-0 z-30" />
+              <TouchableOpacity
+                onPress={async () => {
+                  // Navigate to recent chapters without ad (quick access)
+                  router.push('/recent');
+                }}
+                className="flex-row items-center justify-between"
+              >
+                {/* Decoratives */}
+                <View className="absolute -right-12 opacity-10">
+                  <View className="w-28 h-28 rounded-full border-2 border-orange-600" />
+                </View>
+
+                <View className="flex-1">
+                  <Text className={`font-gujarati text-secondary-800 font-bold ${getFontSizeClasses().textLg}`}>
+                    તાજેતરના પ્રકરણો
+                  </Text>
+                  <Text className={`font-gujarati text-secondary-600 mt-0.5 ${getFontSizeClasses().text}`}>
+                    છેલ્લા 5 જોયેલા પ્રકરણો
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color="#ea580c" />
+              </TouchableOpacity>
+            </View>
           </View>
 
           {/* WhatsApp Join Card */}
@@ -223,10 +235,20 @@ export default function Home() {
               Education is the greatest wealth of life
             </Text>
           </View>
-        </ScrollView>
 
-        {/* Banner Ad */}
-        <BottomBanner />
+          <View className='flex'>
+
+            <Text className='text-2xl text-secondary-50'>
+              test
+            </Text>
+            <Text className='text-3xl text-secondary-50'>
+              test
+            </Text>
+            <Text className='text-4xl text-secondary-50'>
+              test
+            </Text>
+          </View>
+        </ScrollView>
 
         {/* Settings Modal */}
         <Modal
@@ -270,16 +292,7 @@ export default function Home() {
                   <FontSizeControls />
                 </View>
 
-                {/* Rewarded Ad Test */}
-                <View className="px-6 py-4 border-b border-gray-100">
-                  <Text className={`font-gujarati font-semibold text-secondary-800 mb-3 ${getFontSizeClasses().textLg}`}>
-                    પુરસ્કાર જાહેરાત
-                  </Text>
-                  <Text className={`font-gujarati text-secondary-600 mb-3 ${getFontSizeClasses().text}`}>
-                    PDF અને વિડિયો ખોલવા માટે જાહેરાત જોવી પડશે
-                  </Text>
-                  <RewardedAdExample />
-                </View>
+
 
                 <TouchableOpacity
                   onPress={handleChangeStandards}
@@ -304,6 +317,8 @@ export default function Home() {
           </TouchableOpacity>
         </Modal>
       </View>
+
+
     </SafeAreaView>
   );
 }

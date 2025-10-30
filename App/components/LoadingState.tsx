@@ -3,6 +3,7 @@ import { View, Text, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFontSize } from '../contexts/FontSizeContext';
+import SimpleLoadingBar from './SimpleLoadingBar';
 
 interface LoadingStateProps {
   message?: string;
@@ -19,14 +20,13 @@ export default function LoadingState({
   return (
     <View className="flex-1 justify-center items-center p-8">
       
+       
         {/* Animated Loading Icon */}
         <View className="relative mb-6">
-          <View className="absolute -inset-2">
-            <ActivityIndicator 
-              size={size === 'large' ? 'large' : 'small'} 
-              color="#16a34a" 
-            />
-          </View>
+          <ActivityIndicator 
+            size={size === 'large' ? 'large' : 'small'} 
+            color="#16a34a" 
+          />
         </View>
         
         {/* Loading Text */}

@@ -57,7 +57,7 @@ export default function Header({
           
           <View className="flex-1">
             <Text 
-              className={`font-gujarati text-white font-bold text-shadow ${fontClasses.title}`}
+              className={`font-gujarati text-white font-bold text-shadow text-xl`}
               numberOfLines={2}
               adjustsFontSizeToFit={true}
             >

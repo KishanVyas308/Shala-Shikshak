@@ -132,6 +132,8 @@ app.use('/api/page-views', pageViewRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/page-views', pageViewRoutes);
 
+// app.use('/api/quiz')
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ 

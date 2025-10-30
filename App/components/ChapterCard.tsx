@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { storageService } from '../services/storage';
 import { useFontSize } from '../contexts/FontSizeContext';
-import { useRewardedAd } from './Ads';
+// import { useRewardedAd } from '../lib/adHooks';
 
 interface ChapterCardProps {
   id: string;
@@ -35,7 +35,7 @@ export default function ChapterCard({
 }: ChapterCardProps) {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const { getFontSizeClasses } = useFontSize();
-  const { loaded: adLoaded, showRewardedAd } = useRewardedAd();
+  // const { isLoaded: adLoaded, showRewardedAd } = useRewardedAd();
   const fontClasses = getFontSizeClasses();
   const resourceCount = [hasVideo, hasTextbook, hasSolution].filter(Boolean).length;
 
@@ -63,63 +63,10 @@ export default function ChapterCard({
 
   const handleResourcePress = async (url: string, type: string) => {
     try {
-      // Show rewarded ad before opening content
-      if (adLoaded) {
-        Alert.alert(
-          'સામગ્રી ખોલો',
-          `${type} જોવા માટે પહેલા જાહેરાત જુઓ અને પુરસ્કાર મેળવો!`,
-          [
-            {
-              text: 'રદ કરો',
-              style: 'cancel',
-            },
-            {
-              text: 'જાહેરાત જુઓ',
-              onPress: () => {
-                showRewardedAd(
-                  // On reward earned - open the content
-                  () => {
-                    openContent(url, type);
-                  },
-                  // On error - show option to open anyway
-                  () => {
-                    Alert.alert(
-                      'જાહેરાત લોડ થઈ નથી',
-                      'તમે આગળ વધી શકો છો, પણ જાહેરાત જોવાથી અમને સપોર્ટ મળે છે.',
-                      [
-                        {
-                          text: 'પાછા જાઓ',
-                          style: 'cancel',
-                        },
-                        {
-                          text: 'આગળ વધો',
-                          onPress: () => openContent(url, type),
-                        },
-                      ]
-                    );
-                  }
-                );
-              },
-            },
-          ]
-        );
-      } else {
-        // If ad is not loaded, give option to proceed
-        Alert.alert(
-          'જાહેરાત તૈયાર નથી',
-          'જાહેરાત તૈયાર નથી, તમે આગળ વધી શકો છો.',
-          [
-            {
-              text: 'રદ કરો',
-              style: 'cancel',
-            },
-            {
-              text: 'આગળ વધો',
-              onPress: () => openContent(url, type),
-            },
-          ]
-        );
-      }
+      // Try to show rewarded ad seamlessly, if available
+     
+        openContent(url, type);
+      
     } catch (error) {
       console.error('Error handling resource press:', error);
       openContent(url, type);

@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Dimensions, RefreshControl, Alert } from 'react-native';
-import { useLocalSearchParams, router } from 'expo-router';
+import { useLocalSearchParams, router, useNavigation } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { chapterResourcesAPI } from '../../services/chapterResources';
 import { AnalyticsService } from '../../services/analytics';
 import { useFontSize } from '../../contexts/FontSizeContext';
-import { useRewardedAd } from '../../components/Ads';
 import type { ChapterResource } from '../../types';
+import { addRecentChapter } from '../../lib/recentChapters';
 import Header from '../../components/Header';
 import LoadingState from '../../components/LoadingState';
 import ErrorState from '../../components/ErrorState';
+import { showInterstitialAd } from '../../utils/showInterstitialAd';
+import { showRewardedAd } from "../../utils/showRewardedAd";
+
 
 const { width } = Dimensions.get('window');
 const cardWidth = (width - 48) / 2; // 2 cards per row with margins
@@ -20,20 +23,38 @@ export default function ChapterView() {
   const { id: chapterId } = useLocalSearchParams<{ id: string }>();
   const [selectedType, setSelectedType] = useState<'svadhyay' | 'svadhyay_pothi' | 'other'>('svadhyay');
   const { getFontSizeClasses } = useFontSize();
-  const { loaded: adLoaded, showRewardedAd } = useRewardedAd();
 
-  // Track chapter view
+  const navigation = useNavigation();
+
   useEffect(() => {
-    if (chapterId) {
-      AnalyticsService.trackChapterView(chapterId);
-    }
-  }, [chapterId]);
+    const unsubscribe = navigation.addListener("focus", () => {
+      // e.g., show ad every 3rd navigation or based on random chance
+      if (Math.random() < 0.33) showInterstitialAd();
+    });
+
+    return unsubscribe;
+  }, [navigation]);
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['chapter-resources-grouped', chapterId],
     queryFn: () => chapterResourcesAPI.getByChapterGrouped(chapterId!),
     enabled: !!chapterId,
   });
+
+  // Track chapter view and add to recent chapters
+  useEffect(() => {
+    if (chapterId && data?.chapter) {
+      AnalyticsService.trackChapterView(chapterId);
+      // Add to recent chapters
+      const chapter = data.chapter;
+      addRecentChapter({
+        id: chapter.id,
+        title: chapter.name,
+        subject: chapter.subject?.name || '',
+        standard: chapter.subject?.standard?.name || '',
+      });
+    }
+  }, [chapterId, data?.chapter]);
 
   if (isLoading) {
     return (
@@ -246,8 +267,6 @@ export default function ChapterView() {
                   resource={resource} 
                   width={cardWidth}
                   categoryColor={selectedCategory?.color || '#6B7280'}
-                  adLoaded={adLoaded}
-                  showRewardedAd={showRewardedAd}
                 />
               ))}
             </View>
@@ -262,78 +281,22 @@ interface ResourceCardProps {
   resource: ChapterResource;
   width: number;
   categoryColor: string;
-  adLoaded: boolean;
-  showRewardedAd: (onReward: () => void, onError?: () => void) => void;
 }
 
-const ResourceCard: React.FC<ResourceCardProps> = ({ resource, width, categoryColor, adLoaded, showRewardedAd }) => {
+const ResourceCard: React.FC<ResourceCardProps> = ({ resource, width, categoryColor }) => {
   const isVideo = resource.resourceType === 'video';
   
   const handleResourcePress = async () => {
-    try {
-      // Show rewarded ad before opening content
-      if (adLoaded) {
-        const resourceTypeName = isVideo ? 'વિડિયો' : 'PDF';
-        Alert.alert(
-          'સામગ્રી ખોલો',
-          `${resourceTypeName} જોવા માટે પહેલા જાહેરાત જુઓ અને પુરસ્કાર મેળવો!`,
-          [
-            {
-              text: 'રદ કરો',
-              style: 'cancel',
-            },
-            {
-              text: 'જાહેરાત જુઓ',
-              onPress: () => {
-                showRewardedAd(
-                  // On reward earned - open the content
-                  () => {
-                    openResourceContent();
-                  },
-                  // On error - show option to open anyway
-                  () => {
-                    Alert.alert(
-                      'જાહેરાત લોડ થઈ નથી',
-                      'તમે આગળ વધી શકો છો, પણ જાહેરાત જોવાથી અમને સપોર્ટ મળે છે.',
-                      [
-                        {
-                          text: 'પાછા જાઓ',
-                          style: 'cancel',
-                        },
-                        {
-                          text: 'આગળ વધો',
-                          onPress: () => openResourceContent(),
-                        },
-                      ]
-                    );
-                  }
-                );
-              },
-            },
-          ]
-        );
-      } else {
-        // If ad is not loaded, give option to proceed
-        Alert.alert(
-          'જાહેરાત તૈયાર નથી',
-          'જાહેરાત તૈયાર નથી, તમે આગળ વધી શકો છો.',
-          [
-            {
-              text: 'રદ કરો',
-              style: 'cancel',
-            },
-            {
-              text: 'આગળ વધો',
-              onPress: () => openResourceContent(),
-            },
-          ]
-        );
-      }
-    } catch (error) {
-      console.error('Error handling resource press:', error);
+  try {
+    // Always attempt rewarded ad first
+    await showRewardedAd(() => {
       openResourceContent();
-    }
-  };
+    });
+  } catch (error) {
+    console.error("Error handling resource press:", error);
+    openResourceContent();
+  }
+};
 
   const openResourceContent = async () => {
     try {
