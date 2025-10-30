@@ -9,8 +9,6 @@ import { chaptersAPI } from '../services/chapters';
 import { storageService } from '../services/storage';
 import { AnalyticsService } from '../services/analytics';
 import { useFontSize } from '../contexts/FontSizeContext';
-import { BottomBannerAd, SmartBannerAd } from '../components/OptimizedBannerAd';
-import { useInterstitialAd, useAdFrequency } from '../lib/adHooks';
 import Header from '../components/Header';
 import LoadingState from '../components/LoadingState';
 import ErrorState from '../components/ErrorState';
@@ -22,8 +20,6 @@ export default function BookmarksPage() {
   const [bookmarkedChapters, setBookmarkedChapters] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { getFontSizeClasses, fontSize } = useFontSize();
-  const { showInterstitialAd } = useInterstitialAd();
-  const { shouldShowInterstitialAd, recordInterstitialShown } = useAdFrequency();
 
   // Load bookmarks and track page view
   useEffect(() => {
@@ -179,18 +175,9 @@ export default function BookmarksPage() {
                       className="flex-1 mr-3"
                       onPress={() => {
                         // Try to show interstitial ad (with 40% chance and timing rules)
-                        if (shouldShowInterstitialAd()) {
-                          const adShown = showInterstitialAd(() => {
-                            recordInterstitialShown();
-                            router.push(`/subject/${subject.id}`);
-                          });
-                          // If ad wasn't shown due to loading issues, navigate anyway
-                          if (!adShown) {
-                            router.push(`/subject/${subject.id}`);
-                          }
-                        } else {
+                       
                           router.push(`/subject/${subject.id}`);
-                        }
+                        
                       }}
                     >
                       <Text className={`font-gujarati text-gray-900 font-bold mb-1 ${getFontSizeClasses().textLg}`}>
@@ -245,19 +232,10 @@ export default function BookmarksPage() {
                   onPress={async () => {
                     await AnalyticsService.trackChapterView(chapter.id);
                     
-                    // Try to show interstitial ad (with 40% chance and timing rules)
-                    if (shouldShowInterstitialAd()) {
-                      const adShown = showInterstitialAd(() => {
-                        recordInterstitialShown();
-                        router.push(`/chapter/${chapter.id}` as any);
-                      });
-                      // If ad wasn't shown due to loading issues, navigate anyway
-                      if (!adShown) {
-                        router.push(`/chapter/${chapter.id}` as any);
-                      }
-                    } else {
+                    
+                     
                       router.push(`/chapter/${chapter.id}` as any);
-                    }
+                    
                   }}
                   handleRemoveChapterBookmark={() => handleRemoveChapterBookmark(chapter.id)}
                 />
@@ -278,15 +256,10 @@ export default function BookmarksPage() {
           </View>
         )}
 
-        {/* Mid-content Banner Ad */}
-        <SmartBannerAd style={{ marginVertical: 15 }} />
-
+       
         <View className="h-6" />
       </ScrollView>
-
-      {/* Bottom Banner Ad */}
-      <BottomBannerAd />
-      </View>
+  </View>
     </SafeAreaView>
   );
 }

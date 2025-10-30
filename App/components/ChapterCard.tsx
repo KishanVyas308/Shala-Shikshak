@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { storageService } from '../services/storage';
 import { useFontSize } from '../contexts/FontSizeContext';
-import { useRewardedAd } from '../lib/adHooks';
+// import { useRewardedAd } from '../lib/adHooks';
 
 interface ChapterCardProps {
   id: string;
@@ -35,7 +35,7 @@ export default function ChapterCard({
 }: ChapterCardProps) {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const { getFontSizeClasses } = useFontSize();
-  const { isLoaded: adLoaded, showRewardedAd } = useRewardedAd();
+  // const { isLoaded: adLoaded, showRewardedAd } = useRewardedAd();
   const fontClasses = getFontSizeClasses();
   const resourceCount = [hasVideo, hasTextbook, hasSolution].filter(Boolean).length;
 
@@ -64,27 +64,9 @@ export default function ChapterCard({
   const handleResourcePress = async (url: string, type: string) => {
     try {
       // Try to show rewarded ad seamlessly, if available
-      if (adLoaded) {
-        const success = showRewardedAd(
-          // On reward earned - open the content
-          () => {
-            openContent(url, type);
-          },
-          // Options - silent fallback, no annoying popups
-          {
-            allowFallback: false, // Don't show fallback popup
-            fallbackMessage: '' // No message needed
-          }
-        );
-        
-        // If ad couldn't be shown, proceed directly
-        if (!success) {
-          openContent(url, type);
-        }
-      } else {
-        // If no ad loaded, proceed directly - no popup needed
+     
         openContent(url, type);
-      }
+      
     } catch (error) {
       console.error('Error handling resource press:', error);
       openContent(url, type);

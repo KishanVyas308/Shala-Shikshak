@@ -47,10 +47,8 @@ const WhatsAppJoinCard: React.FC<WhatsAppJoinCardProps> = ({ className = '' }) =
   const { getFontSizeClasses } = useFontSize();
 
   useEffect(() => {
-    // Subscribe to link updates
     linkSubscribers.add(setActiveLink);
     
-    // Fetch if not already fetched
     if (!isLinkFetched) {
       fetchActiveLink().then(() => setLoading(false));
     } else {
@@ -83,7 +81,6 @@ const WhatsAppJoinCard: React.FC<WhatsAppJoinCardProps> = ({ className = '' }) =
       return;
     }
 
-    // Ensure the URL starts with https://
     let finalUrl = activeLink.url.trim();
     if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
       finalUrl = 'https://' + finalUrl;
@@ -92,7 +89,6 @@ const WhatsAppJoinCard: React.FC<WhatsAppJoinCardProps> = ({ className = '' }) =
     console.log('Opening WhatsApp URL:', finalUrl);
 
     try {
-      // First check if the URL can be opened
       const canOpen = await Linking.canOpenURL(finalUrl);
       console.log('Can open URL:', canOpen);
       
@@ -102,7 +98,6 @@ const WhatsAppJoinCard: React.FC<WhatsAppJoinCardProps> = ({ className = '' }) =
       } else {
         console.log('Cannot open URL, checking alternatives...');
         
-        // Try WhatsApp scheme if it's a chat.whatsapp.com link
         if (finalUrl.includes('chat.whatsapp.com')) {
           const whatsappScheme = finalUrl.replace('https://chat.whatsapp.com/', 'whatsapp://chat?code=');
           const canOpenScheme = await Linking.canOpenURL(whatsappScheme);
@@ -114,7 +109,6 @@ const WhatsAppJoinCard: React.FC<WhatsAppJoinCardProps> = ({ className = '' }) =
           }
         }
         
-        // If still can't open, show installation prompt
         Alert.alert(
           'WhatsApp ઉપલબ્ધ નથી',
           'કૃપા કરીને WhatsApp ઇન્સ્ટોલ કરો અને ફરીથી પ્રયાસ કરો.',
@@ -154,39 +148,33 @@ const WhatsAppJoinCard: React.FC<WhatsAppJoinCardProps> = ({ className = '' }) =
 
   return (
     <View className={`mx-4 mb-6 ${className}`}>
-      <View className="p-4 bg-white rounded-lg shadow-md overflow-hidden relative">
-        <View className="w-1 bg-green-600 absolute left-0 top-0 bottom-0 z-30" />
-        <TouchableOpacity
-          onPress={handleJoinPress}
-          className="flex-row items-center justify-between"
-          activeOpacity={0.7}
-        >
-          {/* Background decoration */}
-          <View className="absolute -right-12 opacity-10">
-            <View className="w-28 h-28 rounded-full border-2 border-green-600" />
+      <TouchableOpacity
+        onPress={handleJoinPress}
+        className="p-4 bg-white rounded-xl shadow-sm border border-gray-100"
+        activeOpacity={0.7}
+      >
+        <View className="flex-row items-center">
+          {/* WhatsApp Icon */}
+          <View className="w-12 h-12 rounded-full bg-green-50 items-center justify-center mr-4">
+            <Ionicons name="logo-whatsapp" size={26} color="#16a34a" />
           </View>
 
-          {/* WhatsApp icon */}
-          <View className="w-12 h-12 rounded-full bg-green-100 items-center justify-center mr-4">
-            <Ionicons name="logo-whatsapp" size={24} color="#16a34a" />
-          </View>
-
+          {/* Content */}
           <View className="flex-1">
-            <Text className={`font-gujarati text-secondary-800 font-bold ${getFontSizeClasses().textLg}`}>
+            <Text className={`font-gujarati text-gray-900 font-bold ${getFontSizeClasses().textLg}`}>
               WhatsApp ગ્રુપમાં જોડાઓ
             </Text>
-            <Text className={`font-gujarati text-secondary-600 mt-0.5 ${getFontSizeClasses().text}`}>
+            <Text className={`font-gujarati text-gray-600 mt-0.5 ${getFontSizeClasses().text}`}>
               {activeLink.description || 'અમારા શૈક્ષણિક સમુદાયનો ભાગ બનો'}
             </Text>
           </View>
           
-          <Ionicons name="chevron-forward" size={20} color="#16a34a" />
-        </TouchableOpacity>
-      </View>
+          <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
+        </View>
+      </TouchableOpacity>
     </View>
   );
 };
 
-// Export the fetch function for global initialization
 export { fetchActiveLink };
 export default WhatsAppJoinCard;

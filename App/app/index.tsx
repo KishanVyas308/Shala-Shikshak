@@ -8,20 +8,12 @@ import { standardsAPI } from '../services/standards';
 import { storageService } from '../services/storage';
 import { AnalyticsService } from '../services/analytics';
 import { useFontSize } from '../contexts/FontSizeContext';
-// OLD SYSTEM (keeping for backward compatibility)
-import { useInterstitialAd, useAdFrequency } from '../lib/adHooks';
-import { BottomBannerAd } from '../components/OptimizedBannerAd';
-// NEW SYSTEM (recommended for new development)
-import { OptimizedBannerAd } from '../components/OptimizedBannerAd';
-import { AdStatusDebug } from '../components/AdExamples';
-import AdStatusDebugComponent from '../components/AdStatusDebug';
 import Header from '../components/Header';
 import StandardCard, { AddStandardCard } from '../components/StandardCard';
 import LoadingState from '../components/LoadingState';
 import ErrorState from '../components/ErrorState';
 import { FontSizeControls } from '../components/FontSizeControls';
 import WhatsAppJoinCard, { fetchActiveLink } from '../components/WhatsAppJoinCard';
-import SimpleLoadingBar from '../components/SimpleLoadingBar';
 import MinimalLoadingBar from '../components/MinimalLoadingBar';
 
 export default function Home() {
@@ -29,8 +21,7 @@ export default function Home() {
   const [isCheckingStandards, setIsCheckingStandards] = useState(true);
   const [isSettingsModalVisible, setIsSettingsModalVisible] = useState(false);
   const { getFontSizeClasses, fontSize } = useFontSize();
-  const { showInterstitialAd } = useInterstitialAd();
-  const { shouldShowInterstitialAd, recordInterstitialShown } = useAdFrequency();
+
 
   const { data: standards = [], isLoading, error, refetch } = useQuery({
     queryKey: ['standards'],
@@ -158,19 +149,9 @@ export default function Home() {
                   onPress={async () => {
                     await AnalyticsService.trackStandardView(standard.id);
 
-                    // Try to show interstitial ad (with 40% chance and timing rules)
-                    if (shouldShowInterstitialAd()) {
-                      const adShown = showInterstitialAd(() => {
-                        recordInterstitialShown();
-                        router.push(`/standard/${standard.id}`);
-                      });
-                      // If ad wasn't shown due to loading issues, navigate anyway
-                      if (!adShown) {
-                        router.push(`/standard/${standard.id}`);
-                      }
-                    } else {
-                      router.push(`/standard/${standard.id}`);
-                    }
+
+                    router.push(`/standard/${standard.id}`);
+
                   }}
                 />
               ))}
@@ -191,19 +172,9 @@ export default function Home() {
                 onPress={async () => {
                   await AnalyticsService.trackBookmarks();
 
-                  // Try to show interstitial ad (with 40% chance and timing rules)
-                  if (shouldShowInterstitialAd()) {
-                    const adShown = showInterstitialAd(() => {
-                      recordInterstitialShown();
-                      router.push('/bookmarks');
-                    });
-                    // If ad wasn't shown due to loading issues, navigate anyway
-                    if (!adShown) {
-                      router.push('/bookmarks');
-                    }
-                  } else {
-                    router.push('/bookmarks');
-                  }
+
+                  router.push('/bookmarks');
+
                 }}
                 className="flex-row items-center justify-between"
               >
@@ -278,12 +249,6 @@ export default function Home() {
             </Text>
           </View>
         </ScrollView>
-
-        {/* Banner Ad - Using New Optimized System */}
-        <OptimizedBannerAd />
-
-        {/* Debug Ad Status (only in development) */}
-        {/* <AdStatusDebug /> */}
 
         {/* Settings Modal */}
         <Modal

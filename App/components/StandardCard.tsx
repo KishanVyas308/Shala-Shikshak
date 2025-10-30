@@ -58,6 +58,13 @@ export default function StandardCard({
               <Text className={`font-gujarati font-bold text-gray-900 leading-tight ${fontClasses.text2xl}`} numberOfLines={2}>
                 {name.split(' ')[1]}
               </Text>
+              {
+                name.split(' ').length > 2 && (
+                  <Text className={`-mb-3 font-gujarati text-center text-gray-900 leading-tight text-xs`} numberOfLines={2}>
+                    {name.split(' ').slice(2).join(' ')}
+                  </Text>
+                )
+              }
             </View>
 
             {/* <View className="flex-1 "> */}
