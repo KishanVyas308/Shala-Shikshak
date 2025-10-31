@@ -54,7 +54,7 @@ export default function SubjectView() {
   useEffect(() => {
     const unsubscribe = navigation.addListener("focus", () => {
       // e.g., show ad every 3rd navigation or based on random chance
-      if (Math.random() < 0.33) showInterstitialAd();
+      if (Math.random() < 0.20) showInterstitialAd();
     });
 
     return unsubscribe;

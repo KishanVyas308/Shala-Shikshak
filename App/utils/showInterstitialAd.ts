@@ -24,6 +24,7 @@ export const showInterstitialAd = () => {
 
     if (isAdLoaded) {
         interstitial.show();
+        lastAdShown = now;
         isAdLoaded = false;
     } else {
         console.log("Interstitial not ready yet");

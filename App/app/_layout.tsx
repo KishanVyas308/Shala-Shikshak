@@ -37,6 +37,9 @@ const interstitial = InterstitialAd.createForAdRequest(
 
 export default function RootLayout() {
 
+
+  
+
   useEffect(() => {
     // Initialize SDK once
     mobileAds()
