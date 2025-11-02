@@ -287,16 +287,32 @@ const ResourceCard: React.FC<ResourceCardProps> = ({ resource, width, categoryCo
   const isVideo = resource.resourceType === 'video';
   
   const handleResourcePress = async () => {
-  try {
-    // Always attempt rewarded ad first
-    await showRewardedAd(() => {
+    try {
+      // Attempt rewarded ad first, with interstitial as fallback
+      const rewardShown = await showRewardedAd(
+        // On reward earned - open content
+        () => {
+          openResourceContent();
+        },
+        // On ad not available - show interstitial instead
+        () => {
+          console.log("Rewarded ad not available, showing interstitial");
+          showInterstitialAd();
+          // Open content after interstitial
+          setTimeout(() => {
+            openResourceContent();
+          }, 300);
+        }
+      );
+      
+      // If reward not shown and user closed without completing, don't open content
+      // (rewardShown will be false)
+    } catch (error) {
+      console.error("Error handling resource press:", error);
+      // On error, still open content
       openResourceContent();
-    });
-  } catch (error) {
-    console.error("Error handling resource press:", error);
-    openResourceContent();
-  }
-};
+    }
+  };
 
   const openResourceContent = async () => {
     try {

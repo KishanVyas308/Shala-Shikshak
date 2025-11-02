@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
@@ -79,22 +79,34 @@ export default function SelectStandards() {
         try {
             setIsLoading(true);
             await storageService.setUserStandards(selectedStandards);
-            try {
-                router.replace('/');
-            } catch (navError) {
-                console.error('Navigation error:', navError);
-                // Fallback navigation
-                router.push('/');
-            }
+            
+            // Use setTimeout to ensure navigation happens after state update
+            setTimeout(() => {
+                try {
+                    router.replace('/');
+                } catch (navError) {
+                    console.error('Navigation error:', navError);
+                    // Fallback navigation with delay
+                    setTimeout(() => {
+                        try {
+                            router.push('/');
+                        } catch (fallbackError) {
+                            console.error('Fallback navigation error:', fallbackError);
+                            // Force reload as last resort
+                            setIsLoading(false);
+                            Alert.alert('સફળતા', 'ધોરણો સેવ થઈ ગયા. કૃપા કરીને એપ્લિકેશન ફરીથી ખોલો.');
+                        }
+                    }, 100);
+                }
+            }, 100);
         } catch (error) {
             console.error('Error saving standards:', error);
+            setIsLoading(false);
             Alert.alert(
                 'ભૂલ',
                 'ધોરણો સેવ કરવામાં સમસ્યા આવી. કૃપા કરીને ફરીથી પ્રયાસ કરો.',
                 [{ text: 'ઠીક છે', style: 'default' }]
             );
-        } finally {
-            setIsLoading(false);
         }
     };
 
@@ -278,7 +290,7 @@ export default function SelectStandards() {
                 >
                     {isLoading ? (
                         <View className="flex-row items-center">
-                            <View className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-2" />
+                            <ActivityIndicator size="small" color="#ffffff" style={{ marginRight: 8 }} />
                             <Text className={`font-gujarati text-white font-semibold ${getFontSizeClasses().textLg}`}>
                                 સેવ કરી રહ્યું છે...
                             </Text>

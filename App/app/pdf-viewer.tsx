@@ -14,46 +14,72 @@ export default function PDFViewer() {
   const { getFontSizeClasses } = useFontSize();
   const [isContentReady, setIsContentReady] = useState(true); // Direct access without ads
   const [webViewError, setWebViewError] = useState(false);
-
-  // Track PDF viewer usage
-  useEffect(() => {
-    if (url) {
-      AnalyticsService.trackScreen('pdf-viewer');
-    }
-  }, [url]);
+  const [shouldOpenYouTubeDirectly, setShouldOpenYouTubeDirectly] = useState(false);
+  const [youtubeOpened, setYoutubeOpened] = useState(false);
+  const [showYoutubeLoadingMessage, setShowYoutubeLoadingMessage] = useState(false);
 
   // Check if URL is a YouTube link
   const isYouTubeUrl = (url: string) => {
     return url.includes('youtube.com') || url.includes('youtu.be');
   };
 
+  // Track PDF viewer usage and handle YouTube videos
+  useEffect(() => {
+    if (url) {
+      AnalyticsService.trackScreen('pdf-viewer');
+      
+      // For YouTube videos, try WebView first but be ready to auto-open on error
+      if (isYouTubeUrl(url)) {
+        setShouldOpenYouTubeDirectly(false);
+        setYoutubeOpened(false);
+        setShowYoutubeLoadingMessage(false);
+      }
+    }
+  }, [url]);
+
+  // Extract video ID from various YouTube URL formats
+  const extractVideoId = (url: string): string => {
+    try {
+      if (url.includes('youtube.com/watch?v=')) {
+        return url.match(/v=([^&]+)/)?.[1] || '';
+      } else if (url.includes('youtu.be/')) {
+        return url.split('youtu.be/')[1]?.split('?')[0] || '';
+      } else if (url.includes('youtube.com/embed/')) {
+        return url.split('embed/')[1]?.split('?')[0] || '';
+      }
+    } catch (error) {
+      console.error('Error extracting video ID:', error);
+    }
+    return '';
+  };
+
   const openInYouTubeApp = async (url: string) => {
     try {
-      let videoId = '';
-      
-      if (url.includes('youtu.be/')) {
-        videoId = url.split('youtu.be/')[1].split('?')[0];
-      } else if (url.includes('youtube.com/watch?v=')) {
-        videoId = url.split('v=')[1].split('&')[0];
-      } else if (url.includes('youtube.com/embed/')) {
-        videoId = url.split('/embed/')[1].split('?')[0];
-      }
+      const videoId = extractVideoId(url);
       
       if (videoId) {
-        const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
-        const canOpen = await Linking.canOpenURL(youtubeUrl);
-        if (canOpen) {
-          await Linking.openURL(youtubeUrl);
-        } else {
-          Alert.alert(
-            'વીડિઓ ખોલી શકાયો નહીં',
-            'YouTube app ઇન્સ્ટોલ કરો અથવા browser માં જુઓ',
-            [
-              { text: 'રદ કરો', style: 'cancel' },
-              { text: 'Browser માં ખોલો', onPress: () => Linking.openURL(youtubeUrl) }
-            ]
-          );
+        // Mark as opened to prevent going back
+        setYoutubeOpened(true);
+        setShowYoutubeLoadingMessage(true);
+        
+        // Try YouTube app deep link first
+        const youtubeAppUrl = `vnd.youtube://${videoId}`;
+        const youtubeWebUrl = `https://www.youtube.com/watch?v=${videoId}`;
+        
+        // Try app first, fallback to web
+        try {
+          const canOpenApp = await Linking.canOpenURL(youtubeAppUrl);
+          if (canOpenApp) {
+            await Linking.openURL(youtubeAppUrl);
+            return;
+          }
+        } catch {
+          // If app URL fails, try web URL
         }
+        
+        await Linking.openURL(youtubeWebUrl);
+      } else {
+        Alert.alert('ભૂલ', 'અમાન્ય YouTube લિંક');
       }
     } catch (error) {
       console.log('Error opening YouTube:', error);
@@ -221,6 +247,11 @@ export default function PDFViewer() {
 
   // Prevent screenshots and screen recording when component mounts
   useEffect(() => {
+    // Skip screen capture protection for YouTube videos
+    if (isYouTubeViewer) {
+      return;
+    }
+
     const preventScreenCapture = async () => {
       try {
         // Prevent screenshots and screen recording
@@ -238,11 +269,16 @@ export default function PDFViewer() {
         console.warn('Error removing screen capture protection:', error);
       });
     };
-  }, []);
+  }, [isYouTubeViewer]);
 
   // Re-enable screen capture protection when screen comes into focus
   useFocusEffect(
     React.useCallback(() => {
+      // Skip screen capture protection for YouTube videos
+      if (isYouTubeViewer) {
+        return;
+      }
+
       const enableProtection = async () => {
         try {
           await ScreenCapture.preventScreenCaptureAsync();
@@ -259,8 +295,37 @@ export default function PDFViewer() {
           console.warn('Error disabling screen capture protection on blur:', error);
         });
       };
-    }, [])
+    }, [isYouTubeViewer])
   );
+
+  // If it's a YouTube video that should open directly, show message instead of WebView
+  if (isYouTubeViewer && (shouldOpenYouTubeDirectly || showYoutubeLoadingMessage)) {
+    return (
+      <View className="flex-1 bg-gray-50">
+        <Header
+          title={title || 'YouTube વિડિયો'}
+          showBack
+          onBackPress={() => router.back()}
+        />
+        <View className="flex-1 justify-center items-center px-6">
+          <View className="bg-white rounded-2xl p-8 shadow-sm border border-gray-200 items-center">
+            <View className="w-20 h-20 bg-red-100 rounded-full items-center justify-center mb-4">
+              <Text className="text-4xl">▶️</Text>
+            </View>
+            <Text className={`text-center text-gray-800 font-bold mb-2 font-gujarati ${getFontSizeClasses().textLg}`}>
+              વિડિયો YouTube માં ખુલી રહ્યો છે
+            </Text>
+            <Text className={`text-center text-gray-600 mb-4 font-gujarati ${getFontSizeClasses().text}`}>
+              આ વિડિયો એમ્બેડિંગ માટે પ્રતિબંધિત છે (Error 153)
+            </Text>
+            <Text className={`text-center text-gray-500 font-gujarati ${getFontSizeClasses().text}`}>
+              YouTube એપ્લિકેશન ખુલ્યા પછી, તમે આ સ્ક્રીન પરથી પાછા જઈ શકો છો
+            </Text>
+          </View>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1 bg-gray-50">
@@ -281,29 +346,32 @@ export default function PDFViewer() {
         mixedContentMode="compatibility"
         originWhitelist={['*']}
         userAgent="Mozilla/5.0 (Linux; Android 10; SM-G973F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36"
+        onMessage={(event) => {
+          try {
+            const data = JSON.parse(event.nativeEvent.data);
+            if (data.type === 'youtube-error') {
+              console.log('YouTube error detected, auto-opening in YouTube app:', data.message);
+              // Auto-open in YouTube app without asking
+              setShouldOpenYouTubeDirectly(true);
+              openInYouTubeApp(url || '');
+              // Don't call router.back() - let user stay on this screen
+            }
+          } catch (error) {
+            console.log('Error parsing WebView message:', error);
+          }
+        }}
         onShouldStartLoadWithRequest={handleShouldStartLoadWithRequest}
         onError={(syntheticEvent) => {
           const { nativeEvent } = syntheticEvent;
           console.error('WebView error:', nativeEvent);
           
-          if (isYouTubeViewer) {
-            Alert.alert(
-              'YouTube વિડિયો એરર', 
-              'આ વિડિયો WebView માં ચલાવી શકાતો નથી. YouTube એપ્લિકેશનમાં ખોલવું છે?',
-              [
-                { text: 'પાછા જાઓ', onPress: () => router.back() },
-                { 
-                  text: 'YouTube માં ખોલો', 
-                  onPress: () => {
-                    const originalUrl = url || '';
-                    Linking.openURL(originalUrl).catch(() => {
-                      Alert.alert('Error', 'YouTube ખોલી શકાયું નથી');
-                    });
-                  }
-                }
-              ]
-            );
-          } else {
+          if (isYouTubeViewer && !youtubeOpened) {
+            console.log('YouTube WebView error, auto-opening in YouTube app');
+            // Auto-open in YouTube app without asking
+            setShouldOpenYouTubeDirectly(true);
+            openInYouTubeApp(url || '');
+            // Don't call router.back() - let user stay on this screen
+          } else if (!isYouTubeViewer) {
             Alert.alert(
               'લોડિંગ એરર', 
               'સામગ્રી લોડ કરવામાં સમસ્યા આવી છે. કૃપા કરીને ફરીથી પ્રયાસ કરો.',
@@ -318,21 +386,12 @@ export default function PDFViewer() {
           const { nativeEvent } = syntheticEvent;
           console.error('WebView HTTP error:', nativeEvent);
           
-          if (isYouTubeViewer && (nativeEvent.statusCode === 403 || nativeEvent.statusCode === 404)) {
-            Alert.alert(
-              'YouTube વિડિયો અનુપલબ્ધ', 
-              'આ વિડિયો embed કરવા માટે પ્રતિબંધિત છે. YouTube એપ્લિકેશનમાં ખોલવું છે?',
-              [
-                { text: 'પાછા જાઓ', onPress: () => router.back() },
-                { 
-                  text: 'YouTube માં ખોલો', 
-                  onPress: () => {
-                    const originalUrl = url || '';
-                    Linking.openURL(originalUrl);
-                  }
-                }
-              ]
-            );
+          if (isYouTubeViewer && (nativeEvent.statusCode === 403 || nativeEvent.statusCode === 404) && !youtubeOpened) {
+            console.log(`YouTube HTTP ${nativeEvent.statusCode} error, auto-opening in YouTube app`);
+            // Auto-open in YouTube app without asking
+            setShouldOpenYouTubeDirectly(true);
+            openInYouTubeApp(url || '');
+            // Don't call router.back() - let user stay on this screen
           }
         }}
         onLoadStart={() => console.log('WebView started loading')}
@@ -340,9 +399,30 @@ export default function PDFViewer() {
         injectedJavaScript={
           isYouTubeViewer 
             ? `
-              // For YouTube videos - improve compatibility and controls
+              // For YouTube videos - detect errors and improve compatibility
               (function() {
                 console.log('YouTube video player setup');
+                
+                // Detect YouTube playback errors (Error 153, 150, etc.)
+                const checkForErrors = () => {
+                  const errorMessages = document.querySelectorAll('[class*="ytp-error"], [class*="error"], .message');
+                  errorMessages.forEach(msg => {
+                    const text = msg.textContent || '';
+                    if (text.includes('restricted') || 
+                        text.includes('not available') || 
+                        text.includes('embedding') ||
+                        text.includes('playback') ||
+                        text.includes('Error')) {
+                      console.log('YouTube Error detected:', text);
+                      window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'youtube-error', message: text }));
+                    }
+                  });
+                };
+                
+                // Check for errors immediately and periodically
+                setTimeout(checkForErrors, 1000);
+                setTimeout(checkForErrors, 3000);
+                setTimeout(checkForErrors, 5000);
                 
                 // Wait for YouTube player to load
                 setTimeout(() => {
@@ -368,6 +448,15 @@ export default function PDFViewer() {
                       } else {
                         this.pause();
                       }
+                    });
+                    
+                    // Listen for error events
+                    video.addEventListener('error', function(e) {
+                      console.log('Video error event:', e);
+                      window.ReactNativeWebView.postMessage(JSON.stringify({ 
+                        type: 'youtube-error', 
+                        message: 'Video playback error' 
+                      }));
                     });
                   });
                   
