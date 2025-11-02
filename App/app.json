@@ -2,7 +2,7 @@
   "expo": {
     "name": "શાળા શિક્ષક",
     "slug": "shala-shikshak",
-    "version": "4.0.2",
+    "version": "4.0.3",
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
     "scheme": "shalashikshak",
@@ -62,7 +62,8 @@
         {
           "androidAppId": "ca-app-pub-3397220667540126~7399325209",
           "iosAppId": "ca-app-pub-3397220667540126~7399325209",
-          "skAdNetworkItems": []
+          "skAdNetworkItems": [],
+          "userTrackingPermission": false
         }
       ],
       [

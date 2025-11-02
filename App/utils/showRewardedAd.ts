@@ -7,6 +7,8 @@ const adUnitId = __DEV__
 
 let rewardedAd = RewardedAd.createForAdRequest(adUnitId, {
   requestNonPersonalizedAdsOnly: true,
+  keywords: ['education', 'school', 'learning', 'students', 'study'],
+  contentUrl: 'https://shalashikshak.in'
 });
 
 let isRewardedLoaded = false;

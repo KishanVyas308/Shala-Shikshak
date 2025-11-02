@@ -1,6 +1,7 @@
 /**
  * AdManager - Singleton for managing all ad operations
  * Prevents spamming, handles retries, and manages ad lifecycle
+ * COPPA & Families Policy Compliant for educational apps targeting children
  */
 
 import { 
@@ -26,4 +27,11 @@ const AD_UNIT_IDS = {
     ios: __DEV__ ? TestIds.REWARDED : 'ca-app-pub-3397220667540126/1383655159',
     android: __DEV__ ? TestIds.REWARDED : 'ca-app-pub-3397220667540126/1383655159',
   }),
+};
+
+// Child-directed ad request options for COPPA & Families Policy compliance
+const CHILD_DIRECTED_AD_OPTIONS = {
+  requestNonPersonalizedAdsOnly: true, // No personalized ads for children
+  keywords: ['education', 'school', 'learning', 'students', 'study'], // Education-related keywords
+  contentUrl: 'https://shalashikshak.in' // Your app's content URL
 };
