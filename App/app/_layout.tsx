@@ -7,6 +7,7 @@ import { useEffect } from 'react';
 import "./global.css";
 import mobileAds, { InterstitialAd, AdEventType, BannerAd, BannerAdSize, TestIds, MaxAdContentRating } from "react-native-google-mobile-ads";
 import { RewardedAd, RewardedAdEventType } from "react-native-google-mobile-ads";
+import { AnalyticsService } from '../services/analytics';
 
 
 const queryClient = new QueryClient({
@@ -43,6 +44,9 @@ export default function RootLayout() {
   
 
   useEffect(() => {
+    // Track app open
+    AnalyticsService.trackAppOpen();
+
     // Initialize SDK with child-directed and family-safe settings
     mobileAds()
       .setRequestConfiguration({

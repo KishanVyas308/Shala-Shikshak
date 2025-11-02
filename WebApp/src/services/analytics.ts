@@ -1,72 +1,41 @@
 import { api } from '../lib/api';
-import type { 
-  PageViewCreateData, 
-  AnalyticsOverview, 
-  ViewsByDate 
-} from '../types';
+
+// Simple stats interface
+interface SimpleStats {
+  totalOpens: number;
+  appOpens: number;
+  webOpens: number;
+  last24Hours: number;
+  last7Days: number;
+  last30Days: number;
+}
 
 export class AnalyticsService {
+  private static hasTrackedOpen = false;
+
   /**
-   * Record a page view
+   * Track website open (only once per session)
    */
-  static async recordPageView(data: PageViewCreateData): Promise<{ success: boolean; id: string }> {
-    const response = await api.post('/page-views', {
-      ...data,
-      userAgent: navigator.userAgent,
-      platform: 'web',
-    });
-    return response.data;
+  static async trackWebsiteOpen(): Promise<void> {
+    if (this.hasTrackedOpen) {
+      return;
+    }
+
+    try {
+      await api.post('/analytics/app-open', {
+        platform: 'web',
+      });
+      this.hasTrackedOpen = true;
+    } catch (error) {
+      console.error('Failed to track website open:', error);
+    }
   }
 
   /**
-   * Get analytics overview (admin only)
+   * Get simple stats (admin only)
    */
-  static async getAnalyticsOverview(days: number = 30): Promise<AnalyticsOverview> {
-    const response = await api.get(`/analytics/overview?days=${days}`);
-    return response.data;
-  }
-
-  /**
-   * Get daily analytics for charts (admin only)
-   */
-  static async getDailyAnalytics(days: number = 30): Promise<ViewsByDate[]> {
-    const response = await api.get(`/analytics/daily?days=${days}`);
+  static async getSimpleStats(): Promise<SimpleStats> {
+    const response = await api.get('/analytics/stats');
     return response.data;
   }
 }
-
-// Utility functions for client-side analytics
-
-/**
- * Track page view automatically
- */
-export const trackPageView = async (page: string, userId?: string) => {
-  try {
-    await AnalyticsService.recordPageView({
-      page,
-      userId,
-    });
-  } catch (error) {
-    // Silently fail - analytics shouldn't break the app
-    console.warn('Failed to track page view:', error);
-  }
-};
-
-/**
- * Format analytics data for charts
- */
-export const formatChartData = (viewsByDate: ViewsByDate[]) => {
-  return viewsByDate.map(item => ({
-    date: new Date(item.date).toLocaleDateString(),
-    views: item.views,
-    uniqueViews: item.uniqueViews,
-  }));
-};
-
-/**
- * Calculate percentage change
- */
-export const calculatePercentageChange = (current: number, previous: number): number => {
-  if (previous === 0) return current > 0 ? 100 : 0;
-  return Math.round(((current - previous) / previous) * 100);
-};

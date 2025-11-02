@@ -5,31 +5,30 @@ import { AnalyticsService } from '../services/analyticsService';
 const router = express.Router();
 
 /**
- * Get analytics overview (admin only)
- * GET /api/analytics/overview
+ * Track app open (no auth required)
+ * POST /api/analytics/app-open
  */
-router.get('/overview', authenticateToken, async (req, res) => {
+router.post('/app-open', async (req, res) => {
   try {
-    const days = parseInt(req.query.days as string) || 30;
-    const overview = await AnalyticsService.getAnalyticsOverview(days);
-    res.json(overview);
+    const { platform } = req.body;
+    await AnalyticsService.trackAppOpen(platform || 'unknown');
+    res.json({ success: true });
   } catch (error) {
-    console.error('Get analytics overview error:', error);
+    console.error('Track app open error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
 /**
- * Get daily analytics for charts (admin only)
- * GET /api/analytics/daily
+ * Get simple analytics (admin only) - just total opens count
+ * GET /api/analytics/stats
  */
-router.get('/daily', authenticateToken, async (req, res) => {
+router.get('/stats', authenticateToken, async (req, res) => {
   try {
-    const days = parseInt(req.query.days as string) || 30;
-    const dailyAnalytics = await AnalyticsService.getDailyAnalytics(days);
-    res.json(dailyAnalytics);
+    const stats = await AnalyticsService.getSimpleStats();
+    res.json(stats);
   } catch (error) {
-    console.error('Get daily analytics error:', error);
+    console.error('Get analytics stats error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
