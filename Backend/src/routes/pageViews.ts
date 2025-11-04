@@ -78,58 +78,18 @@ function isValidPagePath(page: string): boolean {
 }
 
 /**
- * Record a page view (public endpoint)
+ * DEPRECATED: This endpoint is no longer used.
+ * We now only track app/website opens via POST /api/analytics/app-open
+ * This is kept for backward compatibility only.
+ * 
  * POST /api/page-views
  */
 router.post('/', async (req, res) => {
-  try {
-    const { error, value } = pageViewSchema.validate(req.body);
-    if (error) {
-      return res.status(400).json({ error: error.details[0].message });
-    }
-
-    const { page, userId, userAgent, platform = 'web' } = value;
-    
-    // Validate page path - just skip invalid pages silently
-    if (!isValidPagePath(page)) {
-      return res.status(200).json({ 
-        success: true,
-        message: 'Page view filtered' 
-      });
-    }
-    
-    // Extract IP address
-    const ipAddress = getClientIP(req);
-    
-    // Rate limiting
-    if (ipAddress && isRateLimited(ipAddress)) {
-      return res.status(429).json({ error: 'Too many requests' });
-    }
-
-    const pageView = await AnalyticsService.recordPageView({
-      page,
-      userId,
-      ipAddress,
-      userAgent,
-      platform,
-    });
-
-    if (!pageView) {
-      // Page was filtered out (e.g., admin page)
-      return res.status(200).json({
-        success: true,
-        message: 'Page view filtered',
-      });
-    }
-
-    res.status(201).json({
-      success: true,
-      id: pageView.id,
-    });
-  } catch (error) {
-    console.error('Record page view error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
+  // No-op - return success for backward compatibility
+  res.status(200).json({
+    success: true,
+    message: 'Page view tracking deprecated. Use /api/analytics/app-open instead.',
+  });
 });
 
 export default router;
