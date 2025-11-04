@@ -1,9 +1,13 @@
 // utils/showInterstitialAd.ts
-import { InterstitialAd, AdEventType, TestIds } from "react-native-google-mobile-ads";
+import { InterstitialAd, AdEventType, TestIds, AdsConsent, MaxAdContentRating } from "react-native-google-mobile-ads";
 
 const interstitial = InterstitialAd.createForAdRequest(
     __DEV__ ? TestIds.INTERSTITIAL : "ca-app-pub-3397220667540126/4759755392",
-    { requestNonPersonalizedAdsOnly: true }
+    { 
+        requestNonPersonalizedAdsOnly: true,
+        keywords: ['education', 'school', 'learning', 'students', 'study'],
+        contentUrl: 'https://shalashikshak.in'
+    }
 );
 
 let isAdLoaded = false;
@@ -24,6 +28,7 @@ export const showInterstitialAd = () => {
 
     if (isAdLoaded) {
         interstitial.show();
+        lastAdShown = now;
         isAdLoaded = false;
     } else {
         console.log("Interstitial not ready yet");

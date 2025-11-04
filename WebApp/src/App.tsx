@@ -2,7 +2,7 @@ import { Routes, Route } from 'react-router-dom'
 import { useEffect } from 'react'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from './contexts/AuthContext'
-import { usePageTracking } from './hooks/usePageTracking'
+import { AnalyticsService } from './services/analytics'
 import Navbar from './components/Navbar'
 import WhatsAppJoinButton, { fetchActiveLink } from './components/WhatsAppJoinButton'
 import Home from './pages/Home'
@@ -26,11 +26,12 @@ import ProtectedRoute from './components/ProtectedRoute'
 // No import needed for app-ads.txt from public folder
 
 function AppContent() {
-  // Track page views
-  usePageTracking();
-
-  // Initialize WhatsApp link fetch on app start
+  // Initialize on app start
   useEffect(() => {
+    // Track website open
+    AnalyticsService.trackWebsiteOpen();
+    
+    // Fetch WhatsApp link
     fetchActiveLink();
   }, []);
 

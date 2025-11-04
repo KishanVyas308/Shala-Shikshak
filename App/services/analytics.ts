@@ -1,96 +1,56 @@
 import { api } from '../lib/api';
 
-export interface PageViewData {
-  page: string;
-  userId?: string;
-  userAgent?: string;
-  platform: 'app';
-}
-
 export class AnalyticsService {
+  private static hasTrackedAppOpen = false;
+
   /**
-   * Record a page view for mobile app
+   * Track app open - called once per app session
    */
-  static async recordPageView(data: Omit<PageViewData, 'platform'>): Promise<void> {
+  static async trackAppOpen(): Promise<void> {
+    // Only track once per session
+    if (this.hasTrackedAppOpen) {
+      return;
+    }
+
     try {
-      await api.post('/page-views', {
-        ...data,
+      await api.post('/analytics/app-open', {
         platform: 'app',
-        userAgent: `ShalaShikshak App/${process.env.EXPO_PUBLIC_APP_VERSION || '1.0.0'}`,
+        timestamp: new Date().toISOString(),
       });
+      this.hasTrackedAppOpen = true;
+      console.log('App open tracked');
     } catch (error) {
       // Silently fail - analytics shouldn't break the app
-      console.debug('Page tracking failed:', error);
+      console.debug('App open tracking failed:', error);
     }
   }
 
-  /**
-   * Track screen navigation in the app
-   */
+  // Empty methods to maintain compatibility
   static async trackScreen(screenName: string, userId?: string): Promise<void> {
-    await this.recordPageView({
-      page: `/app/${screenName}`,
-      userId,
-    });
+    // No-op
   }
 
-  /**
-   * Track chapter view
-   */
   static async trackChapterView(chapterId: string, userId?: string): Promise<void> {
-    await this.recordPageView({
-      page: `/chapter/${chapterId}`,
-      userId,
-    });
+    // No-op
   }
 
-  /**
-   * Track subject view
-   */
   static async trackSubjectView(subjectId: string, userId?: string): Promise<void> {
-    await this.recordPageView({
-      page: `/subject/${subjectId}`,
-      userId,
-    });
+    // No-op
   }
 
-  /**
-   * Track standard view
-   */
   static async trackStandardView(standardId: string, userId?: string): Promise<void> {
-    await this.recordPageView({
-      page: `/standard/${standardId}`,
-      userId,
-    });
+    // No-op
   }
 
-  /**
-   * Track PDF viewer usage
-   */
   static async trackPDFView(resourceId: string, userId?: string): Promise<void> {
-    await this.recordPageView({
-      page: `/pdf-viewer?resource=${resourceId}`,
-      userId,
-    });
+    // No-op
   }
 
-  /**
-   * Track bookmarks page
-   */
   static async trackBookmarks(userId?: string): Promise<void> {
-    await this.recordPageView({
-      page: '/bookmarks',
-      userId,
-    });
+    // No-op
   }
 
-  /**
-   * Track home page
-   */
   static async trackHome(userId?: string): Promise<void> {
-    await this.recordPageView({
-      page: '/',
-      userId,
-    });
+    // No-op
   }
 }

@@ -2,7 +2,7 @@
   "expo": {
     "name": "શાળા શિક્ષક",
     "slug": "shala-shikshak",
-    "version": "4.0.2",
+    "version": "4.0.4",
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
     "scheme": "shalashikshak",
@@ -48,11 +48,7 @@
         "android.permission.READ_MEDIA_VIDEO",
         "android.permission.READ_MEDIA_AUDIO",
         "android.permission.READ_EXTERNAL_STORAGE"
-      ],
-      "usesCleartextTraffic": true,
-      "compileSdkVersion": 35,
-      "targetSdkVersion": 35,
-      "buildToolsVersion": "35.0.0"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -66,7 +62,8 @@
         {
           "androidAppId": "ca-app-pub-3397220667540126~7399325209",
           "iosAppId": "ca-app-pub-3397220667540126~7399325209",
-          "skAdNetworkItems":[]
+          "skAdNetworkItems": [],
+          "userTrackingPermission": false
         }
       ],
       [
@@ -90,9 +87,5 @@
         "projectId": "5dec95d2-fbeb-4dd9-84f3-52547e615c36"
       }
     }
-  },
-  "react-native-google-mobile-ads": {
-    "androidAppId": "ca-app-pub-3397220667540126~7399325209",
-    "iosAppId": "ca-app-pub-3397220667540126~7399325209"
   }
 }

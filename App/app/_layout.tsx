@@ -5,8 +5,9 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { FontSizeProvider } from '../contexts/FontSizeContext';
 import { useEffect } from 'react';
 import "./global.css";
-import mobileAds, { InterstitialAd, AdEventType, BannerAd, BannerAdSize, TestIds } from "react-native-google-mobile-ads";
+import mobileAds, { InterstitialAd, AdEventType, BannerAd, BannerAdSize, TestIds, MaxAdContentRating } from "react-native-google-mobile-ads";
 import { RewardedAd, RewardedAdEventType } from "react-native-google-mobile-ads";
+import { AnalyticsService } from '../services/analytics';
 
 
 const queryClient = new QueryClient({
@@ -20,28 +21,46 @@ const queryClient = new QueryClient({
   },
 });
 
+// Child-directed ad options for COPPA & Families Policy compliance
+const childDirectedAdOptions = {
+  requestNonPersonalizedAdsOnly: true, // Required for children's apps
+  keywords: ['education', 'school', 'learning', 'students', 'study'], // Education keywords only
+  contentUrl: 'https://shalashikshak.in'
+};
 
 const rewardedAd = RewardedAd.createForAdRequest(
   __DEV__ ? TestIds.REWARDED : "ca-app-pub-3397220667540126/1383655159", // replace with your actual ID
-  {
-    requestNonPersonalizedAdsOnly: true,
-  }
+  childDirectedAdOptions
 );
 
 const interstitial = InterstitialAd.createForAdRequest(
   __DEV__ ? TestIds.INTERSTITIAL : "ca-app-pub-3397220667540126/4759755392",
-  {
-    requestNonPersonalizedAdsOnly: true,
-  }
+  childDirectedAdOptions
 );
 
 export default function RootLayout() {
 
+
+  
+
   useEffect(() => {
-    // Initialize SDK once
+    // Track app open
+    AnalyticsService.trackAppOpen();
+
+    // Initialize SDK with child-directed and family-safe settings
     mobileAds()
-      .setRequestConfiguration({  })
-      .then(() => mobileAds().initialize());
+      .setRequestConfiguration({
+        // Maximum ad content rating - suitable for general audiences & children
+        maxAdContentRating: MaxAdContentRating.G,
+        // Tag for child-directed treatment (required for COPPA compliance)
+        tagForChildDirectedTreatment: true,
+        // Tag for under age of consent (required for GDPR compliance with children)
+        tagForUnderAgeOfConsent: true,
+      })
+      .then(() => {
+        console.log('AdMob initialized with child-directed settings');
+        return mobileAds().initialize();
+      });
 
     // Preload first ad
     interstitial.load();
