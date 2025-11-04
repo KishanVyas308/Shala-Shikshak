@@ -12,8 +12,8 @@ const AdminDashboard: React.FC = () => {
   });
 
   const { data: analytics } = useQuery({
-    queryKey: ['dashboard-analytics-overview'],
-    queryFn: () => AnalyticsService.getAnalyticsOverview(7), // Last 7 days
+    queryKey: ['dashboard-analytics-stats'],
+    queryFn: () => AnalyticsService.getSimpleStats(),
     refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
   });
 
@@ -191,43 +191,42 @@ const AdminDashboard: React.FC = () => {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between p-4 bg-blue-50 rounded-xl">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Total Views ({analytics.totalViews > 0 ? '7 days' : 'No data'})</p>
-                      <p className="text-2xl font-bold text-blue-600">{analytics.totalViews}</p>
+                      <p className="text-sm font-medium text-gray-600">Total Opens</p>
+                      <p className="text-2xl font-bold text-blue-600">{analytics.totalOpens}</p>
                     </div>
                     <BarChart3 className="h-8 w-8 text-blue-600" />
                   </div>
                   <div className="flex items-center justify-between p-4 bg-green-50 rounded-xl">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Unique Visitors</p>
-                      <p className="text-2xl font-bold text-green-600">{analytics.uniqueViews}</p>
+                      <p className="text-sm font-medium text-gray-600">App Opens</p>
+                      <p className="text-2xl font-bold text-green-600">{analytics.appOpens}</p>
                     </div>
-                    <Users className="h-8 w-8 text-green-600" />
+                    <Activity className="h-8 w-8 text-green-600" />
                   </div>
                   <div className="flex items-center justify-between p-4 bg-purple-50 rounded-xl">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Recent Views (24h)</p>
-                      <p className="text-2xl font-bold text-purple-600">{analytics.recentViews}</p>
+                      <p className="text-sm font-medium text-gray-600">Website Opens</p>
+                      <p className="text-2xl font-bold text-purple-600">{analytics.webOpens}</p>
                     </div>
-                    <TrendingUp className="h-8 w-8 text-purple-600" />
+                    <Users className="h-8 w-8 text-purple-600" />
                   </div>
-                  {analytics.topPages.length > 0 && (
-                    <div className="pt-4 border-t border-gray-100">
-                      <p className="text-sm font-medium text-gray-600 mb-3">Most Popular Pages</p>
-                      <div className="space-y-2">
-                        {analytics.topPages.slice(0, 3).map((page, index) => (
-                          <div key={index} className="flex justify-between text-sm">
-                            <div className="flex-1 mr-2">
-                              <span className="text-gray-900 font-medium truncate block">{page.displayName}</span>
-                              {page.parentName && (
-                                <span className="text-xs text-gray-500">{page.parentName}</span>
-                              )}
-                            </div>
-                            <span className="text-gray-900 font-medium">{page.views}</span>
-                          </div>
-                        ))}
+                  <div className="pt-4 border-t border-gray-100">
+                    <p className="text-sm font-medium text-gray-600 mb-3">Recent Activity</p>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Last 24 Hours</span>
+                        <span className="text-gray-900 font-medium">{analytics.last24Hours}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Last 7 Days</span>
+                        <span className="text-gray-900 font-medium">{analytics.last7Days}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Last 30 Days</span>
+                        <span className="text-gray-900 font-medium">{analytics.last30Days}</span>
                       </div>
                     </div>
-                  )}
+                  </div>
                 </div>
               ) : (
                 <div className="text-center py-8 text-gray-500">
