@@ -14,7 +14,7 @@ router.get('/standard/:standardId', async (req, res) => {
       where: { standardId },
       include: {
         chapters: {
-          orderBy: { createdAt: 'desc' },
+          orderBy: { order: 'asc' },
           select: {
             id: true,
             name: true,
@@ -59,7 +59,7 @@ router.get('/:id', async (req, res) => {
       where: { id },
       include: {
         chapters: {
-          orderBy: { createdAt: 'desc' },
+          orderBy: { order: 'asc' },
         },
         standard: {
           select: {

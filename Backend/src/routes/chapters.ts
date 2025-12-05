@@ -12,7 +12,7 @@ router.get('/subject/:subjectId', async (req, res) => {
 
     const chapters = await prisma.chapter.findMany({
       where: { subjectId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { order: 'asc' },
       include: {
         subject: {
           select: {
@@ -115,11 +115,21 @@ router.post('/', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Subject not found' });
     }
 
+    // Get the highest order number for this subject
+    const lastChapter = await prisma.chapter.findFirst({
+      where: { subjectId },
+      orderBy: { order: 'desc' },
+      select: { order: true },
+    });
+
+    const nextOrder = lastChapter ? lastChapter.order + 1 : 0;
+
     const chapter = await prisma.chapter.create({
       data: {
         name,
         description,
         subjectId,
+        order: nextOrder,
       },
       include: {
         subject: {
@@ -197,6 +207,73 @@ router.put('/:id', authenticateToken, async (req, res) => {
     res.json(updatedChapter);
   } catch (error) {
     console.error('Update chapter error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Reorder chapters (admin only)
+router.put('/reorder/:subjectId', authenticateToken, async (req, res) => {
+  try {
+    const { subjectId } = req.params;
+    const { chapterIds } = req.body; // Array of chapter IDs in new order
+
+    if (!Array.isArray(chapterIds) || chapterIds.length === 0) {
+      return res.status(400).json({ error: 'chapterIds must be a non-empty array' });
+    }
+
+    // Verify all chapters belong to this subject
+    const chapters = await prisma.chapter.findMany({
+      where: {
+        id: { in: chapterIds },
+        subjectId,
+      },
+    });
+
+    if (chapters.length !== chapterIds.length) {
+      return res.status(400).json({ error: 'Some chapters do not belong to this subject' });
+    }
+
+    // Update order for each chapter
+    const updatePromises = chapterIds.map((chapterId, index) =>
+      prisma.chapter.update({
+        where: { id: chapterId },
+        data: { order: index },
+      })
+    );
+
+    await Promise.all(updatePromises);
+
+    // Fetch updated chapters
+    const updatedChapters = await prisma.chapter.findMany({
+      where: { subjectId },
+      orderBy: { order: 'asc' },
+      include: {
+        subject: {
+          select: {
+            id: true,
+            name: true,
+            standard: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+        resources: {
+          orderBy: { createdAt: 'desc' },
+        },
+        _count: {
+          select: {
+            resources: true,
+          },
+        },
+      },
+    });
+
+    res.json(updatedChapters);
+  } catch (error) {
+    console.error('Reorder chapters error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

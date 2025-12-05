@@ -8,6 +8,18 @@ import "./global.css";
 import mobileAds, { InterstitialAd, AdEventType, BannerAd, BannerAdSize, TestIds, MaxAdContentRating } from "react-native-google-mobile-ads";
 import { RewardedAd, RewardedAdEventType } from "react-native-google-mobile-ads";
 import { AnalyticsService } from '../services/analytics';
+import { NotificationProvider } from "@/contexts/NotificationContext";
+import * as Notifications from "expo-notifications";
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
+  }),
+});
 
 
 const queryClient = new QueryClient({
@@ -86,11 +98,10 @@ export default function RootLayout() {
 
 
   return (
-    <>
-
-      <SafeAreaProvider>
-        <QueryClientProvider client={queryClient}>
-          <FontSizeProvider>
+    <SafeAreaProvider>
+      <QueryClientProvider client={queryClient}>
+        <FontSizeProvider>
+          <NotificationProvider>
             <StatusBar style="dark" backgroundColor="#16a34a" />
             <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>
               <Stack
@@ -165,7 +176,7 @@ export default function RootLayout() {
                   }}
                 />
               </Stack>
-              <BannerAd
+              {/* <BannerAd
                 unitId={__DEV__ ? TestIds.BANNER : "ca-app-pub-3397220667540126/8068445014"}
                 size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
                 requestOptions={{
@@ -174,13 +185,11 @@ export default function RootLayout() {
                     collapsible: "bottom",
                   }
                 }}
-              />
+              /> */}
             </SafeAreaView>
-
-          </FontSizeProvider>
-        </QueryClientProvider>
-      </SafeAreaProvider>
-
-    </>
+          </NotificationProvider>
+        </FontSizeProvider>
+      </QueryClientProvider>
+    </SafeAreaProvider>
   );
 }

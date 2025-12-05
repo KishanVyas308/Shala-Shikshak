@@ -15,7 +15,7 @@ router.get('/', async (req, res) => {
           orderBy: { createdAt: 'desc' },
           include: {
             chapters: {
-              orderBy: { createdAt: 'desc' },
+              orderBy: { order: 'asc' },
               include: {
                 _count: {
                   select: {
@@ -51,7 +51,7 @@ router.get('/:id', async (req, res) => {
           orderBy: { createdAt: 'desc' },
           include: {
             chapters: {
-              orderBy: { createdAt: 'desc' },
+              orderBy: { order: 'asc' },
             },
           },
         },

@@ -44,6 +44,8 @@ const AdminChapters: React.FC = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [showResourceModal, setShowResourceModal] = useState(false);
   const [chapterToDelete, setChapterToDelete] = useState<any>(null);
+  const [isRankEditMode, setIsRankEditMode] = useState(false);
+  const [rankEdits, setRankEdits] = useState<Record<string, number>>({});
   
   const { id: subjectParamsId } = useParams<{ id?: string }>();
 
@@ -108,7 +110,7 @@ const AdminChapters: React.FC = () => {
       chapter.subject?.id === selectedSubjectId;
     
     return matchesSearch && matchesStandard && matchesSubject;
-  }).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }).sort((a, b) => (a.order || 0) - (b.order || 0));
 
   // Filter subjects based on selected standard
   const filteredSubjects = selectedStandardId === 'all' 
@@ -167,6 +169,19 @@ const AdminChapters: React.FC = () => {
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.message || 'પ્રકરણ ડિલીટ કરવામાં નિષ્ફળ');
+    },
+  });
+
+  const updateOrderMutation = useMutation({
+    mutationFn: ({ id, order }: { id: string; order: number }) =>
+      chaptersAPI.update(id, { order }),
+    onSuccess: () => {
+      toast.success('ક્રમ અપડેટ થયો');
+      queryClient.invalidateQueries({ queryKey: ['standards'] });
+      queryClient.invalidateQueries({ queryKey: ['standards-with-subjects'] });
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'ક્રમ અપડેટ કરવામાં નિષ્ફળ');
     },
   });
 
@@ -251,6 +266,44 @@ const AdminChapters: React.FC = () => {
 
   const cancelDelete = () => {
     setChapterToDelete(null);
+  };
+
+  const handleEnterRankEditMode = () => {
+    // Initialize rank edits with current chapter orders
+    const initialRanks: Record<string, number> = {};
+    filteredChapters.forEach(chapter => {
+      initialRanks[chapter.id] = chapter.order || 0;
+    });
+    setRankEdits(initialRanks);
+    setIsRankEditMode(true);
+  };
+
+  const handleCancelRankEdit = () => {
+    setIsRankEditMode(false);
+    setRankEdits({});
+  };
+
+  const handleRankChange = (chapterId: string, value: string) => {
+    const numValue = parseInt(value) || 0;
+    setRankEdits(prev => ({ ...prev, [chapterId]: numValue }));
+  };
+
+  const handleSaveAllRanks = async () => {
+    try {
+      // Update all chapters with new ranks
+      const updates = Object.entries(rankEdits).map(([chapterId, order]) =>
+        updateOrderMutation.mutateAsync({ id: chapterId, order })
+      );
+      
+      await Promise.all(updates);
+      
+      setIsRankEditMode(false);
+      setRankEdits({});
+      toast.success('બધા ક્રમ અપડેટ થયા');
+    } catch (error) {
+      console.error('Save ranks error:', error);
+      toast.error('ક્રમ અપડેટ કરવામાં નિષ્ફળ');
+    }
   };
 
   const handleManageResources = (chapterId: string) => {
@@ -343,15 +396,43 @@ const AdminChapters: React.FC = () => {
             
             {/* Desktop Actions */}
             <div className="hidden sm:flex gap-3">
-              <button
-                onClick={openCreateModal}
-                className="inline-flex items-center justify-center px-4 py-3 bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                નવું પ્રકરણ ઉમેરો
-              </button>
-
-            
+              {!isRankEditMode ? (
+                <>
+                  {subjectParamsId && selectedSubject && filteredChapters.length > 1 && (
+                    <button
+                      onClick={handleEnterRankEditMode}
+                      className="inline-flex items-center justify-center px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                    >
+                      <Edit className="h-4 w-4 mr-2" />
+                      ક્રમ બદલો
+                    </button>
+                  )}
+                  <button
+                    onClick={openCreateModal}
+                    className="inline-flex items-center justify-center px-4 py-3 bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    નવું પ્રકરણ ઉમેરો
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={handleCancelRankEdit}
+                    className="inline-flex items-center justify-center px-4 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl font-semibold transition-all duration-200"
+                  >
+                    <X className="h-4 w-4 mr-2" />
+                    રદ કરો
+                  </button>
+                  <button
+                    onClick={handleSaveAllRanks}
+                    className="inline-flex items-center justify-center px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                  >
+                    <Save className="h-4 w-4 mr-2" />
+                    બધા ક્રમ સાચવો
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -514,18 +595,53 @@ const AdminChapters: React.FC = () => {
           </div>
         </div>
 
-        {/* Chapters Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-          {filteredChapters.map((chapter) => (
-            <ChapterCard
-              key={chapter.id}
-              chapter={chapter}
-              onManageResources={handleManageResources}
-              onEdit={openEditModal}
-              onDelete={handleDeleteChapter}
-            />
-          ))}
-        </div>
+        {/* Chapters Grid or Rank Edit List */}
+        {isRankEditMode ? (
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">પ્રકરણોનો ક્રમ બદલો</h3>
+            <div className="space-y-3">
+              {filteredChapters
+                .sort((a, b) => (rankEdits[a.id] || a.order || 0) - (rankEdits[b.id] || b.order || 0))
+                .map((chapter) => (
+                <div
+                  key={chapter.id}
+                  className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200"
+                >
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-semibold text-gray-900 truncate">{chapter.name}</h4>
+                    {chapter.description && (
+                      <p className="text-sm text-gray-600 truncate">{chapter.description}</p>
+                    )}
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <label className="text-sm font-medium text-gray-700 whitespace-nowrap">ક્રમ:</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={rankEdits[chapter.id] ?? chapter.order ?? 0}
+                      onChange={(e) => handleRankChange(chapter.id, e.target.value)}
+                      onClick={(e) => e.currentTarget.select()}
+                      className="w-20 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-center"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+            {filteredChapters.map((chapter) => (
+              <ChapterCard
+                key={chapter.id}
+                chapter={chapter}
+                onManageResources={handleManageResources}
+                onEdit={openEditModal}
+                onDelete={handleDeleteChapter}
+              />
+            ))}
+          </div>
+        )}
 
         {/* Empty State */}
         {filteredChapters.length === 0 && (
@@ -618,6 +734,10 @@ const ChapterCard: React.FC<{
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
               {chapter.subject?.name}
             </span>
+            <span className="mx-2 text-gray-400">•</span>
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+              ક્રમ: {chapter.order || 0}
+            </span>
           </div>
           <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2">
             {chapter.name}
@@ -655,15 +775,6 @@ const ChapterCard: React.FC<{
 
       {/* Footer */}
       <div className="mt-4 pt-4 border-t border-gray-100">
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-xs text-gray-500">
-            {resourcesCount} સંસાધનો ઉપલબ્ધ
-          </span>
-          <span className="text-xs text-gray-500">
-            {new Date(chapter.createdAt).toLocaleDateString('gu-IN')}
-          </span>
-        </div>
-        
         {/* Action Buttons */}
         <div className="space-y-2">
           <button

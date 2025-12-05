@@ -23,14 +23,14 @@ interstitial.load();
 
 let lastAdShown = 0;
 export const showInterstitialAd = () => {
-    const now = Date.now();
-    if (now - lastAdShown < 60000) return; // 60 seconds cooldown
+    // const now = Date.now();
+    // if (now - lastAdShown < 60000) return; // 60 seconds cooldown
 
-    if (isAdLoaded) {
-        interstitial.show();
-        lastAdShown = now;
-        isAdLoaded = false;
-    } else {
-        console.log("Interstitial not ready yet");
-    }
+    // if (isAdLoaded) {
+    //     interstitial.show();
+    //     lastAdShown = now;
+    //     isAdLoaded = false;
+    // } else {
+    //     console.log("Interstitial not ready yet");
+    // }
 };

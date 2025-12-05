@@ -39,6 +39,7 @@ export interface Chapter {
   id: string;
   name: string;
   description?: string;
+  order: number;
   subjectId: string;
   subject?: {
     id: string;
