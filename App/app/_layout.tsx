@@ -3,11 +3,25 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { FontSizeProvider } from '../contexts/FontSizeContext';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import "./global.css";
 import mobileAds, { InterstitialAd, AdEventType, BannerAd, BannerAdSize, TestIds, MaxAdContentRating } from "react-native-google-mobile-ads";
 import { RewardedAd, RewardedAdEventType } from "react-native-google-mobile-ads";
 import { AnalyticsService } from '../services/analytics';
+import { NotificationProvider } from "@/contexts/NotificationContext";
+import * as Notifications from "expo-notifications";
+import { checkAppVersion } from '../services/versionCheck';
+import UpdateAppModal from '../components/UpdateAppModal';
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
+  }),
+});
 
 
 const queryClient = new QueryClient({
@@ -39,11 +53,23 @@ const interstitial = InterstitialAd.createForAdRequest(
 );
 
 export default function RootLayout() {
-
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [currentVersion, setCurrentVersion] = useState('5.0.0');
 
   
 
   useEffect(() => {
+    // Check app version
+    const checkVersion = async () => {
+      const versionCheck = await checkAppVersion();
+      if (versionCheck.needsUpdate) {
+        setCurrentVersion(versionCheck.currentVersion);
+        setShowUpdateModal(true);
+      }
+    };
+
+    checkVersion();
+
     // Track app open
     AnalyticsService.trackAppOpen();
 
@@ -86,11 +112,10 @@ export default function RootLayout() {
 
 
   return (
-    <>
-
-      <SafeAreaProvider>
-        <QueryClientProvider client={queryClient}>
-          <FontSizeProvider>
+    <SafeAreaProvider>
+      <QueryClientProvider client={queryClient}>
+        <FontSizeProvider>
+          <NotificationProvider>
             <StatusBar style="dark" backgroundColor="#16a34a" />
             <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>
               <Stack
@@ -165,7 +190,7 @@ export default function RootLayout() {
                   }}
                 />
               </Stack>
-              <BannerAd
+              {/* <BannerAd
                 unitId={__DEV__ ? TestIds.BANNER : "ca-app-pub-3397220667540126/8068445014"}
                 size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
                 requestOptions={{
@@ -174,13 +199,18 @@ export default function RootLayout() {
                     collapsible: "bottom",
                   }
                 }}
-              />
+              /> */}
             </SafeAreaView>
 
-          </FontSizeProvider>
-        </QueryClientProvider>
-      </SafeAreaProvider>
-
-    </>
+            {/* Update App Modal */}
+            <UpdateAppModal
+              visible={showUpdateModal}
+              currentVersion={currentVersion}
+              onClose={() => setShowUpdateModal(false)}
+            />
+          </NotificationProvider>
+        </FontSizeProvider>
+      </QueryClientProvider>
+    </SafeAreaProvider>
   );
 }

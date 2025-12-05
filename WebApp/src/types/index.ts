@@ -52,6 +52,7 @@ export interface Chapter {
   id: string;
   name: string;
   description?: string;
+  order: number;
   subjectId: string;
   subject?: {
     id: string;
@@ -99,6 +100,7 @@ export interface CreateChapterData {
   name: string;
   description?: string;
   subjectId: string;
+  order?: number;
 }
 
 export interface CreateChapterResourceData {

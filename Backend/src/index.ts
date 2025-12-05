@@ -15,6 +15,7 @@ import uploadRoutes from './routes/upload';
 import whatsappRoutes from './routes/whatsapp';
 import pageViewRoutes from './routes/pageViews';
 import analyticsRoutes from './routes/analytics';
+import pushNotificationRoutes from './routes/pushNotifications';
 
 // Load environment variables
 dotenv.config();
@@ -121,6 +122,12 @@ app.use('/api/uploads', (req, res, next) => {
 }));
 
 // API Routes
+app.use('/api/app/versions', (req, res) => {
+  res.json({
+    versions: ['4.0.4', '5.0.0'],
+  });
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/standards', standardRoutes);
 app.use('/api/subjects', subjectRoutes);
@@ -130,7 +137,7 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/whatsapp', whatsappRoutes);
 app.use('/api/page-views', pageViewRoutes);
 app.use('/api/analytics', analyticsRoutes);
-app.use('/api/page-views', pageViewRoutes);
+app.use('/api/push-notifications', pushNotificationRoutes);
 
 // app.use('/api/quiz')
 
@@ -164,6 +171,7 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
     ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
   });
 });
+
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);

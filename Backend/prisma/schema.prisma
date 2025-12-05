@@ -51,6 +51,7 @@ model Chapter {
   id          String              @id @default(cuid())
   name        String
   description String?
+  order       Int                 @default(0) // for ordering chapters within a subject
   subjectId   String
   subject     Subject             @relation(fields: [subjectId], references: [id], onDelete: Cascade)
   resources   ChapterResource[]
@@ -112,5 +113,19 @@ model PageView {
   @@index([platform])
   @@index([page, platform])
   @@map("page_views")
+}
+
+model PushToken {
+  id        String   @id @default(cuid())
+  token     String   @unique // Expo push token
+  deviceId  String?  // Optional device identifier
+  platform  String   @default("android") // "android" or "ios"
+  isActive  Boolean  @default(true) // Can be disabled if token is invalid
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([token])
+  @@index([isActive])
+  @@map("push_tokens")
 }
 

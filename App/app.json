@@ -2,7 +2,7 @@
   "expo": {
     "name": "શાળા શિક્ષક",
     "slug": "shala-shikshak",
-    "version": "4.0.4",
+    "version": "5.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
     "scheme": "shalashikshak",
@@ -38,10 +38,12 @@
       },
       "edgeToEdgeEnabled": true,
       "package": "com.x100xTechs.shalashikshak",
+      "googleServicesFile": "./google-services.json",
       "permissions": [
         "android.permission.INTERNET",
         "android.permission.ACCESS_NETWORK_STATE",
-        "com.google.android.gms.permission.AD_ID"
+        "com.google.android.gms.permission.AD_ID",
+        "android.permission.POST_NOTIFICATIONS"
       ],
       "blockedPermissions": [
         "android.permission.READ_MEDIA_IMAGES",
@@ -60,8 +62,8 @@
       [
         "react-native-google-mobile-ads",
         {
-          "androidAppId": "ca-app-pub-3397220667540126~7399325209",
-          "iosAppId": "ca-app-pub-3397220667540126~7399325209",
+          "androidAppId": "ca-app-pub-8871302345306784~9443759647",
+          "iosAppId": "ca-app-pub-8871302345306784~9443759647",
           "skAdNetworkItems": [],
           "userTrackingPermission": false
         }

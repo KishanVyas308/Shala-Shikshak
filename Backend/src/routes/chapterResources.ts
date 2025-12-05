@@ -5,6 +5,7 @@ import { prisma } from '../lib/prisma';
 import { authenticateToken } from '../middleware/auth';
 import { chapterResourceSchema, chapterResourceUpdateSchema } from '../utils/validation';
 import { LocalFileService } from '../services/localFileService';
+import { PushNotificationService } from '../services/pushNotificationService';
 
 const router = express.Router();
 const fileService = LocalFileService.getInstance();
@@ -200,6 +201,20 @@ router.post('/', authenticateToken, upload.single('file'), async (req, res) => {
         },
       },
     });
+
+    // Send push notification to all users
+    try {
+      await PushNotificationService.sendNewContentNotification(
+        resource.chapter.subject.standard.name,
+        resource.chapter.subject.name,
+        resource.chapter.name,
+        type,
+        resourceType
+      );
+    } catch (notificationError) {
+      console.error('Failed to send push notification:', notificationError);
+      // Don't fail the request if notification fails
+    }
 
     res.status(201).json(resource);
   } catch (error) {

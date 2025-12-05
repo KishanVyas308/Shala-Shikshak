@@ -26,6 +26,11 @@ export const chaptersAPI = {
     await api.delete(`/chapters/${id}`);
   },
 
+  reorder: async (subjectId: string, chapterIds: string[]): Promise<Chapter[]> => {
+    const response = await api.put(`/chapters/reorder/${subjectId}`, { chapterIds });
+    return response.data;
+  },
+
   batchReorder: async (chapters: { id: string; order: number }[]): Promise<void> => {
     await api.put('/chapters/batch/reorder', { chapters });
   }

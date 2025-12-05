@@ -5,11 +5,10 @@ import { useQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { standardsAPI } from '../services/standards';
-import { storageService } from '../services/storage';
 import { AnalyticsService } from '../services/analytics';
 import { useFontSize } from '../contexts/FontSizeContext';
 import Header from '../components/Header';
-import StandardCard, { AddStandardCard } from '../components/StandardCard';
+import StandardCard from '../components/StandardCard';
 import LoadingState from '../components/LoadingState';
 import ErrorState from '../components/ErrorState';
 import { FontSizeControls } from '../components/FontSizeControls';
@@ -17,8 +16,6 @@ import WhatsAppJoinCard, { fetchActiveLink } from '../components/WhatsAppJoinCar
 import MinimalLoadingBar from '../components/MinimalLoadingBar';
 
 export default function Home() {
-  const [userStandardIds, setUserStandardIds] = useState<string[]>([]);
-  const [isCheckingStandards, setIsCheckingStandards] = useState(true);
   const [isSettingsModalVisible, setIsSettingsModalVisible] = useState(false);
   const { getFontSizeClasses, fontSize } = useFontSize();
 
@@ -28,48 +25,22 @@ export default function Home() {
     queryFn: standardsAPI.getAll,
   });
 
-  // Check for user selected standards on component mount
+  // Initialize on component mount
   useEffect(() => {
-    const checkUserStandards = async () => {
+    const initialize = async () => {
       try {
         // Track home page view
         await AnalyticsService.trackHome();
 
         // Initialize WhatsApp link fetch
         fetchActiveLink();
-
-        const hasSelected = await storageService.hasSelectedStandards();
-        if (!hasSelected) {
-          // No standards selected, redirect to selection screen
-          router.replace('./select-standards' as any);
-          return;
-        }
-
-        // Get user selected standards
-        const selectedIds = await storageService.getUserStandards();
-        setUserStandardIds(selectedIds);
       } catch (error) {
-        console.error('Error checking user standards:', error);
-      } finally {
-        setIsCheckingStandards(false);
+        console.error('Error initializing home:', error);
       }
     };
 
-    checkUserStandards();
+    initialize();
   }, []);
-
-  // Show loading while checking user standards
-  if (isCheckingStandards) {
-    return (
-      <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>
-        <View className="flex-1 bg-secondary-50">
-          <Header title="શાળા શિક્ષક" subtitle="શૈક્ષણિક પ્લેટફોર્મ" />
-          <LoadingState />
-        </View>
-      </SafeAreaView>
-    );
-  }
-
 
   if (isLoading) {
     return (
@@ -93,16 +64,10 @@ export default function Home() {
     );
   }
 
-  // Filter standards to show only user-selected ones
-  const userSelectedStandards = standards.filter(standard =>
-    userStandardIds.includes(standard.id)
-  );
-  const sortedStandards = [...userSelectedStandards].sort((a, b) => a.order - b.order);
+  // Show all standards sorted by order
+  const sortedStandards = [...standards].sort((a, b) => a.order - b.order);
 
-  const handleChangeStandards = () => {
-    setIsSettingsModalVisible(false);
-    router.replace('./select-standards' as any);
-  };
+
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>
@@ -130,9 +95,8 @@ export default function Home() {
           {/* Standards List Header */}
           <View className="mx-6 my-4">
             <Text className={`font-gujarati text-secondary-800 font-bold ${getFontSizeClasses().subtitle}`}>
-              પસંદ કરેલા ધોરણો
+              તમામ ધોરણો
             </Text>
-
           </View>
 
           {/* Standards List */}
@@ -155,9 +119,6 @@ export default function Home() {
                   }}
                 />
               ))}
-
-              <AddStandardCard />
-
             </View>
           </View>
 
@@ -285,33 +246,12 @@ export default function Home() {
               {/* Modal Content */}
               <View className="py-2">
                 {/* Font Size Controls */}
-                <View className="px-6 py-4 border-b border-gray-100">
+                <View className="px-6 py-4">
                   <Text className={`font-gujarati font-semibold text-secondary-800 mb-3 ${getFontSizeClasses().textLg}`}>
                     ફોન્ટ સાઈઝ સેટિંગ્સ
                   </Text>
                   <FontSizeControls />
                 </View>
-
-
-
-                <TouchableOpacity
-                  onPress={handleChangeStandards}
-                  className="flex-row items-center px-6 py-4 active:bg-gray-50"
-                  activeOpacity={0.7}
-                >
-                  <View className="w-10 h-10 rounded-full bg-primary-100 items-center justify-center mr-4">
-                    <Ionicons name="school-outline" size={20} color="#16a34a" />
-                  </View>
-                  <View className="flex-1">
-                    <Text className={`font-gujarati font-semibold text-secondary-800 ${getFontSizeClasses().textLg}`}>
-                      ધોરણ બદલો
-                    </Text>
-                    <Text className={`font-gujarati text-secondary-600 mt-0.5 ${getFontSizeClasses().text}`}>
-                      તમારા ધોરણો પસંદ કરો અથવા બદલો
-                    </Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-                </TouchableOpacity>
               </View>
             </TouchableOpacity>
           </TouchableOpacity>

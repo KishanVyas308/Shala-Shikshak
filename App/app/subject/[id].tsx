@@ -106,9 +106,8 @@ export default function SubjectView() {
   }) || [];
 
   const sortedChapters = [...filteredChapters].sort((a, b) => {
-    const aDate = new Date(a.createdAt || 0);
-    const bDate = new Date(b.createdAt || 0);
-    return bDate.getTime() - aDate.getTime(); // Most recent first
+    // Sort by order field (ascending: 0, 1, 2, ...)
+    return (a.order || 0) - (b.order || 0);
   });
 
   return (
