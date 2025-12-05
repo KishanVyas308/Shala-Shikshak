@@ -56,16 +56,16 @@ app.use(helmet({
       styleSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: ["'self'", "data:", "blob:"],
       objectSrc: ["'none'"],
-      frameSrc: ["'self'", "http://localhost:3000", "http://localhost:5173", "http://localhost:5000", "https://shalashikshak.in", "https://shala-shikshak.pages.dev"],
-      frameAncestors: ["'self'", "http://localhost:3000", "http://localhost:5173", "https://shalashikshak.in", "https://shala-shikshak.pages.dev"],
-      connectSrc: ["'self'", "http://localhost:3000", "http://localhost:5173", "http://localhost:5000", "https://shalashikshak.in", "https://shala-shikshak.pages.dev"],
+      frameSrc: ["'self'", "http://localhost:3000", "http://localhost:5173", "http://localhost:5000", "https://shalashikshak.in", "https://shala-shikshak.pages.dev", "https://shala-shikshak-main.pages.dev"],
+      frameAncestors: ["'self'", "http://localhost:3000", "http://localhost:5173", "https://shalashikshak.in", "https://shala-shikshak.pages.dev", "https://shala-shikshak-main.pages.dev"],
+      connectSrc: ["'self'", "http://localhost:3000", "http://localhost:5173", "http://localhost:5000", "https://shalashikshak.in", "https://shala-shikshak.pages.dev",   "https://shala-shikshak-main.pages.dev"],
     },
   },
   crossOriginEmbedderPolicy: false,
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:5173', 'https://shalashikshak.in', 'https://shala-shikshak.pages.dev'],
+  origin: ['http://localhost:3000', 'http://localhost:5173', 'https://shalashikshak.in', 'https://shala-shikshak.pages.dev', 'https://shala-shikshak-main.pages.dev'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Range', 'X-Requested-With'],
@@ -85,7 +85,7 @@ app.use('/api/uploads', (req, res, next) => {
   // Set headers to allow PDF embedding and enable range requests for react-pdf
   res.set({
     'X-Frame-Options': 'SAMEORIGIN',
-    'Content-Security-Policy': "frame-ancestors 'self' http://localhost:3000 http://localhost:5173 https://shalashikshak.in https://shala-shikshak.pages.dev",
+    'Content-Security-Policy': "frame-ancestors 'self' http://localhost:3000 http://localhost:5173 https://shalashikshak.in https://shala-shikshak.pages.dev https://shala-shikshak-main.pages.dev",
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Range, Authorization, X-Requested-With',
