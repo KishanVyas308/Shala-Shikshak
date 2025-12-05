@@ -173,7 +173,7 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 });
 
 
-app.listen(PORT as any, process.env.HOST as any, () => {
+app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📚 Shala Shikshak API is ready!`);
 });
