@@ -76,7 +76,11 @@
           },
           "android": {
             "enableProguardInReleaseBuilds": true,
-            "extraProguardRules": "-keep class com.google.android.gms.** { *; }\n-dontwarn com.google.android.gms.**"
+            "extraProguardRules": "-keep class com.google.android.gms.** { *; }\n-dontwarn com.google.android.gms.**",
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35,
+            "buildToolsVersion": "35.0.0",
+            "minSdkVersion": 21
           }
         }
       ]
