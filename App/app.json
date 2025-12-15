@@ -62,8 +62,8 @@
       [
         "react-native-google-mobile-ads",
         {
-          "androidAppId": "ca-app-pub-8871302345306784~9443759647",
-          "iosAppId": "ca-app-pub-8871302345306784~9443759647",
+          "androidAppId": "ca-app-pub-3848233898449658~9359759859",
+          "iosAppId": "ca-app-pub-3848233898449658~9359759859",
           "skAdNetworkItems": [],
           "userTrackingPermission": false
         }
@@ -76,7 +76,11 @@
           },
           "android": {
             "enableProguardInReleaseBuilds": true,
-            "extraProguardRules": "-keep class com.google.android.gms.** { *; }\n-dontwarn com.google.android.gms.**"
+            "extraProguardRules": "-keep class com.google.android.gms.** { *; }\n-dontwarn com.google.android.gms.**",
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35,
+            "buildToolsVersion": "35.0.0",
+            "minSdkVersion": 24
           }
         }
       ]

@@ -43,12 +43,12 @@ const childDirectedAdOptions = {
 };
 
 const rewardedAd = RewardedAd.createForAdRequest(
-  __DEV__ ? TestIds.REWARDED : "ca-app-pub-3397220667540126/1383655159", // replace with your actual ID
+  __DEV__ ? TestIds.REWARDED : "ca-app-pub-3848233898449658/4582716526", // replace with your actual ID
   childDirectedAdOptions
 );
 
 const interstitial = InterstitialAd.createForAdRequest(
-  __DEV__ ? TestIds.INTERSTITIAL : "ca-app-pub-3397220667540126/4759755392",
+  __DEV__ ? TestIds.INTERSTITIAL : "ca-app-pub-3848233898449658/6247151989",
   childDirectedAdOptions
 );
 
@@ -191,7 +191,7 @@ export default function RootLayout() {
                 />
               </Stack>
               {/* <BannerAd
-                unitId={__DEV__ ? TestIds.BANNER : "ca-app-pub-3397220667540126/8068445014"}
+                unitId={__DEV__ ? TestIds.BANNER : "ca-app-pub-3848233898449658/3756720012"}
                 size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
                 requestOptions={{
                   requestNonPersonalizedAdsOnly: true,
