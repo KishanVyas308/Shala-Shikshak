@@ -2,7 +2,7 @@
 import { InterstitialAd, AdEventType, TestIds, AdsConsent, MaxAdContentRating } from "react-native-google-mobile-ads";
 
 const interstitial = InterstitialAd.createForAdRequest(
-    __DEV__ ? TestIds.INTERSTITIAL : "ca-app-pub-3397220667540126/4759755392",
+    __DEV__ ? TestIds.INTERSTITIAL : "ca-app-pub-3848233898449658/6247151989",
     { 
         requestNonPersonalizedAdsOnly: true,
         keywords: ['education', 'school', 'learning', 'students', 'study'],

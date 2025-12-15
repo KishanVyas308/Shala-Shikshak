@@ -3,7 +3,7 @@ import { RewardedAd, RewardedAdEventType, TestIds } from "react-native-google-mo
 
 const adUnitId = __DEV__
   ? TestIds.REWARDED
-  : "ca-app-pub-8871302345306784/4621951459";
+  : "ca-app-pub-3848233898449658/4582716526";
 
 let rewardedAd = RewardedAd.createForAdRequest(adUnitId, {
   requestNonPersonalizedAdsOnly: true,
