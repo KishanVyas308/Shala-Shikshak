@@ -4,7 +4,7 @@ const prisma = new PrismaClient();
 
 async function fixChapterOrder() {
   try {
-    console.log('Starting to fix chapter order...');
+
 
     // Get all subjects
     const subjects = await prisma.subject.findMany({
@@ -15,7 +15,7 @@ async function fixChapterOrder() {
       },
     });
 
-    console.log(`Found ${subjects.length} subjects`);
+
 
     let totalUpdated = 0;
 
@@ -23,8 +23,7 @@ async function fixChapterOrder() {
     for (const subject of subjects) {
       if (subject.chapters.length === 0) continue;
 
-      console.log(`\nProcessing subject: ${subject.name} (${subject.chapters.length} chapters)`);
-
+  
       // Update each chapter with its new order
       for (let i = 0; i < subject.chapters.length; i++) {
         const chapter = subject.chapters[i];
@@ -32,12 +31,10 @@ async function fixChapterOrder() {
           where: { id: chapter.id },
           data: { order: i },
         });
-        console.log(`  - Updated "${chapter.name}" to order ${i}`);
         totalUpdated++;
       }
     }
 
-    console.log(`\n✅ Successfully updated ${totalUpdated} chapters across ${subjects.length} subjects`);
   } catch (error) {
     console.error('Error fixing chapter order:', error);
   } finally {

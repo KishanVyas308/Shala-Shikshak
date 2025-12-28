@@ -65,7 +65,7 @@ export class PushNotificationService {
       });
 
       if (pushTokens.length === 0) {
-        console.log('No active push tokens found');
+
         return { success: 0, failed: 0 };
       }
 
@@ -121,7 +121,7 @@ export class PushNotificationService {
         }
       }
 
-      console.log(`Push notifications sent: ${successCount} success, ${failedCount} failed`);
+
       return { success: successCount, failed: failedCount };
     } catch (error) {
       console.error('Error sending push notifications:', error);

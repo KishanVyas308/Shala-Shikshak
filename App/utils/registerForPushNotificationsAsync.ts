@@ -21,14 +21,14 @@ export async function registerForPushNotificationsAsync() {
             finalStatus = status;
         }
         if (finalStatus !== 'granted') {
-            console.log('Failed to get push token for push notification!');
+
             return;
         }
 
         const projectId = Constants.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
 
         if (!projectId) {
-            console.log('EAS Project ID is not set in app configuration.');
+
             return;
         }
         try {
@@ -37,14 +37,14 @@ export async function registerForPushNotificationsAsync() {
                     projectId: projectId
                 })
             ).data;
-            console.log('Push notification token:', pushTokenString);
+
             return pushTokenString;
             
         } catch (error) {
-            console.log('Error getting push token:', error);
+
         }
     } else {
-        console.log('Must use physical device for Push Notifications');
+
     }
 
 }

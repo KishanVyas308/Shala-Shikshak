@@ -18,7 +18,7 @@ export class AnalyticsService {
         timestamp: new Date().toISOString(),
       });
       this.hasTrackedAppOpen = true;
-      console.log('App open tracked');
+
     } catch (error) {
       // Silently fail - analytics shouldn't break the app
       console.debug('App open tracking failed:', error);

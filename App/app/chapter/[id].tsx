@@ -20,8 +20,11 @@ const { width } = Dimensions.get('window');
 const cardWidth = (width - 48) / 2; // 2 cards per row with margins
 
 export default function ChapterView() {
-  const { id: chapterId } = useLocalSearchParams<{ id: string }>();
-  const [selectedType, setSelectedType] = useState<'svadhyay' | 'svadhyay_pothi' | 'other'>('svadhyay');
+  const { id: chapterId, type } = useLocalSearchParams<{ id: string; type?: string }>();
+  const [selectedType, setSelectedType] = useState<'svadhyay' | 'svadhyay_pothi' | 'other'>(
+    (type as 'svadhyay' | 'svadhyay_pothi' | 'other') || 'svadhyay'
+  );
+  const [resourceTypeFilter, setResourceTypeFilter] = useState<'all' | 'video' | 'pdf'>('all');
   const { getFontSizeClasses } = useFontSize();
 
   const navigation = useNavigation();
@@ -113,7 +116,14 @@ export default function ChapterView() {
   ];
 
   const currentResources = data?.resources[selectedType] || [];
+  const filteredResources = currentResources.filter(resource => {
+    if (resourceTypeFilter === 'all') return true;
+    return resource.resourceType === resourceTypeFilter;
+  });
   const selectedCategory = categories.find(cat => cat.key === selectedType);
+  
+  // Check if user came from a specific category button (hide selection UI)
+  const isDirectCategoryAccess = !!type;
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>
@@ -131,91 +141,134 @@ export default function ChapterView() {
         }
         showsVerticalScrollIndicator={false}
       >
-        {/* Chapter Info */}
-        <View className="mx-4 mt-4 mb-6 p-4 bg-white rounded-xl shadow-sm">
-          <Text className={`font-gujarati font-bold text-gray-800 mb-2 ${getFontSizeClasses().textLg}`}>
-            {data.chapter.name}
-          </Text>
-          {data.chapter.description && (
-            <Text className={`font-gujarati text-gray-600 mb-3 ${getFontSizeClasses().text}`}>
-              {data.chapter.description}
+        
+        {/* Category Tabs - Only show if not coming from direct category access */}
+        {!isDirectCategoryAccess && (
+          <View className="mx-4 mt-6">
+            <Text className={`font-gujarati font-bold text-gray-800 mb-3 ${getFontSizeClasses().textLg}`}>
+              સંસાધન પ્રકાર
             </Text>
-          )}
-          <View className="flex-row items-center">
-            <View className="flex-row items-center mr-4">
-              <Ionicons name="folder-outline" size={16} color="#6B7280" />
-              <Text className={`font-gujarati text-gray-500 ml-1 ${getFontSizeClasses().text}`}>
-                કુલ સંસાધનો: {data.counts.total}
-              </Text>
-            </View>
-          </View>
-        </View>
-       
-        {/* Category Selection */}
-        <View className="mx-4 my-6">
-          <Text className={`font-gujarati font-bold text-gray-800 mb-4 ${getFontSizeClasses().textLg}`}>
-            સંસાધન પ્રકાર
-          </Text>
-          <View className="flex-row justify-between">
-            {categories.map((category) => {
-              const isSelected = selectedType === category.key;
-              
-              return (
-                <TouchableOpacity
-                  key={category.key}
-                  onPress={() => setSelectedType(category.key)}
-                  className={`flex-1 p-4 rounded-xl border-2 mx-1 ${
-                    isSelected 
-                      ? 'border-primary-300' 
-                      : 'border-gray-200'
-                  }`}
-                  style={{
-                    backgroundColor: isSelected ? category.bgColor : '#FFFFFF',
-                  }}
-                >
-                  <View className="items-center">
-                    <View 
-                      className="w-12 h-12 rounded-full items-center justify-center mb-2"
-                      style={{ backgroundColor: category.color + '20' }}
-                    >
-                      <Ionicons 
-                        name={category.icon} 
-                        size={24} 
-                        color={category.color} 
-                      />
-                    </View>
+            <View className="flex-row gap-2 mb-4">
+              {categories.map((category) => {
+                const isSelected = selectedType === category.key;
+                
+                return (
+                  <TouchableOpacity
+                    key={category.key}
+                    onPress={() => {
+                      setSelectedType(category.key);
+                      setResourceTypeFilter('all');
+                    }}
+                    className="flex-row items-center px-4 py-2.5 rounded-lg border-2"
+                    style={{
+                      backgroundColor: isSelected ? category.bgColor : '#FFFFFF',
+                      borderColor: isSelected ? category.color : '#E5E7EB',
+                    }}
+                  >
+                    <Ionicons 
+                      name={category.icon} 
+                      size={18} 
+                      color={category.color} 
+                    />
                     <Text 
-                      className={`font-gujarati font-semibold text-center mb-1 ${getFontSizeClasses().text}`}
-                      style={{ color: isSelected ? category.color : '#374151' }}
+                      className={`font-gujarati font-semibold ml-2 ${getFontSizeClasses().text}`}
+                      style={{ color: isSelected ? category.color : '#6B7280' }}
                     >
                       {category.label}
                     </Text>
-                    <Text 
-                      className={`font-gujarati text-center mb-2 ${getFontSizeClasses().text}`}
-                      style={{ color: isSelected ? category.color + 'CC' : '#6B7280' }}
-                    >
-                      {category.description}
-                    </Text>
                     <View 
-                      className="px-2 py-1 rounded-full"
-                      style={{ backgroundColor: category.color + '15' }}
+                      className="ml-2 px-2 py-0.5 rounded-full"
+                      style={{ backgroundColor: category.color + '20' }}
                     >
                       <Text 
-                        className={`font-gujarati font-bold ${getFontSizeClasses().text}`}
+                        className="font-gujarati text-xs font-bold"
                         style={{ color: category.color }}
                       >
                         {category.count}
                       </Text>
                     </View>
-                  </View>
-                </TouchableOpacity>
-              );
-            })}
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
           </View>
-        </View>
+        )}
+
+        {/* PDF/Video Filter - Only show if not coming from direct category access */}
+        {!isDirectCategoryAccess && (
+          <View className="mx-4 mb-6">
+            <Text className={`font-gujarati font-bold text-gray-800 mb-3 ${getFontSizeClasses().textLg}`}>
+              ફિલ્ટર
+            </Text>
+            <View className="flex-row gap-2">
+              <TouchableOpacity
+                onPress={() => setResourceTypeFilter('all')}
+                className="flex-row items-center px-4 py-2.5 rounded-lg border-2"
+                style={{
+                  backgroundColor: resourceTypeFilter === 'all' ? '#F0F9FF' : '#FFFFFF',
+                  borderColor: resourceTypeFilter === 'all' ? '#3B82F6' : '#E5E7EB',
+                }}
+              >
+                <Ionicons 
+                  name="apps-outline" 
+                  size={18} 
+                  color={resourceTypeFilter === 'all' ? '#3B82F6' : '#6B7280'} 
+                />
+                <Text 
+                  className={`font-gujarati font-semibold ml-2 ${getFontSizeClasses().text}`}
+                  style={{ color: resourceTypeFilter === 'all' ? '#3B82F6' : '#6B7280' }}
+                >
+                  બધા
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => setResourceTypeFilter('video')}
+                className="flex-row items-center px-4 py-2.5 rounded-lg border-2"
+                style={{
+                  backgroundColor: resourceTypeFilter === 'video' ? '#FEF2F2' : '#FFFFFF',
+                  borderColor: resourceTypeFilter === 'video' ? '#DC2626' : '#E5E7EB',
+                }}
+              >
+                <Ionicons 
+                  name="play-circle-outline" 
+                  size={18} 
+                  color={resourceTypeFilter === 'video' ? '#DC2626' : '#6B7280'} 
+                />
+                <Text 
+                  className={`font-gujarati font-semibold ml-2 ${getFontSizeClasses().text}`}
+                  style={{ color: resourceTypeFilter === 'video' ? '#DC2626' : '#6B7280' }}
+                >
+                  વિડિયો
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => setResourceTypeFilter('pdf')}
+                className="flex-row items-center px-4 py-2.5 rounded-lg border-2"
+                style={{
+                  backgroundColor: resourceTypeFilter === 'pdf' ? '#ECFDF5' : '#FFFFFF',
+                  borderColor: resourceTypeFilter === 'pdf' ? '#10B981' : '#E5E7EB',
+                }}
+              >
+                <Ionicons 
+                  name="document-text-outline" 
+                  size={18} 
+                  color={resourceTypeFilter === 'pdf' ? '#10B981' : '#6B7280'} 
+                />
+                <Text 
+                  className={`font-gujarati font-semibold ml-2 ${getFontSizeClasses().text}`}
+                  style={{ color: resourceTypeFilter === 'pdf' ? '#10B981' : '#6B7280' }}
+                >
+                  PDF
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
 
         {/* Resources Grid */}
-        <View className="mx-4 mb-6">
+        <View className={`mx-4 ${isDirectCategoryAccess ? 'mt-6' : ''} mb-6`}>
           <View className="flex-row items-center justify-between mb-4">
             <View className="flex-row items-center">
               <Ionicons 
@@ -235,12 +288,12 @@ export default function ChapterView() {
                 className="font-gujarati text-xs font-bold"
                 style={{ color: selectedCategory?.color || '#6B7280' }}
               >
-                {currentResources.length} આઇટમ
+                {filteredResources.length} આઇટમ
               </Text>
             </View>
           </View>
 
-          {currentResources.length === 0 ? (
+          {filteredResources.length === 0 ? (
             <View className="bg-white rounded-xl p-8 items-center">
               <View 
                 className="w-16 h-16 rounded-full items-center justify-center mb-4"
@@ -261,7 +314,7 @@ export default function ChapterView() {
             </View>
           ) : (
             <View className="flex-row flex-wrap justify-between">
-              {currentResources.map((resource) => (
+              {filteredResources.map((resource) => (
                 <ResourceCard 
                   key={resource.id}
                   resource={resource} 
@@ -296,7 +349,7 @@ const ResourceCard: React.FC<ResourceCardProps> = ({ resource, width, categoryCo
         },
         // On ad not available - show interstitial instead
         () => {
-          console.log("Rewarded ad not available, showing interstitial");
+
           showInterstitialAd();
           // Open content after interstitial
           setTimeout(() => {

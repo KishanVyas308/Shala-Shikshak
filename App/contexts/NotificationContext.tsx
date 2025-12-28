@@ -71,10 +71,10 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
         throw new Error(data.error || 'Failed to register token');
       }
 
-      console.log('✅ Push token registered with backend:', data);
+
       return data;
     } catch (error) {
-      console.error('❌ Failed to register push token with backend:', error);
+
       throw error;
     }
   };
@@ -98,17 +98,13 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
 
     notificationListener.current =
       Notifications.addNotificationReceivedListener((notification) => {
-        console.log("🔔 Notification Received: ", notification);
+
         setNotification(notification);
       });
 
     responseListener.current =
       Notifications.addNotificationResponseReceivedListener((response) => {
-        console.log(
-          "🔔 Notification Response: ",
-          JSON.stringify(response, null, 2),
-          JSON.stringify(response.notification.request.content.data, null, 2)
-        );
+      
         // Handle the notification response here
       });
 

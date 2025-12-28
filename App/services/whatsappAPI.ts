@@ -25,7 +25,7 @@ class WhatsAppAPI {
       }
       
       const result = await response.json();
-      console.log('WhatsApp API response:', result);
+
       
       // Backend returns { success: true, data: link }
       if (result.success && result.data) {
@@ -48,7 +48,7 @@ class WhatsAppAPI {
       }
       
       const result = await response.json();
-      console.log('WhatsApp getAllLinks response:', result);
+
       
       // Backend returns { success: true, data: links }
       if (result.success && result.data) {

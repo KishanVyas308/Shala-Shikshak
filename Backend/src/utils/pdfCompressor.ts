@@ -73,10 +73,8 @@ export async function compressPDF(
       `"${sanitizedInputPath}"`
     ].join(' ');
 
-    console.log(`🔄 Compressing PDF: ${path.basename(inputPath)}`);
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`📝 Command: ${gsCommand}`);
-    }
+
+ 
 
     // Execute Ghostscript command with timeout
     const { stdout, stderr } = await execAsync(gsCommand, {
@@ -96,12 +94,7 @@ export async function compressPDF(
     // Calculate compression ratio
     const compressionRatio = Math.round(((originalSize - compressedSize) / originalSize) * 100);
 
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`✅ PDF compressed successfully:`);
-      console.log(`   Original size: ${(originalSize / 1024 / 1024).toFixed(2)} MB`);
-      console.log(`   Compressed size: ${(compressedSize / 1024 / 1024).toFixed(2)} MB`);
-      console.log(`   Compression ratio: ${compressionRatio}%`);
-    }
+  
 
     return {
       success: true,
@@ -173,9 +166,7 @@ export async function cleanupTempFile(filePath: string): Promise<void> {
   try {
     if (existsSync(filePath)) {
       await fs.unlink(filePath);
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`🗑️ Cleaned up temp file: ${path.basename(filePath)}`);
-      }
+   
     }
   } catch (error) {
     console.error(`Failed to cleanup temp file ${filePath}:`, error);

@@ -82,7 +82,7 @@ export default function PDFViewer() {
         Alert.alert('ભૂલ', 'અમાન્ય YouTube લિંક');
       }
     } catch (error) {
-      console.log('Error opening YouTube:', error);
+     
       Alert.alert('ભૂલ', 'વીડિઓ ખોલવામાં સમસ્યા');
     }
   };
@@ -98,8 +98,7 @@ export default function PDFViewer() {
 
   // Convert URL to appropriate viewer format
   const getViewerUrl = (url: string) => {
-    console.log('Original URL:', url);
-    
+ 
     // Handle YouTube URLs
     if (isYouTubeUrl(url)) {
       let videoId = '';
@@ -116,11 +115,11 @@ export default function PDFViewer() {
       if (videoId) {
         // Try different embed approaches for better compatibility
         const embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=0&controls=1&fs=1&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&cc_load_policy=0&disablekb=1&origin=https://shalashikshak.in`;
-        console.log('YouTube embed URL (privacy-enhanced):', embedUrl);
+       
         return embedUrl;
       }
       
-      console.log('Fallback to original YouTube URL:', url);
+     
       return url;
     }
     
@@ -130,7 +129,7 @@ export default function PDFViewer() {
         const fileIdMatch = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
         if (fileIdMatch) {
           const driveUrl = `https://drive.google.com/file/d/${fileIdMatch[1]}/preview`;
-          console.log('Google Drive preview URL:', driveUrl);
+         
           return driveUrl;
         }
         // If already in preview format, use as is
@@ -145,7 +144,7 @@ export default function PDFViewer() {
     } else {
       // Regular PDF URL - use PDF.js viewer
       const pdfUrl = `https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent(url)}`;
-      console.log('PDF.js viewer URL:', pdfUrl);
+     
       return pdfUrl;
     }
   };
@@ -179,7 +178,7 @@ export default function PDFViewer() {
   // Handle navigation requests (like "Open in app")
   const handleShouldStartLoadWithRequest = (request: any) => {
     const { url: requestUrl } = request;
-    console.log('Navigation request to:', requestUrl);
+   
     
     // Allow the initial load
     if (requestUrl === viewerUrl) {
@@ -195,7 +194,7 @@ export default function PDFViewer() {
       requestUrl.includes('youtube.com/watch') ||
       (requestUrl.includes('youtube.com') && !requestUrl.includes('embed'))
     )) {
-      console.log('YouTube external link detected:', requestUrl);
+    
       
       // Show options to user
       Alert.alert(
@@ -241,7 +240,7 @@ export default function PDFViewer() {
     }
     
     // Allow other navigation
-    console.log('Allowing navigation to:', requestUrl);
+  
     return true;
   };
 
@@ -350,14 +349,14 @@ export default function PDFViewer() {
           try {
             const data = JSON.parse(event.nativeEvent.data);
             if (data.type === 'youtube-error') {
-              console.log('YouTube error detected, auto-opening in YouTube app:', data.message);
+
               // Auto-open in YouTube app without asking
               setShouldOpenYouTubeDirectly(true);
               openInYouTubeApp(url || '');
               // Don't call router.back() - let user stay on this screen
             }
           } catch (error) {
-            console.log('Error parsing WebView message:', error);
+
           }
         }}
         onShouldStartLoadWithRequest={handleShouldStartLoadWithRequest}
@@ -366,7 +365,7 @@ export default function PDFViewer() {
           console.error('WebView error:', nativeEvent);
           
           if (isYouTubeViewer && !youtubeOpened) {
-            console.log('YouTube WebView error, auto-opening in YouTube app');
+
             // Auto-open in YouTube app without asking
             setShouldOpenYouTubeDirectly(true);
             openInYouTubeApp(url || '');
@@ -387,21 +386,20 @@ export default function PDFViewer() {
           console.error('WebView HTTP error:', nativeEvent);
           
           if (isYouTubeViewer && (nativeEvent.statusCode === 403 || nativeEvent.statusCode === 404) && !youtubeOpened) {
-            console.log(`YouTube HTTP ${nativeEvent.statusCode} error, auto-opening in YouTube app`);
+
             // Auto-open in YouTube app without asking
             setShouldOpenYouTubeDirectly(true);
             openInYouTubeApp(url || '');
             // Don't call router.back() - let user stay on this screen
           }
         }}
-        onLoadStart={() => console.log('WebView started loading')}
-        onLoadEnd={() => console.log('WebView finished loading')}
+       
         injectedJavaScript={
           isYouTubeViewer 
             ? `
               // For YouTube videos - detect errors and improve compatibility
               (function() {
-                console.log('YouTube video player setup');
+                
                 
                 // Detect YouTube playback errors (Error 153, 150, etc.)
                 const checkForErrors = () => {
@@ -413,7 +411,7 @@ export default function PDFViewer() {
                         text.includes('embedding') ||
                         text.includes('playback') ||
                         text.includes('Error')) {
-                      console.log('YouTube Error detected:', text);
+                     
                       window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'youtube-error', message: text }));
                     }
                   });
@@ -452,7 +450,7 @@ export default function PDFViewer() {
                     
                     // Listen for error events
                     video.addEventListener('error', function(e) {
-                      console.log('Video error event:', e);
+                     
                       window.ReactNativeWebView.postMessage(JSON.stringify({ 
                         type: 'youtube-error', 
                         message: 'Video playback error' 
@@ -468,12 +466,12 @@ export default function PDFViewer() {
                     iframe.setAttribute('allowfullscreen', 'true');
                   });
                   
-                  console.log('YouTube setup complete');
+                
                 }, 2000);
                 
                 // Handle touch events better
                 document.addEventListener('touchstart', function(e) {
-                  console.log('Touch detected on YouTube player');
+                  
                 }, true);
               })();
               true;
@@ -482,7 +480,7 @@ export default function PDFViewer() {
             ? `
               // For Google Drive viewer - hide download and sharing options
               setTimeout(() => {
-                console.log('Setting up Google Drive viewer');
+               
                 
                 // Hide toolbar buttons
                 const toolbar = document.querySelector('[role="toolbar"]');
@@ -511,14 +509,14 @@ export default function PDFViewer() {
                   control.style.display = 'none';
                 });
                 
-                console.log('Google Drive setup complete');
+               
               }, 3000);
               true;
             `
             : `
               // For PDF.js viewer - hide download and print buttons
               setTimeout(() => {
-                console.log('Setting up PDF.js viewer');
+               
                 
                 const elementsToHide = [
                   '#toolbarViewerRight',
@@ -535,8 +533,6 @@ export default function PDFViewer() {
                     element.style.display = 'none';
                   }
                 });
-                
-                console.log('PDF.js setup complete');
               }, 2000);
               true;
             `
