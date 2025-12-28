@@ -17,9 +17,9 @@ const fetchActiveLink = async () => {
   if (isLinkFetched) return globalWhatsAppLink;
   
   try {
-    console.log('Fetching WhatsApp link from API...');
+
     const link = await whatsappAPI.getActiveLink();
-    console.log('API Response:', link);
+
     
     if (link && !link.url) {
       console.warn('WhatsApp link received but URL is missing:', link);
@@ -62,7 +62,7 @@ const WhatsAppJoinCard: React.FC<WhatsAppJoinCardProps> = ({ className = '' }) =
 
   const handleJoinPress = async () => {
     if (!activeLink) {
-      console.log('No active link available');
+
       Alert.alert(
         'ત્રુટિ',
         'WhatsApp લિંક ઉપલબ્ધ નથી. કૃપા કરીને પછીથી પ્રયાસ કરો.',
@@ -72,7 +72,7 @@ const WhatsAppJoinCard: React.FC<WhatsAppJoinCardProps> = ({ className = '' }) =
     }
 
     if (!activeLink.url || typeof activeLink.url !== 'string') {
-      console.log('Active link URL is invalid:', activeLink);
+
       Alert.alert(
         'ત્રુટિ',
         'WhatsApp લિંક માન્ય નથી. કૃપા કરીને પછીથી પ્રયાસ કરો.',
@@ -86,22 +86,22 @@ const WhatsAppJoinCard: React.FC<WhatsAppJoinCardProps> = ({ className = '' }) =
       finalUrl = 'https://' + finalUrl;
     }
 
-    console.log('Opening WhatsApp URL:', finalUrl);
+
 
     try {
       const canOpen = await Linking.canOpenURL(finalUrl);
-      console.log('Can open URL:', canOpen);
+
       
       if (canOpen) {
         await Linking.openURL(finalUrl);
-        console.log('Successfully opened WhatsApp URL');
+
       } else {
-        console.log('Cannot open URL, checking alternatives...');
+
         
         if (finalUrl.includes('chat.whatsapp.com')) {
           const whatsappScheme = finalUrl.replace('https://chat.whatsapp.com/', 'whatsapp://chat?code=');
           const canOpenScheme = await Linking.canOpenURL(whatsappScheme);
-          console.log('Trying WhatsApp scheme:', whatsappScheme, 'Can open:', canOpenScheme);
+
           
           if (canOpenScheme) {
             await Linking.openURL(whatsappScheme);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, RefreshControl, TouchableOpacity, Alert } from 'react-native';
 import { useLocalSearchParams, router, useNavigation } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
@@ -8,11 +8,13 @@ import { subjectsAPI } from '../../services/subjects';
 import { storageService } from '../../services/storage';
 import { AnalyticsService } from '../../services/analytics';
 import { useFontSize } from '../../contexts/FontSizeContext';
+import { chapterResourcesAPI } from '../../services/chapterResources';
 import Header from '../../components/Header';
 import ChapterCard from '../../components/ChapterCard';
 import LoadingState from '../../components/LoadingState';
 import ErrorState from '../../components/ErrorState';
 import { showInterstitialAd } from '../../utils/showInterstitialAd';
+import type { Chapter } from '../../types';
 
 export default function SubjectView() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -137,21 +139,9 @@ export default function SubjectView() {
           {sortedChapters.length > 0 ? (
             <>
               {sortedChapters.map((chapter) => (
-                <ChapterCard
+                <EnhancedChapterCard
                   key={`${chapter.id}-${fontSize}`}
-                  id={chapter.id}
-                  name={chapter.name}
-                  description={chapter.description}
-                  hasVideo={!!chapter.videoUrl}
-                  hasTextbook={!!chapter.textbookPdfUrl}
-                  hasSolution={!!chapter.solutionPdfUrl}
-                  videoUrl={chapter.videoUrl}
-                  textbookPdfUrl={chapter.textbookPdfUrl}
-                  solutionPdfUrl={chapter.solutionPdfUrl}
-                  onPress={async () => {
-                    await AnalyticsService.trackChapterView(chapter.id);
-                    router.push(`/chapter/${chapter.id}` as any);
-                  }}
+                  chapter={chapter}
                 />
               ))}
             </>
@@ -179,3 +169,194 @@ export default function SubjectView() {
     </SafeAreaView>
   );
 }
+
+// Enhanced Chapter Card with Category Buttons
+interface EnhancedChapterCardProps {
+  chapter: Chapter;
+}
+
+const EnhancedChapterCard: React.FC<EnhancedChapterCardProps> = ({ chapter }) => {
+  const { getFontSizeClasses } = useFontSize();
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [resourceCounts, setResourceCounts] = useState<{
+    svadhyay: number;
+    svadhyay_pothi: number;
+    other: number;
+  } | null>(null);
+
+  useEffect(() => {
+    checkBookmarkStatus();
+    fetchResourceCounts();
+  }, [chapter.id]);
+
+  const checkBookmarkStatus = async () => {
+    try {
+      const bookmarked = await storageService.isChapterBookmarked(chapter.id);
+      setIsBookmarked(bookmarked);
+    } catch (error) {
+      console.error('Error checking bookmark status:', error);
+    }
+  };
+
+  const fetchResourceCounts = async () => {
+    try {
+      const data = await chapterResourcesAPI.getByChapterGrouped(chapter.id);
+      setResourceCounts(data.counts);
+    } catch (error) {
+      console.error('Error fetching resource counts:', error);
+    }
+  };
+
+  const handleBookmarkPress = async () => {
+    try {
+      const newBookmarkStatus = await storageService.toggleChapterBookmark(chapter.id);
+      setIsBookmarked(newBookmarkStatus);
+    } catch (error) {
+      Alert.alert('ભૂલ', 'બુકમાર્ક અપડેટ કરવામાં સમસ્યા આવી');
+    }
+  };
+
+  const handleCategoryPress = async (categoryType: 'svadhyay' | 'svadhyay_pothi' | 'other') => {
+    await AnalyticsService.trackChapterView(chapter.id);
+    router.push({
+      pathname: `/chapter/${chapter.id}` as any,
+      params: { type: categoryType }
+    });
+  };
+
+  const categories = [
+    {
+      key: 'svadhyay' as const,
+      label: 'સ્વાધ્યાય',
+      icon: 'book-outline' as const,
+      color: '#3B82F6',
+      bgColor: '#EFF6FF',
+      count: resourceCounts?.svadhyay || 0,
+    },
+    {
+      key: 'svadhyay_pothi' as const,
+      label: 'સ્વાધ્યાય પોથી',
+      icon: 'library-outline' as const,
+      color: '#10B981',
+      bgColor: '#ECFDF5',
+      count: resourceCounts?.svadhyay_pothi || 0,
+    },
+    {
+      key: 'other' as const,
+      label: 'અન્ય',
+      icon: 'folder-outline' as const,
+      color: '#6B7280',
+      bgColor: '#F9FAFB',
+      count: resourceCounts?.other || 0,
+    },
+  ];
+
+  return (
+    <View className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mx-4 mb-3">
+      {/* Bookmark indicator */}
+      <TouchableOpacity
+        onPress={handleBookmarkPress}
+        className={`absolute top-3 right-3 z-10 rounded-full p-2 ${isBookmarked ? 'bg-primary-100' : 'bg-gray-100'}`}
+        activeOpacity={0.7}
+      >
+        <Ionicons 
+          name={isBookmarked ? "bookmark" : "bookmark-outline"} 
+          size={18} 
+          color={isBookmarked ? "#16a34a" : "#6b7280"} 
+        />
+      </TouchableOpacity>
+
+      {/* Left accent bar */}
+      <View className="flex-row">
+        <View className="w-1 bg-primary-500" />
+
+        <View className="flex-1 p-4">
+          <View className="flex-row items-center justify-between mb-3">
+            <View className="flex-1 mr-3">
+              {/* Chapter Name */}
+              <Text className={`font-gujarati text-gray-900 font-bold mb-1 ${getFontSizeClasses().textLg}`} numberOfLines={2}>
+                {chapter.name}
+              </Text>
+
+              {/* Description */}
+              {chapter.description && (
+                <Text className={`font-gujarati text-gray-600 mb-2 leading-4 ${getFontSizeClasses().text}`} numberOfLines={2}>
+                  {chapter.description}
+                </Text>
+              )}
+            </View>
+          </View>
+
+          {/* Category Buttons */}
+          <View className="flex-row gap-2 flex-wrap">
+            {/* Textbook Button */}
+            <TouchableOpacity
+              onPress={() => {
+                // No action for now
+              }}
+              className="flex-row items-center px-3 py-2 rounded-lg border"
+              style={{ 
+                backgroundColor: '#FEF3C7',
+                borderColor: '#F59E0B40'
+              }}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="book" size={14} color="#F59E0B" />
+              <Text 
+                className={`font-gujarati font-medium ml-1 ${getFontSizeClasses().text}`}
+                style={{ color: '#F59E0B' }}
+              >
+                પુસ્તક
+              </Text>
+            </TouchableOpacity>
+
+            {/* Resource Category Buttons */}
+            {resourceCounts && categories.map((category) => {
+              if (category.count === 0) return null;
+              
+              return (
+                <TouchableOpacity
+                  key={category.key}
+                  onPress={() => handleCategoryPress(category.key)}
+                  className="flex-row items-center px-3 py-2 rounded-lg border"
+                  style={{ 
+                    backgroundColor: category.bgColor,
+                    borderColor: category.color + '40'
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name={category.icon} size={14} color={category.color} />
+                  <Text 
+                    className={`font-gujarati font-medium ml-1 ${getFontSizeClasses().text}`}
+                    style={{ color: category.color }}
+                  >
+                    {category.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          {/* Show loading or empty state if no resources */}
+          {!resourceCounts && (
+            <View className="flex-row items-center justify-center py-2">
+              <Ionicons name="hourglass-outline" size={14} color="#9CA3AF" />
+              <Text className={`font-gujarati text-gray-500 ml-1 ${getFontSizeClasses().text}`}>
+                સંસાધનો લોડ થઈ રહ્યા છે...
+              </Text>
+            </View>
+          )}
+
+          {resourceCounts && (resourceCounts.svadhyay + resourceCounts.svadhyay_pothi + resourceCounts.other) === 0 && (
+            <View className="flex-row items-center justify-center py-2 bg-gray-50 rounded-lg">
+              <Ionicons name="information-circle-outline" size={14} color="#9CA3AF" />
+              <Text className={`font-gujarati text-gray-500 ml-1 ${getFontSizeClasses().text}`}>
+                કોઈ સંસાધનો ઉપલબ્ધ નથી
+              </Text>
+            </View>
+          )}
+        </View>
+      </View>
+    </View>
+  );
+};

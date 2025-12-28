@@ -33,7 +33,7 @@ const deleteLocalFileIfExists = async (fileUrl: string | null) => {
   
   try {
     await fileService.deleteFile(fileUrl);
-    console.log(`Successfully deleted local file: ${fileUrl}`);
+
   } catch (error) {
     console.error(`Error deleting local file ${fileUrl}:`, error);
     // Don't throw error - we don't want file deletion failure to prevent resource deletion

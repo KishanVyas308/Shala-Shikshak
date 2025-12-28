@@ -124,7 +124,7 @@ app.use('/api/uploads', (req, res, next) => {
 // API Routes
 app.use('/api/app/versions', (req, res) => {
   res.json({
-    versions: ['4.0.4', '5.0.0'],
+    versions: ['5.0.0', '5.1.0'],
   });
 });
 

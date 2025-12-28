@@ -31,6 +31,6 @@ export const showInterstitialAd = () => {
     //     lastAdShown = now;
     //     isAdLoaded = false;
     // } else {
-    //     console.log("Interstitial not ready yet");
+
     // }
 };

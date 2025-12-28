@@ -3,7 +3,7 @@ import { API_BASE_URL } from '../lib/api';
 
 export const checkAppVersion = async (): Promise<{ needsUpdate: boolean; currentVersion: string; availableVersions: string[] }> => {
   try {
-    const currentVersion = '5.0.0';
+    const currentVersion = '5.1.0';
     
     const response = await fetch(`${API_BASE_URL}/app/versions`);
     const data = await response.json();
@@ -20,7 +20,7 @@ export const checkAppVersion = async (): Promise<{ needsUpdate: boolean; current
     console.error('Error checking app version:', error);
     return {
       needsUpdate: false,
-      currentVersion: '5.0.0',
+      currentVersion: '5.1.0',
       availableVersions: []
     };
   }

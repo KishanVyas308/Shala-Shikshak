@@ -54,7 +54,7 @@ const interstitial = InterstitialAd.createForAdRequest(
 
 export default function RootLayout() {
   const [showUpdateModal, setShowUpdateModal] = useState(false);
-  const [currentVersion, setCurrentVersion] = useState('5.0.0');
+  const [currentVersion, setCurrentVersion] = useState('5.1.0');
 
   
 
@@ -84,7 +84,7 @@ export default function RootLayout() {
         tagForUnderAgeOfConsent: true,
       })
       .then(() => {
-        console.log('AdMob initialized with child-directed settings');
+       
         return mobileAds().initialize();
       });
 
@@ -103,7 +103,7 @@ export default function RootLayout() {
   rewardedAd.load();
 
   const rewardListener = rewardedAd.addAdEventListener(RewardedAdEventType.EARNED_REWARD, reward => {
-    console.log('User earned reward:', reward);
+   
     rewardedAd.load();
   });
 

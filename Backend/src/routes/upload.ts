@@ -121,9 +121,7 @@ router.post(
         await fileService.deleteFile(tempFile.filePath);
         await fs.unlink(compressedFilePath);
 
-        console.log(
-          `PDF compressed: Original size: ${compressionResult.originalSize} bytes, Compressed size: ${compressionResult.compressedSize} bytes, Ratio: ${compressionResult.compressionRatio}%`
-        );
+    
 
         res.json({
           message: "File uploaded and compressed successfully",

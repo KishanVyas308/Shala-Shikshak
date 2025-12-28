@@ -2,7 +2,7 @@
   "expo": {
     "name": "શાળા શિક્ષક",
     "slug": "shala-shikshak",
-    "version": "5.0.0",
+    "version": "5.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
     "scheme": "shalashikshak",

@@ -17,7 +17,7 @@ const UPLOADS_DIR = path.join(process.cwd(), 'uploads');
 if (!fs.existsSync(UPLOADS_DIR)) {
   fs.mkdirSync(UPLOADS_DIR, { recursive: true });
   if (process.env.NODE_ENV === 'development') {
-    console.log('✅ Created uploads directory');
+
   }
 }
 
@@ -53,10 +53,7 @@ export class LocalFileService {
       // Full file path
       const filePath = path.join(UPLOADS_DIR, uniqueFileName);
       
-      if (process.env.NODE_ENV === 'development') {
-        console.log("Saving file locally:", uniqueFileName);
-      }
-      
+
       // Write file to uploads directory
       await fs.promises.writeFile(filePath, fileBuffer);
       
@@ -67,10 +64,7 @@ export class LocalFileService {
       const baseUrl = process.env.BASE_URL || 'http://localhost:5000';
       const fileUrl = `${baseUrl}/uploads/${uniqueFileName}`;
       
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`Successfully saved file: ${uniqueFileName}`);
-      }
-      
+   
       return {
         id: fileId,
         name: uniqueFileName,
@@ -105,9 +99,7 @@ export class LocalFileService {
       // Check if file exists
       if (fs.existsSync(fullPath)) {
         await fs.promises.unlink(fullPath);
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`Successfully deleted file: ${fullPath}`);
-        }
+   
       } else {
         if (process.env.NODE_ENV === 'development') {
           console.warn(`File not found for deletion: ${fullPath}`);
