@@ -14,6 +14,8 @@ interface ChapterCardProps {
   hasTextbook: boolean;
   hasSolution: boolean;
   videoUrl?: string;
+  textbookUrl?: string;
+  textbookPageNumber?: number;
   textbookPdfUrl?: string;
   solutionPdfUrl?: string;
   onPress: () => void;
@@ -28,6 +30,8 @@ export default function ChapterCard({
   hasTextbook,
   hasSolution,
   videoUrl,
+  textbookUrl,
+  textbookPageNumber,
   textbookPdfUrl,
   solutionPdfUrl,
   onPress,
@@ -161,15 +165,19 @@ export default function ChapterCard({
                 </TouchableOpacity>
               )}
 
-              {hasTextbook && textbookPdfUrl && (
+              {hasTextbook && (textbookUrl || textbookPdfUrl) && (
                 <TouchableOpacity
-                  onPress={() => handleResourcePress(textbookPdfUrl, 'પુસ્તક PDF')}
+                  onPress={() => {
+                    const url = textbookUrl || textbookPdfUrl || '';
+                    const pageParam = textbookPageNumber ? `#page=${textbookPageNumber}` : '';
+                    handleResourcePress(url + pageParam, 'પાઠ્યપુસ્તક');
+                  }}
                   className="flex-1 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 flex-row items-center justify-center"
                   activeOpacity={0.7}
                 >
                   <Ionicons name="book" size={14} color="#2563eb" />
                   <Text className={`font-gujarati text-blue-700 font-medium ml-1 ${fontClasses.text}`}>
-                    પાઠ્યપુસ્તક
+                    {textbookPageNumber ? `પૃ. ${textbookPageNumber}` : 'પાઠ્યપુસ્તક'}
                   </Text>
                 </TouchableOpacity>
               )}

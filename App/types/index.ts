@@ -23,6 +23,7 @@ export interface Subject {
   name: string;
   description?: string;
   standardId: string;
+  textbookUrl?: string;
   standard?: {
     id: string;
     name: string;
@@ -40,10 +41,12 @@ export interface Chapter {
   name: string;
   description?: string;
   order: number;
+  textbookPageNumber?: number;
   subjectId: string;
   subject?: {
     id: string;
     name: string;
+    textbookUrl?: string;
     standard?: {
       id: string;
       name: string;

@@ -10,7 +10,7 @@ import LoadingState from '../components/LoadingState';
 import WebView from 'react-native-webview';
 
 export default function PDFViewer() {
-  const { url, title } = useLocalSearchParams<{ url: string; title: string }>();
+  const { url, title, page } = useLocalSearchParams<{ url: string; title: string; page?: string }>();
   const { getFontSizeClasses } = useFontSize();
   const [isContentReady, setIsContentReady] = useState(true); // Direct access without ads
   const [webViewError, setWebViewError] = useState(false);
@@ -129,17 +129,20 @@ export default function PDFViewer() {
         const fileIdMatch = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
         if (fileIdMatch) {
           const driveUrl = `https://drive.google.com/file/d/${fileIdMatch[1]}/preview`;
-         
-          return driveUrl;
+          // Append page number for Google Drive PDFs
+          return page ? `${driveUrl}#page=${page}` : driveUrl;
         }
         // If already in preview format, use as is
         if (url.includes('/preview')) {
-          return url;
+          const baseUrl = url.split('#')[0]; // Remove any existing fragment
+          return page ? `${baseUrl}#page=${page}` : baseUrl;
         }
-        return `${url}/preview`;
+        const previewUrl = `${url}/preview`;
+        return page ? `${previewUrl}#page=${page}` : previewUrl;
       } else {
         // Assume it's a file ID for Google Drive
-        return `https://drive.google.com/file/d/${url}/preview`;
+        const driveUrl = `https://drive.google.com/file/d/${url}/preview`;
+        return page ? `${driveUrl}#page=${page}` : driveUrl;
       }
     } else {
       // Regular PDF URL - use PDF.js viewer
@@ -478,39 +481,103 @@ export default function PDFViewer() {
             `
             : isDriveViewer 
             ? `
-              // For Google Drive viewer - hide download and sharing options
-              setTimeout(() => {
-               
+              // For Google Drive viewer - hide download and sharing options & navigate to page
+              (function() {
+                const targetPage = ${page || 1};
+                
+                // Navigate to specific page
+                setTimeout(() => {
+                  // Try multiple methods to navigate to the page
+                  
+                  // Method 1: Use iframe API if available
+                  const iframe = document.querySelector('iframe');
+                  if (iframe && iframe.contentWindow) {
+                    try {
+                      iframe.contentWindow.postMessage({
+                        type: 'gotoPage',
+                        page: targetPage
+                      }, '*');
+                    } catch (e) {
+                      console.log('Method 1 failed:', e);
+                    }
+                  }
+                  
+                  // Method 2: Simulate page navigation using keyboard
+                  setTimeout(() => {
+                    // Focus on the document
+                    const viewer = document.querySelector('embed, object, iframe') || document.body;
+                    if (viewer) {
+                      viewer.focus();
+                      
+                      // Press 'g' to open goto page dialog in Drive viewer
+                      const gEvent = new KeyboardEvent('keydown', {
+                        key: 'g',
+                        code: 'KeyG',
+                        keyCode: 71,
+                        which: 71,
+                        bubbles: true
+                      });
+                      document.dispatchEvent(gEvent);
+                      
+                      // Wait and type page number
+                      setTimeout(() => {
+                        const pageStr = targetPage.toString();
+                        for (let char of pageStr) {
+                          const charEvent = new KeyboardEvent('keypress', {
+                            key: char,
+                            code: 'Digit' + char,
+                            keyCode: 48 + parseInt(char),
+                            which: 48 + parseInt(char),
+                            bubbles: true
+                          });
+                          document.dispatchEvent(charEvent);
+                        }
+                        
+                        // Press Enter
+                        setTimeout(() => {
+                          const enterEvent = new KeyboardEvent('keydown', {
+                            key: 'Enter',
+                            code: 'Enter',
+                            keyCode: 13,
+                            which: 13,
+                            bubbles: true
+                          });
+                          document.dispatchEvent(enterEvent);
+                        }, 200);
+                      }, 300);
+                    }
+                  }, 1000);
+                }, 2000);
                 
                 // Hide toolbar buttons
-                const toolbar = document.querySelector('[role="toolbar"]');
-                if (toolbar) {
-                  const buttons = toolbar.querySelectorAll('div[role="button"]');
-                  buttons.forEach(button => {
-                    const ariaLabel = button.getAttribute('aria-label') || '';
-                    if (ariaLabel.includes('Download') || 
-                        ariaLabel.includes('Print') || 
-                        ariaLabel.includes('Share') ||
-                        ariaLabel.includes('ડાઉનલોડ') ||
-                        ariaLabel.includes('પ્રિન્ટ') ||
-                        ariaLabel.includes('શેર')) {
-                      button.style.display = 'none';
-                    }
+                setTimeout(() => {
+                  const toolbar = document.querySelector('[role="toolbar"]');
+                  if (toolbar) {
+                    const buttons = toolbar.querySelectorAll('div[role="button"]');
+                    buttons.forEach(button => {
+                      const ariaLabel = button.getAttribute('aria-label') || '';
+                      if (ariaLabel.includes('Download') || 
+                          ariaLabel.includes('Print') || 
+                          ariaLabel.includes('Share') ||
+                          ariaLabel.includes('ડાઉનલોડ') ||
+                          ariaLabel.includes('પ્રિન્ટ') ||
+                          ariaLabel.includes('શેર')) {
+                        button.style.display = 'none';
+                      }
+                    });
+                  }
+                  
+                  // Hide additional download controls
+                  const downloadControls = document.querySelectorAll(
+                    '[data-tooltip*="Download"], [data-tooltip*="Print"], ' +
+                    '[aria-label*="Download"], [aria-label*="Print"], ' +
+                    '[title*="Download"], [title*="Print"]'
+                  );
+                  downloadControls.forEach(control => {
+                    control.style.display = 'none';
                   });
-                }
-                
-                // Hide additional download controls
-                const downloadControls = document.querySelectorAll(
-                  '[data-tooltip*="Download"], [data-tooltip*="Print"], ' +
-                  '[aria-label*="Download"], [aria-label*="Print"], ' +
-                  '[title*="Download"], [title*="Print"]'
-                );
-                downloadControls.forEach(control => {
-                  control.style.display = 'none';
-                });
-                
-               
-              }, 3000);
+                }, 3000);
+              })();
               true;
             `
             : `

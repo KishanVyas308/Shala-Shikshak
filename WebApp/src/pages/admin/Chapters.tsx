@@ -23,12 +23,14 @@ import {
 } from 'lucide-react';
 import { standardsAPI } from '../../services/standards';
 import { chaptersAPI } from '../../services/chapters';
+import { subjectsAPI } from '../../services/subjects';
 
 // Simplified validation schema - only basic chapter info
 const chapterSchema = z.object({
   name: z.string().min(1, 'પ્રકરણનું નામ આવશ્યક છે').max(200, 'નામ ખૂબ લાંબું છે'),
   description: z.string().optional(),
   subjectId: z.string().min(1, 'કૃપા કરીને વિષય પસંદ કરો'),
+  textbookPageNumber: z.number().int().positive('પૃષ્ઠ સંખ્યા હકારાત્મક સંખ્યા હોવી જોઈએ').optional(),
 });
 
 type ChapterFormData = z.infer<typeof chapterSchema>;
@@ -46,6 +48,9 @@ const AdminChapters: React.FC = () => {
   const [chapterToDelete, setChapterToDelete] = useState<any>(null);
   const [isRankEditMode, setIsRankEditMode] = useState(false);
   const [rankEdits, setRankEdits] = useState<Record<string, number>>({});
+  const [isTextbookEditMode, setIsTextbookEditMode] = useState(false);
+  const [textbookPageEdits, setTextbookPageEdits] = useState<Record<string, number>>({});
+  const [subjectTextbookUrl, setSubjectTextbookUrl] = useState<string>('');
   
   const { id: subjectParamsId } = useParams<{ id?: string }>();
 
@@ -80,6 +85,12 @@ const AdminChapters: React.FC = () => {
       if (subject && subject.standard) {
         setSelectedStandardId(subject.standard.id);
       }
+      // Clear edit modes and state when subject changes
+      setIsRankEditMode(false);
+      setIsTextbookEditMode(false);
+      setRankEdits({});
+      setTextbookPageEdits({});
+      setSubjectTextbookUrl('');
     }
   }, [subjectParamsId, subjects, selectedSubjectId]);
 
@@ -172,6 +183,19 @@ const AdminChapters: React.FC = () => {
     },
   });
 
+  const updateSubjectMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => 
+      subjectsAPI.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['standards'] });
+      queryClient.invalidateQueries({ queryKey: ['standards-with-subjects'] });
+    },
+    onError: (error: any) => {
+      console.error('Subject update error:', error);
+      throw error;
+    },
+  });
+
   const updateOrderMutation = useMutation({
     mutationFn: ({ id, order }: { id: string; order: number }) =>
       chaptersAPI.update(id, { order }),
@@ -233,6 +257,9 @@ const AdminChapters: React.FC = () => {
     setValue('name', chapter.name);
     setValue('description', chapter.description || '');
     setValue('subjectId', chapter.subject.id);
+    if (chapter.textbookPageNumber) {
+      setValue('textbookPageNumber', chapter.textbookPageNumber);
+    }
     
     // Set modal selections
     setModalSelectedStandardId(chapter.subject.standard.id);
@@ -308,6 +335,72 @@ const AdminChapters: React.FC = () => {
 
   const handleManageResources = (chapterId: string) => {
     navigate(`/admin/chapter/${chapterId}/resources`);
+  };
+
+  const handleEnterTextbookEditMode = () => {
+    // Initialize textbook edits with current values
+    if (selectedSubject) {
+      // First clear all old state completely
+      setTextbookPageEdits({});
+      setSubjectTextbookUrl('');
+      
+      // Then set new values
+      setSubjectTextbookUrl(selectedSubject.textbookUrl || '');
+      
+      const initialEdits: Record<string, number> = {};
+      filteredChapters.forEach(chapter => {
+        initialEdits[chapter.id] = chapter.textbookPageNumber || 0;
+      });
+      setTextbookPageEdits(initialEdits);
+      setIsTextbookEditMode(true);
+    }
+  };
+
+  const handleCancelTextbookEdit = () => {
+    setIsTextbookEditMode(false);
+    setTextbookPageEdits({});
+    setSubjectTextbookUrl('');
+  };
+
+  const handleTextbookPageChange = (chapterId: string, value: string) => {
+    const numValue = parseInt(value) || 0;
+    setTextbookPageEdits(prev => ({ ...prev, [chapterId]: numValue }));
+  };
+
+  const handleSaveAllTextbooks = async () => {
+    try {
+      // Update subject with textbook URL
+      if (selectedSubject && subjectTextbookUrl) {
+        await updateSubjectMutation.mutateAsync({
+          id: selectedSubject.id,
+          data: { textbookUrl: subjectTextbookUrl }
+        });
+      }
+
+      // Update only chapters that exist in filteredChapters with changed page numbers
+      const validChapterIds = new Set(filteredChapters.map(c => c.id));
+      
+      const updates = Object.entries(textbookPageEdits)
+        .filter(([chapterId]) => validChapterIds.has(chapterId))
+        .map(([chapterId, pageNumber]) => {
+          const updateData: any = {};
+          if (pageNumber !== undefined) updateData.textbookPageNumber = pageNumber;
+          return updateMutation.mutateAsync({ 
+            id: chapterId, 
+            data: updateData
+          });
+        });
+      
+      await Promise.all(updates);
+      
+      setIsTextbookEditMode(false);
+      setTextbookPageEdits({});
+      setSubjectTextbookUrl('');
+      toast.success('પાઠ્યપુસ્તક માહિતી સફળતાપૂર્વક અપડેટ થઈ');
+    } catch (error) {
+      console.error('Save textbooks error:', error);
+      toast.error('પાઠ્યપુસ્તક અપડેટ કરવામાં નિષ્ફળ');
+    }
   };
 
   if (isLoading) {
@@ -396,16 +489,27 @@ const AdminChapters: React.FC = () => {
             
             {/* Desktop Actions */}
             <div className="hidden sm:flex gap-3">
-              {!isRankEditMode ? (
+              {!isRankEditMode && !isTextbookEditMode ? (
                 <>
-                  {subjectParamsId && selectedSubject && filteredChapters.length > 1 && (
-                    <button
-                      onClick={handleEnterRankEditMode}
-                      className="inline-flex items-center justify-center px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
-                    >
-                      <Edit className="h-4 w-4 mr-2" />
-                      ક્રમ બદલો
-                    </button>
+                  {subjectParamsId && selectedSubject && filteredChapters.length > 0 && (
+                    <>
+                      <button
+                        onClick={handleEnterTextbookEditMode}
+                        className="inline-flex items-center justify-center px-4 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                      >
+                        <BookOpen className="h-4 w-4 mr-2" />
+                        પાઠ્યપુસ્તક
+                      </button>
+                      {filteredChapters.length > 1 && (
+                        <button
+                          onClick={handleEnterRankEditMode}
+                          className="inline-flex items-center justify-center px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                        >
+                          <Edit className="h-4 w-4 mr-2" />
+                          ક્રમ બદલો
+                        </button>
+                      )}
+                    </>
                   )}
                   <button
                     onClick={openCreateModal}
@@ -413,6 +517,23 @@ const AdminChapters: React.FC = () => {
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     નવું પ્રકરણ ઉમેરો
+                  </button>
+                </>
+              ) : isTextbookEditMode ? (
+                <>
+                  <button
+                    onClick={handleCancelTextbookEdit}
+                    className="inline-flex items-center justify-center px-4 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl font-semibold transition-all duration-200"
+                  >
+                    <X className="h-4 w-4 mr-2" />
+                    રદ કરો
+                  </button>
+                  <button
+                    onClick={handleSaveAllTextbooks}
+                    className="inline-flex items-center justify-center px-4 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                  >
+                    <Save className="h-4 w-4 mr-2" />
+                    પાઠ્યપુસ્તક સાચવો
                   </button>
                 </>
               ) : (
@@ -480,7 +601,15 @@ const AdminChapters: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">વિષય</label>
                 <select
                   value={selectedSubjectId}
-                  onChange={(e) => setSelectedSubjectId(e.target.value)}
+                  onChange={(e) => {
+                    setSelectedSubjectId(e.target.value);
+                    // Clear edit modes when subject changes
+                    setIsRankEditMode(false);
+                    setIsTextbookEditMode(false);
+                    setRankEdits({});
+                    setTextbookPageEdits({});
+                    setSubjectTextbookUrl('');
+                  }}
                   className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                   disabled={selectedStandardId === 'all'}
                 >
@@ -550,7 +679,15 @@ const AdminChapters: React.FC = () => {
                 <div>
                   <select
                     value={selectedSubjectId}
-                    onChange={(e) => setSelectedSubjectId(e.target.value)}
+                    onChange={(e) => {
+                      setSelectedSubjectId(e.target.value);
+                      // Clear edit modes when subject changes
+                      setIsRankEditMode(false);
+                      setIsTextbookEditMode(false);
+                      setRankEdits({});
+                      setTextbookPageEdits({});
+                      setSubjectTextbookUrl('');
+                    }}
                     className="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                     disabled={selectedStandardId === 'all'}
                   >
@@ -595,8 +732,57 @@ const AdminChapters: React.FC = () => {
           </div>
         </div>
 
-        {/* Chapters Grid or Rank Edit List */}
-        {isRankEditMode ? (
+        {/* Chapters Grid, Rank Edit List, or Textbook Edit List */}
+        {isTextbookEditMode ? (
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-6">પાઠ્યપુસ્તક માહિતી</h3>
+            
+            {/* Subject Textbook URL */}
+            <div className="mb-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                {selectedSubject?.name} માટે Google Drive લિંક:
+              </label>
+              <input
+                type="url"
+                value={subjectTextbookUrl}
+                onChange={(e) => setSubjectTextbookUrl(e.target.value)}
+                placeholder="https://drive.google.com/file/d/..."
+                className="w-full px-4 py-3 border border-blue-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-sm"
+              />
+              <p className="text-xs text-blue-700 mt-2">આ લિંક આ વિષયના બધા પ્રકરણો માટે ઉપયોગ થશે</p>
+            </div>
+
+            {/* Chapter Page Numbers */}
+            <div className="space-y-4">
+              <h4 className="font-semibold text-gray-900 mb-3">પ્રતિ પ્રકરણ પૃષ્ઠ સંખ્યા:</h4>
+              {filteredChapters.map((chapter) => (
+                <div
+                  key={chapter.id}
+                  className="p-4 bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-between"
+                >
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-gray-900">{chapter.name}</h4>
+                    {chapter.description && (
+                      <p className="text-sm text-gray-600 truncate">{chapter.description}</p>
+                    )}
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <label className="text-sm font-medium text-gray-700 whitespace-nowrap">પૃ.:</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={textbookPageEdits[chapter.id] ?? chapter.textbookPageNumber ?? 0}
+                      onChange={(e) => handleTextbookPageChange(chapter.id, e.target.value)}
+                      onClick={(e) => e.currentTarget.select()}
+                      className="w-20 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-center"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : isRankEditMode ? (
           <div className="bg-white rounded-xl shadow-lg p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">પ્રકરણોનો ક્રમ બદલો</h3>
             <div className="space-y-3">
@@ -720,6 +906,7 @@ const ChapterCard: React.FC<{
   onDelete: (chapter: any) => void;
 }> = ({ chapter, onManageResources, onEdit, onDelete }) => {
   const resourcesCount = chapter._count?.resources || 0;
+  const textbookUrl = chapter.textbookUrl;
 
   return (
     <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
@@ -752,6 +939,18 @@ const ChapterCard: React.FC<{
 
       {/* Resources */}
       <div className="space-y-3">
+        {textbookUrl && (
+          <div className="p-3 bg-cyan-50 rounded-lg border border-cyan-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <BookOpen className="h-4 w-4 text-cyan-600 mr-2" />
+                <span className="text-sm font-medium text-cyan-700">
+                  પાઠ્યપુસ્તક: {chapter.textbookPageNumber ? `પૃ. ${chapter.textbookPageNumber}` : 'URL ઉપલબ્ધ'}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
         {resourcesCount > 0 ? (
           <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
             <div className="flex items-center">
@@ -968,6 +1167,45 @@ const CreateChapterModal: React.FC<{
                 className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 resize-none transition-all"
                 placeholder="પ્રકરણ વિશે ટૂંકી માહિતી લખો..."
               />
+            </div>
+
+            {/* Textbook URL */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                પાઠ્યપુસ્તક Google Drive લિંક (વૈકલ્પિક)
+              </label>
+              <input
+                {...register('textbookUrl')}
+                type="url"
+                className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
+                placeholder="https://drive.google.com/file/d/..."
+              />
+              {errors.textbookUrl && (
+                <p className="text-sm text-red-600 mt-1 flex items-center">
+                  <AlertTriangle className="h-3 w-3 mr-1" />
+                  {errors.textbookUrl.message}
+                </p>
+              )}
+            </div>
+
+            {/* Textbook Page Number */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                પાઠ્યપુસ્તક પૃષ્ઠ સંખ્યા (વૈકલ્પિક)
+              </label>
+              <input
+                {...register('textbookPageNumber', { valueAsNumber: true })}
+                type="number"
+                min="0"
+                className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
+                placeholder="જેમ કે: 45"
+              />
+              {errors.textbookPageNumber && (
+                <p className="text-sm text-red-600 mt-1 flex items-center">
+                  <AlertTriangle className="h-3 w-3 mr-1" />
+                  {errors.textbookPageNumber.message}
+                </p>
+              )}
             </div>
           </div>
 

@@ -22,6 +22,7 @@ export interface Subject {
   id: string;
   name: string;
   description?: string;
+  textbookUrl?: string;
   standardId: string;
   standard?: {
     id: string;
@@ -53,10 +54,12 @@ export interface Chapter {
   name: string;
   description?: string;
   order: number;
+  textbookPageNumber?: number;
   subjectId: string;
   subject?: {
     id: string;
     name: string;
+    textbookUrl?: string;
     standard?: {
       id: string;
       name: string;
@@ -101,6 +104,7 @@ export interface CreateChapterData {
   description?: string;
   subjectId: string;
   order?: number;
+  textbookPageNumber?: number;
 }
 
 export interface CreateChapterResourceData {

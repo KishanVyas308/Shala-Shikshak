@@ -34,29 +34,31 @@ model Standard {
 }
 
 model Subject {
-  id          String    @id @default(cuid())
-  name        String    // e.g., "Mathematics", "Science", etc.
-  description String?
-  standardId  String
-  standard    Standard  @relation(fields: [standardId], references: [id], onDelete: Cascade)
-  chapters    Chapter[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id           String    @id @default(cuid())
+  name         String    // e.g., "Mathematics", "Science", etc.
+  description  String?
+  textbookUrl  String?   // Google Drive link for textbook/પાઠ્યપુસ્તક - shared by all chapters in this subject
+  standardId   String
+  standard     Standard  @relation(fields: [standardId], references: [id], onDelete: Cascade)
+  chapters     Chapter[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   @@unique([name, standardId])
   @@map("subjects")
 }
 
 model Chapter {
-  id          String              @id @default(cuid())
-  name        String
-  description String?
-  order       Int                 @default(0) // for ordering chapters within a subject
-  subjectId   String
-  subject     Subject             @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-  resources   ChapterResource[]
-  createdAt   DateTime            @default(now())
-  updatedAt   DateTime            @updatedAt
+  id                  String              @id @default(cuid())
+  name                String
+  description         String?
+  order               Int                 @default(0) // for ordering chapters within a subject
+  textbookPageNumber  Int?                // Page number for this chapter in the subject's textbook
+  subjectId           String
+  subject             Subject             @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  resources           ChapterResource[]
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
 
   @@map("chapters")
 }

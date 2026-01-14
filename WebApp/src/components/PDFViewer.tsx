@@ -2,6 +2,7 @@ import React, { useEffect, useCallback } from 'react';
 
 interface PDFViewerProps {
     fileurl: string;
+    initialPage?: number;
 }
 
 class PDFErrorBoundary extends React.Component<
@@ -55,7 +56,7 @@ class PDFErrorBoundary extends React.Component<
     }
 }
 
-const PDFViewer: React.FC<PDFViewerProps> = ({ fileurl }) => {
+const PDFViewer: React.FC<PDFViewerProps> = ({ fileurl, initialPage }) => {
     const iframeRef = React.useRef<HTMLIFrameElement>(null);
 
     // Check if URL is a Google Drive link or doesn't end with .pdf
@@ -70,20 +71,25 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ fileurl }) => {
             if (url.includes('drive.google.com') || url.includes('docs.google.com')) {
                 const fileIdMatch = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
                 if (fileIdMatch) {
-                    return `https://drive.google.com/file/d/${fileIdMatch[1]}/preview`;
+                    // Add page parameter if provided
+                    const baseUrl = `https://drive.google.com/file/d/${fileIdMatch[1]}/preview`;
+                    return initialPage ? `${baseUrl}#page=${initialPage}` : baseUrl;
                 }
                 // If already in preview format, use as is
                 if (url.includes('/preview')) {
-                    return url;
+                    return initialPage ? `${url}#page=${initialPage}` : url;
                 }
-                return `${url}/preview`;
+                const withPreview = `${url}/preview`;
+                return initialPage ? `${withPreview}#page=${initialPage}` : withPreview;
             } else {
                 // Assume it's a file ID for Google Drive
-                return `https://drive.google.com/file/d/${url}/preview`;
+                const baseUrl = `https://drive.google.com/file/d/${url}/preview`;
+                return initialPage ? `${baseUrl}#page=${initialPage}` : baseUrl;
             }
         } else {
-            // Regular PDF URL - use PDF.js viewer
-            return `https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent(url)}`;
+            // Regular PDF URL - use PDF.js viewer with page parameter
+            const baseUrl = `https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent(url)}`;
+            return initialPage ? `${baseUrl}#page=${initialPage}` : baseUrl;
         }
     };
 

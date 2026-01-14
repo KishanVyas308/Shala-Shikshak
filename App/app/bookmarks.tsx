@@ -224,9 +224,11 @@ export default function BookmarksPage() {
                   name={chapter.name}
                   description={chapter.description}
                   hasVideo={!!chapter.videoUrl}
-                  hasTextbook={!!chapter.textbookPdfUrl}
+                  hasTextbook={!!(chapter.subject?.textbookUrl || chapter.textbookPdfUrl)}
                   hasSolution={!!chapter.solutionPdfUrl}
                   videoUrl={chapter.videoUrl}
+                  textbookUrl={chapter.subject?.textbookUrl}
+                  textbookPageNumber={chapter.textbookPageNumber}
                   textbookPdfUrl={chapter.textbookPdfUrl}
                   solutionPdfUrl={chapter.solutionPdfUrl}
                   onPress={async () => {

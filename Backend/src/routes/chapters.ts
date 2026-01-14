@@ -18,6 +18,7 @@ router.get('/subject/:subjectId', async (req, res) => {
           select: {
             id: true,
             name: true,
+            textbookUrl: true,
             standard: {
               select: {
                 id: true,
@@ -56,6 +57,7 @@ router.get('/:id', async (req, res) => {
           select: {
             id: true,
             name: true,
+            textbookUrl: true,
             standard: {
               select: {
                 id: true,
@@ -136,6 +138,7 @@ router.post('/', authenticateToken, async (req, res) => {
           select: {
             id: true,
             name: true,
+            textbookUrl: true,
             standard: {
               select: {
                 id: true,
@@ -185,6 +188,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
           select: {
             id: true,
             name: true,
+            textbookUrl: true,
             standard: {
               select: {
                 id: true,
