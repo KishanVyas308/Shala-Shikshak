@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { BookOpen, ArrowLeft, FileText, PlayCircle, Download, ArrowRight } from 'lucide-react';
+import { BookOpen, ArrowLeft, FileText, PlayCircle, Download, ArrowRight, X } from 'lucide-react';
 import { subjectsAPI } from '../services/subjects';
+import PDFViewer from '../components/PDFViewer';
 
 interface Chapter {
   id: string;
@@ -23,6 +24,8 @@ interface Chapter {
 const SubjectView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [searchTerm, setSearchTerm] = useState('');
+  const [showTextbook, setShowTextbook] = useState(false);
+  const [textbookPage, setTextbookPage] = useState<number | undefined>(undefined);
 
   const { data: subject, isLoading, error } = useQuery({
     queryKey: ['subjects', id],
@@ -80,6 +83,32 @@ const SubjectView: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      {/* Textbook PDF Viewer Modal */}
+      {showTextbook && subject.textbookUrl && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-75 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-6xl h-[90vh] flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h2 className="text-xl font-bold text-gray-900">
+                પાઠ્યપુસ્તક - {subject.name}
+                {textbookPage && <span className="text-orange-600 ml-2">(પૃષ્ઠ {textbookPage})</span>}
+              </h2>
+              <button
+                onClick={() => {
+                  setShowTextbook(false);
+                  setTextbookPage(undefined);
+                }}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <PDFViewer fileurl={subject.textbookUrl} initialPage={textbookPage} />
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Content */}
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 sm:py-2 md:py-6 lg:py-8">
         {/* Breadcrumb */}
@@ -105,6 +134,23 @@ const SubjectView: React.FC = () => {
           )}
           <span className="text-gray-400">/</span>
           <span className="text-gray-600 font-medium text-sm sm:text-base truncate">{subject.name}</span>
+          
+          {/* Textbook Button */}
+          {subject.textbookUrl && (
+            <>
+              <span className="text-gray-400 hidden sm:inline">/</span>
+              <button
+                onClick={() => {
+                  setTextbookPage(undefined);
+                  setShowTextbook(true);
+                }}
+                className="flex items-center text-orange-600 hover:text-orange-700 transition-colors text-sm sm:text-base font-medium px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg hover:bg-orange-50"
+              >
+                <FileText className="h-4 w-4 mr-1" />
+                <span>પાઠ્યપુસ્તક</span>
+              </button>
+            </>
+          )}
         </div>
 
 
@@ -164,7 +210,14 @@ const SubjectView: React.FC = () => {
             "space-y-4 sm:space-y-6"
           }>
             {filteredChapters.map((chapter) => (
-              <ChapterCard key={chapter.id} chapter={chapter} />
+              <ChapterCard 
+                key={chapter.id} 
+                chapter={chapter}
+                onOpenTextbook={(pageNumber) => {
+                  setTextbookPage(pageNumber);
+                  setShowTextbook(true);
+                }}
+              />
             ))}
           </div>
         )}
@@ -186,57 +239,78 @@ const SubjectView: React.FC = () => {
 
 interface ChapterCardProps {
   chapter: Chapter;
+  onOpenTextbook?: (pageNumber?: number) => void;
 }
 
-const ChapterCard: React.FC<ChapterCardProps> = ({ chapter }) => {
+const ChapterCard: React.FC<ChapterCardProps> = ({ chapter, onOpenTextbook }) => {
   const hasVideo = !!chapter.videoUrl;
   const hasSolutionPdf = !!chapter.solutionPdfUrl;
   const hasTextbookPdf = !!chapter.textbookPdfUrl;
- 
+  const hasTextbookUrl = !!chapter.subject?.textbookUrl;
+  
+  const handleTextbookClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (onOpenTextbook && chapter.subject?.textbookUrl) {
+      onOpenTextbook(chapter.textbookPageNumber);
+    }
+  };
 
-    return (
-      <Link
-        to={`/chapter/${chapter.id}`}
-        className="group bg-white rounded-lg sm:rounded-xl lg:rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-0.5 sm:hover:-translate-y-1 overflow-hidden active:scale-95 block"
-      >
-        <div className="p-4 sm:p-6 lg:p-8">
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex-grow">
-              <div className="flex items-center mb-2">
-                
-                <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 group-hover:text-indigo-600 transition-colors leading-tight">
-                  {chapter.name || 'પ્રકરણ'}
-                </h3>
-              </div>
-              {chapter.description && (
-                <p className="text-gray-600 text-sm sm:text-base leading-relaxed mb-4 line-clamp-2">
-                  {chapter.description}
-                </p>
-              )}
+  return (
+    <Link
+      to={`/chapter/${chapter.id}`}
+      className="group bg-white rounded-lg sm:rounded-xl lg:rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-0.5 sm:hover:-translate-y-1 overflow-hidden active:scale-95 block"
+    >
+      <div className="p-4 sm:p-6 lg:p-8">
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex-grow">
+            <div className="flex items-center mb-2">
+              
+              <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 group-hover:text-indigo-600 transition-colors leading-tight">
+                {chapter.name || 'પ્રકરણ'}
+              </h3>
             </div>
+            {chapter.description && (
+              <p className="text-gray-600 text-sm sm:text-base leading-relaxed mb-4 line-clamp-2">
+                {chapter.description}
+              </p>
+            )}
           </div>
-          
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3 sm:gap-4">
-              {hasVideo && (
-                <div className="flex items-center text-red-600 text-xs sm:text-sm">
-                  <PlayCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1 flex-shrink-0" />
-                  <span>વિડિયો</span>
-                </div>
-              )}
-              {hasSolutionPdf && (
-                <div className="flex items-center text-green-600 text-xs sm:text-sm">
-                  <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 flex-shrink-0" />
-                  <span>ઉકેલ PDF</span>
-                </div>
-              )}
-              {hasTextbookPdf && (
-                <div className="flex items-center text-blue-600 text-xs sm:text-sm">
-                  <FileText className="h-3 w-3 sm:h-4 sm:w-4 mr-1 flex-shrink-0" />
-                  <span>પુસ્તક PDF</span>
-                </div>
-              )}
-            </div>
+        </div>
+        
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
+            {hasTextbookUrl && (
+              <button
+                onClick={handleTextbookClick}
+                className="flex items-center text-orange-600 hover:text-orange-700 text-xs sm:text-sm px-2 py-1 rounded hover:bg-orange-50 transition-colors"
+              >
+                <FileText className="h-3 w-3 sm:h-4 sm:w-4 mr-1 flex-shrink-0" />
+                <span>પાઠ્યપુસ્તક</span>
+                {chapter.textbookPageNumber && (
+                  <span className="ml-1">પૃ.{chapter.textbookPageNumber}</span>
+                )}
+              </button>
+            )}
+            {hasVideo && (
+              <div className="flex items-center text-red-600 text-xs sm:text-sm">
+                <PlayCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1 flex-shrink-0" />
+                <span>વિડિયો</span>
+              </div>
+            )}
+            {hasSolutionPdf && (
+              <div className="flex items-center text-green-600 text-xs sm:text-sm">
+                <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 flex-shrink-0" />
+                <span>ઉકેલ PDF</span>
+              </div>
+            )}
+            {hasTextbookPdf && (
+              <div className="flex items-center text-blue-600 text-xs sm:text-sm">
+                <FileText className="h-3 w-3 sm:h-4 sm:w-4 mr-1 flex-shrink-0" />
+                <span>પુસ્તક PDF</span>
+              </div>
+            )}
+          </div>
             
             <div className="flex items-center text-indigo-600 font-medium group-hover:text-indigo-700 text-xs sm:text-sm lg:text-base">
               <span className="mr-1 sm:mr-2 hidden sm:inline">અધ્યયન કરો</span>

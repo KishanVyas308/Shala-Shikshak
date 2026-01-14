@@ -230,7 +230,23 @@ const ChapterView: React.FC = () => {
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4">
           <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">{chapter.name}</h1>
           {chapter.description && (
-            <p className="text-gray-600">{chapter.description}</p>
+            <p className="text-gray-600 mb-3">{chapter.description}</p>
+          )}
+          
+          {/* Textbook Button */}
+          {chapter.subject?.textbookUrl && (
+            <a
+              href={chapter.subject.textbookUrl + (chapter.textbookPageNumber ? `#page=${chapter.textbookPageNumber}` : '')}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm font-medium"
+            >
+              <FileText className="w-4 h-4 mr-2" />
+              પાઠ્યપુસ્તક ખોલો
+              {chapter.textbookPageNumber && (
+                <span className="ml-1">(પૃષ્ઠ {chapter.textbookPageNumber})</span>
+              )}
+            </a>
           )}
         </div>
 

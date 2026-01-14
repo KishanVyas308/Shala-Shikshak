@@ -133,6 +133,7 @@ export default function SubjectView() {
         }
         showsVerticalScrollIndicator={false}
       >
+        
 
         {/* Chapters List */}
         <View className="pb-6 my-4">
@@ -142,6 +143,7 @@ export default function SubjectView() {
                 <EnhancedChapterCard
                   key={`${chapter.id}-${fontSize}`}
                   chapter={chapter}
+                  subjectTextbookUrl={subject.textbookUrl}
                 />
               ))}
             </>
@@ -173,9 +175,10 @@ export default function SubjectView() {
 // Enhanced Chapter Card with Category Buttons
 interface EnhancedChapterCardProps {
   chapter: Chapter;
+  subjectTextbookUrl?: string;
 }
 
-const EnhancedChapterCard: React.FC<EnhancedChapterCardProps> = ({ chapter }) => {
+const EnhancedChapterCard: React.FC<EnhancedChapterCardProps> = ({ chapter, subjectTextbookUrl }) => {
   const { getFontSizeClasses } = useFontSize();
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [resourceCounts, setResourceCounts] = useState<{
@@ -290,25 +293,34 @@ const EnhancedChapterCard: React.FC<EnhancedChapterCardProps> = ({ chapter }) =>
           {/* Category Buttons */}
           <View className="flex-row gap-2 flex-wrap">
             {/* Textbook Button */}
-            <TouchableOpacity
-              onPress={() => {
-                // No action for now
-              }}
-              className="flex-row items-center px-3 py-2 rounded-lg border"
-              style={{ 
-                backgroundColor: '#FEF3C7',
-                borderColor: '#F59E0B40'
-              }}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="book" size={14} color="#F59E0B" />
-              <Text 
-                className={`font-gujarati font-medium ml-1 ${getFontSizeClasses().text}`}
-                style={{ color: '#F59E0B' }}
+            {subjectTextbookUrl && (
+              <TouchableOpacity
+                onPress={() => {
+                  router.push({
+                    pathname: '/pdf-viewer' as any,
+                    params: { 
+                      url: subjectTextbookUrl, 
+                      title: `${chapter.name} - પાઠ્યપુસ્તક`,
+                      page: chapter.textbookPageNumber?.toString() || '1'
+                    }
+                  });
+                }}
+                className="flex-row items-center px-3 py-2 rounded-lg border"
+                style={{ 
+                  backgroundColor: '#FEF3C7',
+                  borderColor: '#F59E0B40'
+                }}
+                activeOpacity={0.7}
               >
-                પુસ્તક
-              </Text>
-            </TouchableOpacity>
+                <Ionicons name="book" size={14} color="#F59E0B" />
+                <Text 
+                  className={`font-gujarati font-medium ml-1 ${getFontSizeClasses().text}`}
+                  style={{ color: '#F59E0B' }}
+                >
+                  { 'પાઠ્યપુસ્તક'}
+                </Text>
+              </TouchableOpacity>
+            )}
 
             {/* Resource Category Buttons */}
             {resourceCounts && categories.map((category) => {
@@ -347,7 +359,7 @@ const EnhancedChapterCard: React.FC<EnhancedChapterCardProps> = ({ chapter }) =>
             </View>
           )}
 
-          {resourceCounts && (resourceCounts.svadhyay + resourceCounts.svadhyay_pothi + resourceCounts.other) === 0 && (
+          {resourceCounts && (resourceCounts.svadhyay + resourceCounts.svadhyay_pothi + resourceCounts.other + (subjectTextbookUrl ? 1 : 0)) === 0 && (
             <View className="flex-row items-center justify-center py-2 bg-gray-50 rounded-lg">
               <Ionicons name="information-circle-outline" size={14} color="#9CA3AF" />
               <Text className={`font-gujarati text-gray-500 ml-1 ${getFontSizeClasses().text}`}>
