@@ -15,8 +15,12 @@ interface Chapter {
   solutionPdfFileName?: string;
   textbookPdfUrl?: string;
   textbookPdfFileName?: string;
+  textbookPageNumber?: number;
   createdAt?: string;
   updatedAt?: string;
+  subject?: {
+    textbookUrl?: string;
+  };
 }
 
 
